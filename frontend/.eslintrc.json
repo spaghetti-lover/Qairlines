@@ -1,0 +1,15 @@
+// .eslintrc.json
+{
+  "extends": ["next/core-web-vitals"],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["src"], // Để eslint hiểu các alias
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
+  "rules": {
+    "@next/next/no-img-element": "off"
+  }
+}

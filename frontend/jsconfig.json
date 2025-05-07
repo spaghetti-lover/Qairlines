@@ -1,0 +1,19 @@
+// jsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": "src", // Thiết lập thư mục gốc là `src`
+    "paths": {
+      "@/*": ["./*"], // Alias cho thư mục gốc
+      "@/components/*": ["components/*"], // Alias cho components
+      "@/hooks/*": ["hooks/*"], // Alias cho hooks
+      "@/layouts/*": ["layouts/*"], // Alias cho layouts
+      "@/lib/*": ["lib/*"], // Alias cho lib
+      "@/pages/*": ["pages/*"], // Alias cho pages
+      "@/services/*": ["services/*"], // Alias cho services
+      "@/styles/*": ["styles/*"], // Alias cho styles
+      "@/utils/*": ["utils/*"] // Alias cho utils
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

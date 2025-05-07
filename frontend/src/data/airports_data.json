@@ -1,0 +1,57 @@
+[
+    {
+        "region": "Việt Nam",
+        "airports": [
+            {
+                "city": "Hà Nội",
+                "code": "HAN",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "TP. Hồ Chí Minh",
+                "code": "SGN",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Đà Nẵng",
+                "code": "DAD",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Phú Quốc",
+                "code": "PQC",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Nha Trang",
+                "code": "CXR",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Cần Thơ",
+                "code": "VCA",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Hải Phòng",
+                "code": "HPH",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Huế",
+                "code": "HUI",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Vinh",
+                "code": "VII",
+                "country": "Việt Nam"
+            },
+            {
+                "city": "Thanh Hóa",
+                "code": "THD",
+                "country": "Việt Nam"
+            }
+        ]
+    }
+]

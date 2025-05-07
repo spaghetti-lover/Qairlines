@@ -1,0 +1,83 @@
+[
+    {
+      "id": 1,
+      "from": "Hà Nội",
+      "to": "TP. Hồ Chí Minh",
+      "date": "26/01/2025",
+      "price": "979.000",
+      "views": "Đã xem: 7 phút trước",
+      "image": "/landmark81.jpg",
+      "position": "1/8"
+    },
+    {
+      "id": 2,
+      "from": "Hà Nội",
+      "to": "Đà Nẵng",
+      "date": "19/01/2025",
+      "price": "1.153.000",
+      "views": "Đã xem: 4 phút trước",
+      "image": "/golden_bridge.jpg",
+      "position": "2/8"
+    },
+    {
+      "id": 3,
+      "from": "Hà Nội",
+      "to": "Đà Lạt",
+      "date": "14/01/2025",
+      "price": "957.000",
+      "views": "Đã xem: 7 phút trước",
+      "image": "/dalat_diocese_cathedral.jpg",
+      "position": "3/8"
+    },
+    {
+      "id": 4,
+      "from": "Hà Nội",
+      "to": "Huế",
+      "date": "24/12/2024",
+      "price": "1.162.000",
+      "views": "Đã xem: 42 phút trước",
+      "image": "/tuduc_tomb.jpg",
+      "position": "4/8"
+    },
+    {
+        "id": 5,
+        "from": "TP. Hồ Chí Minh",
+        "to": "Hà Nội",
+        "date": "11/02/2025",
+        "price": "979.000",
+        "views": "Đã xem: 42 phút trước",
+        "image": "/ho-guom.jpg",
+        "position": "5/8"
+      },
+      {
+        "id": 6,
+        "from": "TP. Hồ Chí Minh",
+        "to": "Quy Nhơn",
+        "date": "09/02/2025",
+        "price": "666.000",
+        "views": "Đã xem: 42 phút trước",
+        "image": "/quy-nhon.jpg",
+        "position": "6/8"
+      },
+      {
+        "id": 7,
+        "from": "TP. Hồ Chí Minh",
+        "to": "Phú Quốc",
+        "date": "08/02/2025",
+        "price": "892.000",
+        "views": "Đã xem: 42 phút trước",
+        "image": "/phu-quoc.jpg",
+        "position": "7/8"
+      },
+      {
+        "id": 8,
+        "from": "TP. Hồ Chí Minh",
+        "to": "Bangkok",
+        "date": "18/12/2024",
+        "price": "4.161.000",
+        "views": "Đã xem: 42 phút trước",
+        "image": "/bangkok.jpg",
+        "position": "8/8"
+      }
+  ]
+  

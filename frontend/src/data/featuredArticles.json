@@ -1,0 +1,44 @@
+[
+  {
+    "slug": "nhung-dieu-can-xem-va-lam-khi-den-tham-nhat-ban",
+    "image": "/News/featured_post-1.jpg",
+    "title": "Những điều cần xem và làm khi đến thăm Nhật Bản",
+    "description": "Khám phá văn hóa Nhật Bản với những địa điểm đẹp và những hoạt động thú vị.",
+    "content": "Nhật Bản là sự giao thoa tuyệt vời giữa truyền thống và hiện đại, mang đến cho du khách những trải nghiệm độc đáo không nơi nào có được. Khi đặt chân đến đây, bạn không thể bỏ qua các ngôi đền cổ kính như chùa Kiyomizu-dera ở Kyoto hay đền Meiji ở Tokyo, nơi mang đến cảm giác thanh tịnh và bình yên. Vào mùa xuân, ngắm hoa anh đào nở rộ tại công viên Ueno hoặc dưới chân núi Phú Sĩ sẽ khiến bạn ngỡ ngàng trước vẻ đẹp tinh khôi. Ngoài ra, trải nghiệm tàu cao tốc Shinkansen sẽ giúp bạn khám phá các thành phố sôi động một cách nhanh chóng và tiện lợi. Đừng quên thưởng thức ẩm thực địa phương với sushi tươi ngon tại chợ Tsukiji hay những tô mì ramen nóng hổi ở Fukuoka. Nếu là tín đồ thời trang, khu phố Harajuku tại Tokyo là điểm đến không thể thiếu với các cửa hàng độc đáo và phong cách trẻ trung.",
+    "date": "08 Tháng 12, 2023",
+    "category": "Du lịch",
+    "buttonText": "Đọc thêm",
+    "author": "Phạm Nhật Dương",
+    "authorTitle": "Chuyên gia văn hóa",
+    "authorImage": "/AvatarUser/no_avatar.jpg",
+    "readTime": 7
+  },
+  {
+    "slug": "kham-pha-ve-dep-hung-vi-cua-day-himalaya",
+    "image": "/News/featured_post-2.jpg",
+    "title": "Khám phá vẻ đẹp hùng vĩ của dãy Himalaya",
+    "description": "Trải nghiệm hành trình leo núi đầy thách thức và ngắm nhìn cảnh quan tuyệt đẹp.",
+    "content": "Dãy Himalaya, nơi sở hữu những ngọn núi cao nhất thế giới, là điểm đến lý tưởng cho những ai yêu thích phiêu lưu và khám phá thiên nhiên. Những cung đường trekking như Annapurna hay Everest Base Camp sẽ thử thách giới hạn của bạn, đồng thời mang đến cảnh sắc hùng vĩ khiến bạn không thể rời mắt. Đặc biệt, ngắm bình minh tại Poon Hill là một trong những khoảnh khắc đáng nhớ nhất, khi ánh nắng đầu ngày chiếu sáng các dãy núi tuyết. Không chỉ dừng lại ở cảnh quan, Himalaya còn là nơi bạn có thể tìm hiểu về văn hóa Tây Tạng, ghé thăm các tu viện cổ kính và hòa mình vào đời sống người dân địa phương. Hãy dành thời gian chiêm ngưỡng hồ băng Gokyo với làn nước trong xanh tuyệt đẹp, và sau những hành trình gian nan, một tách trà Masala nóng sẽ giúp bạn thư giãn và tận hưởng từng khoảnh khắc đáng giá.",
+    "date": "15 Tháng 12, 2023",
+    "category": "Phiêu lưu",
+    "buttonText": "Đọc thêm",
+    "author": "Nguyễn Văn E",
+    "authorTitle": "Nhà thám hiểm",
+    "authorImage": "/AvatarUser/no_avatar.jpg",
+    "readTime": 12
+  },
+  {
+    "slug": "thuong-thuc-nghe-thuat-am-thuc-phap-tai-paris",
+    "image": "/News/featured_post-3.png",
+    "title": "Thưởng thức nghệ thuật ẩm thực Pháp tại Paris",
+    "description": "Tận hưởng những món ăn tinh tế và khám phá văn hóa ẩm thực độc đáo.",
+    "content": "Paris, kinh đô ánh sáng, không chỉ quyến rũ bởi vẻ đẹp lãng mạn mà còn bởi nền ẩm thực tinh tế đậm chất nghệ thuật. Bạn có thể bắt đầu ngày mới bằng việc thưởng thức bánh sừng bò giòn rụm cùng tách cà phê thơm lừng tại các quán café ven đường ở Montmartre. Dạo qua các chợ địa phương như chợ Bastille hoặc Marché des Enfants Rouges sẽ là cơ hội để bạn khám phá các loại pho mát hảo hạng, rượu vang thơm ngon và những món ăn đặc sản. Nếu yêu thích sự sang trọng, một bữa tối tại nhà hàng Michelin với các món ăn như foie gras hay crème brûlée sẽ là trải nghiệm đáng nhớ. Ngoài ra, bạn còn có thể tham gia các lớp học làm bánh để tự tay tạo ra những chiếc macaron đầy màu sắc. Kết thúc hành trình ẩm thực bằng một bữa tối lãng mạn trên du thuyền sông Seine, bạn sẽ cảm nhận trọn vẹn nét đẹp của Paris qua mọi giác quan.",
+    "date": "22 Tháng 12, 2023",
+    "category": "Ẩm thực",
+    "buttonText": "Đọc thêm",
+    "author": "Trần Thanh F",
+    "authorTitle": "Đầu bếp chuyên nghiệp",
+    "authorImage": "/AvatarUser/no_avatar.jpg",
+    "readTime": 9
+  }
+]
