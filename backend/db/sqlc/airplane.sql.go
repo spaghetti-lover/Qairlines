@@ -7,27 +7,24 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
 
 const createAirplane = `-- name: CreateAirplane :one
 INSERT INTO airplane (
   airplane_model_id,
-  registration_number,
-  active
+  registration_number
 ) VALUES (
-  $1, $2, $3
+  $1, $2
 ) RETURNING airplane_id, airplane_model_id, registration_number, active
 `
 
 type CreateAirplaneParams struct {
-	AirplaneModelID    int64        `json:"airplane_model_id"`
-	RegistrationNumber string       `json:"registration_number"`
-	Active             sql.NullBool `json:"active"`
+	AirplaneModelID    int64  `json:"airplane_model_id"`
+	RegistrationNumber string `json:"registration_number"`
 }
 
 func (q *Queries) CreateAirplane(ctx context.Context, arg CreateAirplaneParams) (Airplane, error) {
-	row := q.db.QueryRowContext(ctx, createAirplane, arg.AirplaneModelID, arg.RegistrationNumber, arg.Active)
+	row := q.db.QueryRow(ctx, createAirplane, arg.AirplaneModelID, arg.RegistrationNumber)
 	var i Airplane
 	err := row.Scan(
 		&i.AirplaneID,
@@ -44,7 +41,7 @@ WHERE registration_number = $1
 `
 
 func (q *Queries) DeleteAirplane(ctx context.Context, registrationNumber string) error {
-	_, err := q.db.ExecContext(ctx, deleteAirplane, registrationNumber)
+	_, err := q.db.Exec(ctx, deleteAirplane, registrationNumber)
 	return err
 }
 
@@ -54,7 +51,7 @@ WHERE registration_number = $1 LIMIT 1
 `
 
 func (q *Queries) GetAirplane(ctx context.Context, registrationNumber string) (Airplane, error) {
-	row := q.db.QueryRowContext(ctx, getAirplane, registrationNumber)
+	row := q.db.QueryRow(ctx, getAirplane, registrationNumber)
 	var i Airplane
 	err := row.Scan(
 		&i.AirplaneID,
@@ -78,7 +75,7 @@ type ListAirplanesParams struct {
 }
 
 func (q *Queries) ListAirplanes(ctx context.Context, arg ListAirplanesParams) ([]Airplane, error) {
-	rows, err := q.db.QueryContext(ctx, listAirplanes, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listAirplanes, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -95,9 +92,6 @@ func (q *Queries) ListAirplanes(ctx context.Context, arg ListAirplanesParams) ([
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -7,8 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPassenger = `-- name: CreatePassenger :one
@@ -30,21 +30,21 @@ INSERT INTO passengers (
 `
 
 type CreatePassengerParams struct {
-	BookingID      string         `json:"booking_id"`
-	CitizenID      string         `json:"citizen_id"`
-	PassportNumber sql.NullString `json:"passport_number"`
-	Gender         string         `json:"gender"`
-	PhoneNumber    string         `json:"phone_number"`
-	FirstName      string         `json:"first_name"`
-	LastName       string         `json:"last_name"`
-	Nationality    string         `json:"nationality"`
-	DateOfBirth    time.Time      `json:"date_of_birth"`
-	SeatRow        int32          `json:"seat_row"`
-	SeatCol        string         `json:"seat_col"`
+	BookingID      string      `json:"booking_id"`
+	CitizenID      string      `json:"citizen_id"`
+	PassportNumber pgtype.Text `json:"passport_number"`
+	Gender         string      `json:"gender"`
+	PhoneNumber    string      `json:"phone_number"`
+	FirstName      string      `json:"first_name"`
+	LastName       string      `json:"last_name"`
+	Nationality    string      `json:"nationality"`
+	DateOfBirth    pgtype.Date `json:"date_of_birth"`
+	SeatRow        int32       `json:"seat_row"`
+	SeatCol        string      `json:"seat_col"`
 }
 
 func (q *Queries) CreatePassenger(ctx context.Context, arg CreatePassengerParams) (Passenger, error) {
-	row := q.db.QueryRowContext(ctx, createPassenger,
+	row := q.db.QueryRow(ctx, createPassenger,
 		arg.BookingID,
 		arg.CitizenID,
 		arg.PassportNumber,
@@ -81,7 +81,7 @@ WHERE passenger_id = $1
 `
 
 func (q *Queries) DeletePassenger(ctx context.Context, passengerID int64) error {
-	_, err := q.db.ExecContext(ctx, deletePassenger, passengerID)
+	_, err := q.db.Exec(ctx, deletePassenger, passengerID)
 	return err
 }
 
@@ -91,7 +91,7 @@ WHERE passenger_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetPassenger(ctx context.Context, passengerID int64) (Passenger, error) {
-	row := q.db.QueryRowContext(ctx, getPassenger, passengerID)
+	row := q.db.QueryRow(ctx, getPassenger, passengerID)
 	var i Passenger
 	err := row.Scan(
 		&i.PassengerID,
@@ -123,7 +123,7 @@ type ListPassengersParams struct {
 }
 
 func (q *Queries) ListPassengers(ctx context.Context, arg ListPassengersParams) ([]Passenger, error) {
-	rows, err := q.db.QueryContext(ctx, listPassengers, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listPassengers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -148,9 +148,6 @@ func (q *Queries) ListPassengers(ctx context.Context, arg ListPassengersParams) 
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

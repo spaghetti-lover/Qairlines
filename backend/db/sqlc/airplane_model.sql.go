@@ -26,7 +26,7 @@ type CreateAirplaneModelParams struct {
 }
 
 func (q *Queries) CreateAirplaneModel(ctx context.Context, arg CreateAirplaneModelParams) (AirplaneModel, error) {
-	row := q.db.QueryRowContext(ctx, createAirplaneModel, arg.Name, arg.Manufacturer, arg.TotalSeats)
+	row := q.db.QueryRow(ctx, createAirplaneModel, arg.Name, arg.Manufacturer, arg.TotalSeats)
 	var i AirplaneModel
 	err := row.Scan(
 		&i.AirplaneModelID,
@@ -44,7 +44,7 @@ WHERE airplane_model_id = $1
 `
 
 func (q *Queries) DeleteAirplaneModel(ctx context.Context, airplaneModelID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAirplaneModel, airplaneModelID)
+	_, err := q.db.Exec(ctx, deleteAirplaneModel, airplaneModelID)
 	return err
 }
 
@@ -54,7 +54,7 @@ WHERE airplane_model_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAirplaneModel(ctx context.Context, airplaneModelID int64) (AirplaneModel, error) {
-	row := q.db.QueryRowContext(ctx, getAirplaneModel, airplaneModelID)
+	row := q.db.QueryRow(ctx, getAirplaneModel, airplaneModelID)
 	var i AirplaneModel
 	err := row.Scan(
 		&i.AirplaneModelID,
@@ -79,7 +79,7 @@ type ListAirplaneModelsParams struct {
 }
 
 func (q *Queries) ListAirplaneModels(ctx context.Context, arg ListAirplaneModelsParams) ([]AirplaneModel, error) {
-	rows, err := q.db.QueryContext(ctx, listAirplaneModels, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listAirplaneModels, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -97,9 +97,6 @@ func (q *Queries) ListAirplaneModels(ctx context.Context, arg ListAirplaneModels
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

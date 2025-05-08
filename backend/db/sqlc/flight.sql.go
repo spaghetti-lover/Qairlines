@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createFlight = `-- name: CreateFlight :one
@@ -28,20 +29,20 @@ INSERT INTO flight (
 `
 
 type CreateFlightParams struct {
-	FlightNumber           string          `json:"flight_number"`
-	RegistrationNumber     string          `json:"registration_number"`
-	EstimatedDepartureTime sql.NullTime    `json:"estimated_departure_time"`
-	ActualDepartureTime    sql.NullTime    `json:"actual_departure_time"`
-	EstimatedArrivalTime   sql.NullTime    `json:"estimated_arrival_time"`
-	DepartureAirportID     sql.NullInt64   `json:"departure_airport_id"`
-	DepartureAirportID_2   sql.NullInt64   `json:"departure_airport_id_2"`
-	DestinationAirportID   sql.NullInt64   `json:"destination_airport_id"`
-	FlightPrice            sql.NullFloat64 `json:"flight_price"`
-	Status                 sql.NullString  `json:"status"`
+	FlightNumber           string           `json:"flight_number"`
+	RegistrationNumber     string           `json:"registration_number"`
+	EstimatedDepartureTime pgtype.Timestamp `json:"estimated_departure_time"`
+	ActualDepartureTime    pgtype.Timestamp `json:"actual_departure_time"`
+	EstimatedArrivalTime   pgtype.Timestamp `json:"estimated_arrival_time"`
+	DepartureAirportID     pgtype.Int8      `json:"departure_airport_id"`
+	DepartureAirportID_2   pgtype.Int8      `json:"departure_airport_id_2"`
+	DestinationAirportID   pgtype.Int8      `json:"destination_airport_id"`
+	FlightPrice            pgtype.Float8    `json:"flight_price"`
+	Status                 pgtype.Text      `json:"status"`
 }
 
 func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Flight, error) {
-	row := q.db.QueryRowContext(ctx, createFlight,
+	row := q.db.QueryRow(ctx, createFlight,
 		arg.FlightNumber,
 		arg.RegistrationNumber,
 		arg.EstimatedDepartureTime,
@@ -76,7 +77,7 @@ WHERE flight_number = $1
 `
 
 func (q *Queries) DeleteFlight(ctx context.Context, flightNumber string) error {
-	_, err := q.db.ExecContext(ctx, deleteFlight, flightNumber)
+	_, err := q.db.Exec(ctx, deleteFlight, flightNumber)
 	return err
 }
 
@@ -86,7 +87,7 @@ WHERE flight_number = $1 LIMIT 1
 `
 
 func (q *Queries) GetFlight(ctx context.Context, flightNumber string) (Flight, error) {
-	row := q.db.QueryRowContext(ctx, getFlight, flightNumber)
+	row := q.db.QueryRow(ctx, getFlight, flightNumber)
 	var i Flight
 	err := row.Scan(
 		&i.FlightID,
@@ -117,7 +118,7 @@ type ListFlightsParams struct {
 }
 
 func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Flight, error) {
-	rows, err := q.db.QueryContext(ctx, listFlights, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listFlights, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +142,6 @@ func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Fli
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

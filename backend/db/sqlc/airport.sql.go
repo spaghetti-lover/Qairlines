@@ -26,7 +26,7 @@ type CreateAirportParams struct {
 }
 
 func (q *Queries) CreateAirport(ctx context.Context, arg CreateAirportParams) (Airport, error) {
-	row := q.db.QueryRowContext(ctx, createAirport, arg.AirportCode, arg.City, arg.Name)
+	row := q.db.QueryRow(ctx, createAirport, arg.AirportCode, arg.City, arg.Name)
 	var i Airport
 	err := row.Scan(
 		&i.AirportID,
@@ -44,7 +44,7 @@ WHERE airport_code = $1
 `
 
 func (q *Queries) DeleteAirport(ctx context.Context, airportCode string) error {
-	_, err := q.db.ExecContext(ctx, deleteAirport, airportCode)
+	_, err := q.db.Exec(ctx, deleteAirport, airportCode)
 	return err
 }
 
@@ -54,7 +54,7 @@ WHERE airport_code = $1 LIMIT 1
 `
 
 func (q *Queries) GetAirport(ctx context.Context, airportCode string) (Airport, error) {
-	row := q.db.QueryRowContext(ctx, getAirport, airportCode)
+	row := q.db.QueryRow(ctx, getAirport, airportCode)
 	var i Airport
 	err := row.Scan(
 		&i.AirportID,
@@ -79,7 +79,7 @@ type ListAirportsParams struct {
 }
 
 func (q *Queries) ListAirports(ctx context.Context, arg ListAirportsParams) ([]Airport, error) {
-	rows, err := q.db.QueryContext(ctx, listAirports, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listAirports, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -97,9 +97,6 @@ func (q *Queries) ListAirports(ctx context.Context, arg ListAirportsParams) ([]A
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createBooking = `-- name: CreateBooking :one
@@ -24,16 +25,16 @@ INSERT INTO booking (
 `
 
 type CreateBookingParams struct {
-	BookerEmail      string       `json:"booker_email"`
-	NumberOfAdults   int64        `json:"number_of_adults"`
-	NumberOfChildren int32        `json:"number_of_children"`
-	FlightClass      string       `json:"flight_class"`
-	Cancelled        sql.NullBool `json:"cancelled"`
-	FlightID         int64        `json:"flight_id"`
+	BookerEmail      string      `json:"booker_email"`
+	NumberOfAdults   int64       `json:"number_of_adults"`
+	NumberOfChildren int32       `json:"number_of_children"`
+	FlightClass      string      `json:"flight_class"`
+	Cancelled        pgtype.Bool `json:"cancelled"`
+	FlightID         int64       `json:"flight_id"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error) {
-	row := q.db.QueryRowContext(ctx, createBooking,
+	row := q.db.QueryRow(ctx, createBooking,
 		arg.BookerEmail,
 		arg.NumberOfAdults,
 		arg.NumberOfChildren,
@@ -61,7 +62,7 @@ WHERE booking_id = $1
 `
 
 func (q *Queries) DeleteBookings(ctx context.Context, bookingID string) error {
-	_, err := q.db.ExecContext(ctx, deleteBookings, bookingID)
+	_, err := q.db.Exec(ctx, deleteBookings, bookingID)
 	return err
 }
 
@@ -71,7 +72,7 @@ WHERE booking_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetBooking(ctx context.Context, bookingID string) (Booking, error) {
-	row := q.db.QueryRowContext(ctx, getBooking, bookingID)
+	row := q.db.QueryRow(ctx, getBooking, bookingID)
 	var i Booking
 	err := row.Scan(
 		&i.BookingID,
@@ -99,7 +100,7 @@ type ListBookingsParams struct {
 }
 
 func (q *Queries) ListBookings(ctx context.Context, arg ListBookingsParams) ([]Booking, error) {
-	rows, err := q.db.QueryContext(ctx, listBookings, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listBookings, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -120,9 +121,6 @@ func (q *Queries) ListBookings(ctx context.Context, arg ListBookingsParams) ([]B
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

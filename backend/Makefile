@@ -7,6 +7,8 @@ migrateup:
 createmigrate:
 	@read -p "Enter migration name: " name; \
 	migrate create -ext sql -dir db/migrations -seq $$name
+test:
+	go test -cover ./...
 sqlc:
 	sqlc generate
 

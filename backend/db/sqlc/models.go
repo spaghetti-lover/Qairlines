@@ -5,15 +5,16 @@
 package db
 
 import (
-	"database/sql"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Airplane struct {
-	AirplaneID         int64        `json:"airplane_id"`
-	AirplaneModelID    int64        `json:"airplane_model_id"`
-	RegistrationNumber string       `json:"registration_number"`
-	Active             sql.NullBool `json:"active"`
+	AirplaneID         int64       `json:"airplane_id"`
+	AirplaneModelID    int64       `json:"airplane_model_id"`
+	RegistrationNumber string      `json:"registration_number"`
+	Active             pgtype.Bool `json:"active"`
 }
 
 type AirplaneModel struct {
@@ -38,60 +39,60 @@ type Booking struct {
 	// CHECK > 0
 	NumberOfAdults int64 `json:"number_of_adults"`
 	// CHECK (number_of_children >= 0)
-	NumberOfChildren int32        `json:"number_of_children"`
-	FlightClass      string       `json:"flight_class"`
-	Cancelled        sql.NullBool `json:"cancelled"`
-	FlightID         int64        `json:"flight_id"`
-	BookingDate      sql.NullTime `json:"booking_date"`
+	NumberOfChildren int32            `json:"number_of_children"`
+	FlightClass      string           `json:"flight_class"`
+	Cancelled        pgtype.Bool      `json:"cancelled"`
+	FlightID         int64            `json:"flight_id"`
+	BookingDate      pgtype.Timestamp `json:"booking_date"`
 }
 
 type Flight struct {
-	FlightID               int64           `json:"flight_id"`
-	FlightNumber           string          `json:"flight_number"`
-	RegistrationNumber     string          `json:"registration_number"`
-	EstimatedDepartureTime sql.NullTime    `json:"estimated_departure_time"`
-	ActualDepartureTime    sql.NullTime    `json:"actual_departure_time"`
-	EstimatedArrivalTime   sql.NullTime    `json:"estimated_arrival_time"`
-	ActualArrivalTime      sql.NullTime    `json:"actual_arrival_time"`
-	DepartureAirportID     sql.NullInt64   `json:"departure_airport_id"`
-	DestinationAirportID   sql.NullInt64   `json:"destination_airport_id"`
-	FlightPrice            sql.NullFloat64 `json:"flight_price"`
-	Status                 sql.NullString  `json:"status"`
+	FlightID               int64            `json:"flight_id"`
+	FlightNumber           string           `json:"flight_number"`
+	RegistrationNumber     string           `json:"registration_number"`
+	EstimatedDepartureTime pgtype.Timestamp `json:"estimated_departure_time"`
+	ActualDepartureTime    pgtype.Timestamp `json:"actual_departure_time"`
+	EstimatedArrivalTime   pgtype.Timestamp `json:"estimated_arrival_time"`
+	ActualArrivalTime      pgtype.Timestamp `json:"actual_arrival_time"`
+	DepartureAirportID     pgtype.Int8      `json:"departure_airport_id"`
+	DestinationAirportID   pgtype.Int8      `json:"destination_airport_id"`
+	FlightPrice            pgtype.Float8    `json:"flight_price"`
+	Status                 pgtype.Text      `json:"status"`
 }
 
 type FlightSeat struct {
 	FlightSeatsID      int64          `json:"flight_seats_id"`
 	RegistrationNumber string         `json:"registration_number"`
 	FlightClass        string         `json:"flight_class"`
-	ClassMultiplier    sql.NullString `json:"class_multiplier"`
-	ChildMultiplier    sql.NullString `json:"child_multiplier"`
+	ClassMultiplier    pgtype.Numeric `json:"class_multiplier"`
+	ChildMultiplier    pgtype.Numeric `json:"child_multiplier"`
 	// CHECK > 0
 	MaxRowSeat int64 `json:"max_row_seat"`
 	MaxColSeat int64 `json:"max_col_seat"`
 }
 
 type Passenger struct {
-	PassengerID    int64          `json:"passenger_id"`
-	BookingID      string         `json:"booking_id"`
-	CitizenID      string         `json:"citizen_id"`
-	PassportNumber sql.NullString `json:"passport_number"`
+	PassengerID    int64       `json:"passenger_id"`
+	BookingID      string      `json:"booking_id"`
+	CitizenID      string      `json:"citizen_id"`
+	PassportNumber pgtype.Text `json:"passport_number"`
 	// CHECK (gender IN ('Male', 'Female'))
-	Gender      string    `json:"gender"`
-	PhoneNumber string    `json:"phone_number"`
-	FirstName   string    `json:"first_name"`
-	LastName    string    `json:"last_name"`
-	Nationality string    `json:"nationality"`
-	DateOfBirth time.Time `json:"date_of_birth"`
-	SeatRow     int32     `json:"seat_row"`
-	SeatCol     string    `json:"seat_col"`
+	Gender      string      `json:"gender"`
+	PhoneNumber string      `json:"phone_number"`
+	FirstName   string      `json:"first_name"`
+	LastName    string      `json:"last_name"`
+	Nationality string      `json:"nationality"`
+	DateOfBirth pgtype.Date `json:"date_of_birth"`
+	SeatRow     int32       `json:"seat_row"`
+	SeatCol     string      `json:"seat_col"`
 }
 
 type Payment struct {
-	PaymentID           int64          `json:"payment_id"`
-	TransactionDateTime time.Time      `json:"transaction_date_time"`
-	Amount              sql.NullString `json:"amount"`
-	Currency            sql.NullString `json:"currency"`
-	PaymentMethod       sql.NullString `json:"payment_method"`
-	Status              sql.NullString `json:"status"`
-	BookingID           sql.NullString `json:"booking_id"`
+	PaymentID           int64            `json:"payment_id"`
+	TransactionDateTime pgtype.Timestamp `json:"transaction_date_time"`
+	Amount              pgtype.Numeric   `json:"amount"`
+	Currency            pgtype.Text      `json:"currency"`
+	PaymentMethod       pgtype.Text      `json:"payment_method"`
+	Status              pgtype.Text      `json:"status"`
+	BookingID           pgtype.Text      `json:"booking_id"`
 }

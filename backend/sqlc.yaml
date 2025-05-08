@@ -8,9 +8,14 @@ packages:
     engine: "postgresql"
     # Nếu đặt true, các struct được generate sẽ có tag JSON => hữu ích cho việc serialize sang JSON, như khi trả về API
     emit_json_tags: true
+    # Chỉ định gói (package) Go mà sqlc sẽ sử dụng để tạo code tương tác với cơ sở dữ liệu PostgreSQL
+    sql_package: "pgx/v5"
     # Nếu true, SQLC sẽ generate code dùng prepared statements.
     emit_prepared_queries: false
     # Nếu true, SQLC sẽ tạo ra một interface cho các query methods, giúp dễ dàng mock và test.
     emit_interface: false
     # Nếu true, tên struct sẽ giống hệt tên bảng trong DB.Ở đây là false, SQLC sẽ tự động capitalize và chuyển tên bảng sang kiểu CamelCase (ví dụ: users → User).
     emit_exact_table_names: false
+    overrides:
+      - db_type: "timestamptz"
+        go_type: "time.Time"

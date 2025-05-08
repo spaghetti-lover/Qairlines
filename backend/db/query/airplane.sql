@@ -1,10 +1,9 @@
 -- name: CreateAirplane :one
 INSERT INTO airplane (
   airplane_model_id,
-  registration_number,
-  active
+  registration_number
 ) VALUES (
-  $1, $2, $3
+  $1, $2
 ) RETURNING *;
 
 

@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPayment = `-- name: CreatePayment :one
@@ -23,15 +24,15 @@ INSERT INTO payment (
 `
 
 type CreatePaymentParams struct {
-	Amount        sql.NullString `json:"amount"`
-	Currency      sql.NullString `json:"currency"`
-	PaymentMethod sql.NullString `json:"payment_method"`
-	Status        sql.NullString `json:"status"`
-	BookingID     sql.NullString `json:"booking_id"`
+	Amount        pgtype.Numeric `json:"amount"`
+	Currency      pgtype.Text    `json:"currency"`
+	PaymentMethod pgtype.Text    `json:"payment_method"`
+	Status        pgtype.Text    `json:"status"`
+	BookingID     pgtype.Text    `json:"booking_id"`
 }
 
 func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {
-	row := q.db.QueryRowContext(ctx, createPayment,
+	row := q.db.QueryRow(ctx, createPayment,
 		arg.Amount,
 		arg.Currency,
 		arg.PaymentMethod,
@@ -57,7 +58,7 @@ WHERE payment_id = $1
 `
 
 func (q *Queries) DeletePayment(ctx context.Context, paymentID int64) error {
-	_, err := q.db.ExecContext(ctx, deletePayment, paymentID)
+	_, err := q.db.Exec(ctx, deletePayment, paymentID)
 	return err
 }
 
@@ -67,7 +68,7 @@ WHERE payment_id = $1 LIMIT 1
 `
 
 func (q *Queries) GetPayment(ctx context.Context, paymentID int64) (Payment, error) {
-	row := q.db.QueryRowContext(ctx, getPayment, paymentID)
+	row := q.db.QueryRow(ctx, getPayment, paymentID)
 	var i Payment
 	err := row.Scan(
 		&i.PaymentID,
@@ -94,7 +95,7 @@ type ListPaymentParams struct {
 }
 
 func (q *Queries) ListPayment(ctx context.Context, arg ListPaymentParams) ([]Payment, error) {
-	rows, err := q.db.QueryContext(ctx, listPayment, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listPayment, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +115,6 @@ func (q *Queries) ListPayment(ctx context.Context, arg ListPaymentParams) ([]Pay
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

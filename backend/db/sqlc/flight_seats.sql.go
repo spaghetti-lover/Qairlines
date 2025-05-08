@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createFlightSeat = `-- name: CreateFlightSeat :one
@@ -26,14 +27,14 @@ INSERT INTO flight_seats (
 type CreateFlightSeatParams struct {
 	RegistrationNumber string         `json:"registration_number"`
 	FlightClass        string         `json:"flight_class"`
-	ClassMultiplier    sql.NullString `json:"class_multiplier"`
-	ChildMultiplier    sql.NullString `json:"child_multiplier"`
+	ClassMultiplier    pgtype.Numeric `json:"class_multiplier"`
+	ChildMultiplier    pgtype.Numeric `json:"child_multiplier"`
 	MaxRowSeat         int64          `json:"max_row_seat"`
 	MaxColSeat         int64          `json:"max_col_seat"`
 }
 
 func (q *Queries) CreateFlightSeat(ctx context.Context, arg CreateFlightSeatParams) (FlightSeat, error) {
-	row := q.db.QueryRowContext(ctx, createFlightSeat,
+	row := q.db.QueryRow(ctx, createFlightSeat,
 		arg.RegistrationNumber,
 		arg.FlightClass,
 		arg.ClassMultiplier,
@@ -60,7 +61,7 @@ WHERE registration_number = $1
 `
 
 func (q *Queries) DeleteFlightSeat(ctx context.Context, registrationNumber string) error {
-	_, err := q.db.ExecContext(ctx, deleteFlightSeat, registrationNumber)
+	_, err := q.db.Exec(ctx, deleteFlightSeat, registrationNumber)
 	return err
 }
 
@@ -70,7 +71,7 @@ WHERE registration_number = $1 LIMIT 1
 `
 
 func (q *Queries) GetFlightSeat(ctx context.Context, registrationNumber string) (FlightSeat, error) {
-	row := q.db.QueryRowContext(ctx, getFlightSeat, registrationNumber)
+	row := q.db.QueryRow(ctx, getFlightSeat, registrationNumber)
 	var i FlightSeat
 	err := row.Scan(
 		&i.FlightSeatsID,
@@ -97,7 +98,7 @@ type ListFlightSeatsParams struct {
 }
 
 func (q *Queries) ListFlightSeats(ctx context.Context, arg ListFlightSeatsParams) ([]FlightSeat, error) {
-	rows, err := q.db.QueryContext(ctx, listFlightSeats, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listFlightSeats, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -117,9 +118,6 @@ func (q *Queries) ListFlightSeats(ctx context.Context, arg ListFlightSeatsParams
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
