@@ -21,18 +21,20 @@ CREATE TABLE "airplane" (
   "active" boolean DEFAULT true
 );
 
+CREATE TYPE flight_status AS ENUM ('Landed', 'Delayed', 'On Time', 'Scheduled');
+
 CREATE TABLE "flight" (
   "flight_id" bigserial PRIMARY KEY,
   "flight_number" varchar UNIQUE NOT NULL,
   "registration_number" varchar UNIQUE NOT NULL,
-  "estimated_departure_time" timestamp,
+  "estimated_departure_time" timestamp NOT NULL,
   "actual_departure_time" timestamp,
-  "estimated_arrival_time" timestamp,
+  "estimated_arrival_time" timestamp NOT NULl,
   "actual_arrival_time" timestamp,
-  "departure_airport_id" bigint,
-  "destination_airport_id" bigint,
-  "flight_price" float,
-  "status" varchar
+  "departure_airport_id" bigint NOT NULL,
+  "destination_airport_id" bigint NOT NULL,
+  "flight_price" NUMERIC(12,2) NOT NULL CHECK(flight_price >= 0),
+  "status" flight_status NOT NULL
 );
 
 CREATE TABLE "flight_seats" (
@@ -45,12 +47,14 @@ CREATE TABLE "flight_seats" (
   "max_col_seat" bigint NOT NULL
 );
 
+CREATE TYPE flight_class_type AS ENUM ('Economy', 'Business', 'First');
+
 CREATE TABLE "booking" (
   "booking_id" varchar PRIMARY KEY,
   "booker_email" varchar NOT NULL,
   "number_of_adults" bigint NOT NULL,
-  "number_of_children" INTEGER NOT NULL,
-  "flight_class" varchar NOT NULL,
+  "number_of_children" bigint NOT NULL,
+  "flight_class" flight_class_type NOT NULL,
   "cancelled" BOOLEAN DEFAULT false,
   "flight_id" bigint NOT NULL,
   "booking_date" timestamp DEFAULT (CURRENT_TIMESTAMP)
@@ -73,7 +77,7 @@ CREATE TABLE "passengers" (
 
 CREATE TABLE "payment" (
   "payment_id" bigserial PRIMARY KEY,
-  "transaction_date_time" timestamp,
+  "transaction_date_time" timestamp DEFAULT NOW() NOT NULL,
   "amount" NUMERIC(12,2),
   "currency" varchar DEFAULT 'USD',
   "payment_method" varchar,

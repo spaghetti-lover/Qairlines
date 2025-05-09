@@ -5,7 +5,7 @@ INSERT INTO flight (
   estimated_departure_time,
   actual_departure_time,
   estimated_arrival_time,
-  departure_airport_id,
+  actual_arrival_time,
   departure_airport_id,
   destination_airport_id,
   flight_price,

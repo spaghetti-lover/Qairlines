@@ -5,10 +5,99 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type FlightClassType string
+
+const (
+	FlightClassTypeEconomy  FlightClassType = "Economy"
+	FlightClassTypeBusiness FlightClassType = "Business"
+	FlightClassTypeFirst    FlightClassType = "First"
+)
+
+func (e *FlightClassType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FlightClassType(s)
+	case string:
+		*e = FlightClassType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FlightClassType: %T", src)
+	}
+	return nil
+}
+
+type NullFlightClassType struct {
+	FlightClassType FlightClassType `json:"flight_class_type"`
+	Valid           bool            `json:"valid"` // Valid is true if FlightClassType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFlightClassType) Scan(value interface{}) error {
+	if value == nil {
+		ns.FlightClassType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FlightClassType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFlightClassType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FlightClassType), nil
+}
+
+type FlightStatus string
+
+const (
+	FlightStatusLanded    FlightStatus = "Landed"
+	FlightStatusDelayed   FlightStatus = "Delayed"
+	FlightStatusOnTime    FlightStatus = "On Time"
+	FlightStatusScheduled FlightStatus = "Scheduled"
+)
+
+func (e *FlightStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FlightStatus(s)
+	case string:
+		*e = FlightStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FlightStatus: %T", src)
+	}
+	return nil
+}
+
+type NullFlightStatus struct {
+	FlightStatus FlightStatus `json:"flight_status"`
+	Valid        bool         `json:"valid"` // Valid is true if FlightStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFlightStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.FlightStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FlightStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFlightStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FlightStatus), nil
+}
 
 type Airplane struct {
 	AirplaneID         int64       `json:"airplane_id"`
@@ -39,8 +128,8 @@ type Booking struct {
 	// CHECK > 0
 	NumberOfAdults int64 `json:"number_of_adults"`
 	// CHECK (number_of_children >= 0)
-	NumberOfChildren int32            `json:"number_of_children"`
-	FlightClass      string           `json:"flight_class"`
+	NumberOfChildren int64            `json:"number_of_children"`
+	FlightClass      FlightClassType  `json:"flight_class"`
 	Cancelled        pgtype.Bool      `json:"cancelled"`
 	FlightID         int64            `json:"flight_id"`
 	BookingDate      pgtype.Timestamp `json:"booking_date"`
@@ -54,10 +143,10 @@ type Flight struct {
 	ActualDepartureTime    pgtype.Timestamp `json:"actual_departure_time"`
 	EstimatedArrivalTime   pgtype.Timestamp `json:"estimated_arrival_time"`
 	ActualArrivalTime      pgtype.Timestamp `json:"actual_arrival_time"`
-	DepartureAirportID     pgtype.Int8      `json:"departure_airport_id"`
-	DestinationAirportID   pgtype.Int8      `json:"destination_airport_id"`
-	FlightPrice            pgtype.Float8    `json:"flight_price"`
-	Status                 pgtype.Text      `json:"status"`
+	DepartureAirportID     int64            `json:"departure_airport_id"`
+	DestinationAirportID   int64            `json:"destination_airport_id"`
+	FlightPrice            pgtype.Numeric   `json:"flight_price"`
+	Status                 FlightStatus     `json:"status"`
 }
 
 type FlightSeat struct {

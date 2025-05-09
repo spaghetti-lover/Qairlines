@@ -13,6 +13,7 @@ import (
 
 const createBooking = `-- name: CreateBooking :one
 INSERT INTO booking (
+  booking_id,
   booker_email,
   number_of_adults,
   number_of_children,
@@ -20,21 +21,23 @@ INSERT INTO booking (
   cancelled,
   flight_id
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5, $6, $7
 ) RETURNING booking_id, booker_email, number_of_adults, number_of_children, flight_class, cancelled, flight_id, booking_date
 `
 
 type CreateBookingParams struct {
-	BookerEmail      string      `json:"booker_email"`
-	NumberOfAdults   int64       `json:"number_of_adults"`
-	NumberOfChildren int32       `json:"number_of_children"`
-	FlightClass      string      `json:"flight_class"`
-	Cancelled        pgtype.Bool `json:"cancelled"`
-	FlightID         int64       `json:"flight_id"`
+	BookingID        string          `json:"booking_id"`
+	BookerEmail      string          `json:"booker_email"`
+	NumberOfAdults   int64           `json:"number_of_adults"`
+	NumberOfChildren int64           `json:"number_of_children"`
+	FlightClass      FlightClassType `json:"flight_class"`
+	Cancelled        pgtype.Bool     `json:"cancelled"`
+	FlightID         int64           `json:"flight_id"`
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error) {
 	row := q.db.QueryRow(ctx, createBooking,
+		arg.BookingID,
 		arg.BookerEmail,
 		arg.NumberOfAdults,
 		arg.NumberOfChildren,

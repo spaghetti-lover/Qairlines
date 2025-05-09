@@ -18,7 +18,7 @@ INSERT INTO flight (
   estimated_departure_time,
   actual_departure_time,
   estimated_arrival_time,
-  departure_airport_id,
+  actual_arrival_time,
   departure_airport_id,
   destination_airport_id,
   flight_price,
@@ -34,11 +34,11 @@ type CreateFlightParams struct {
 	EstimatedDepartureTime pgtype.Timestamp `json:"estimated_departure_time"`
 	ActualDepartureTime    pgtype.Timestamp `json:"actual_departure_time"`
 	EstimatedArrivalTime   pgtype.Timestamp `json:"estimated_arrival_time"`
-	DepartureAirportID     pgtype.Int8      `json:"departure_airport_id"`
-	DepartureAirportID_2   pgtype.Int8      `json:"departure_airport_id_2"`
-	DestinationAirportID   pgtype.Int8      `json:"destination_airport_id"`
-	FlightPrice            pgtype.Float8    `json:"flight_price"`
-	Status                 pgtype.Text      `json:"status"`
+	ActualArrivalTime      pgtype.Timestamp `json:"actual_arrival_time"`
+	DepartureAirportID     int64            `json:"departure_airport_id"`
+	DestinationAirportID   int64            `json:"destination_airport_id"`
+	FlightPrice            pgtype.Numeric   `json:"flight_price"`
+	Status                 FlightStatus     `json:"status"`
 }
 
 func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Flight, error) {
@@ -48,8 +48,8 @@ func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Fli
 		arg.EstimatedDepartureTime,
 		arg.ActualDepartureTime,
 		arg.EstimatedArrivalTime,
+		arg.ActualArrivalTime,
 		arg.DepartureAirportID,
-		arg.DepartureAirportID_2,
 		arg.DestinationAirportID,
 		arg.FlightPrice,
 		arg.Status,

@@ -1,5 +1,6 @@
 -- name: CreateBooking :one
 INSERT INTO booking (
+  booking_id,
   booker_email,
   number_of_adults,
   number_of_children,
@@ -7,7 +8,7 @@ INSERT INTO booking (
   cancelled,
   flight_id
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: GetBooking :one
