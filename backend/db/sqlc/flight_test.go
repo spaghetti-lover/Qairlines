@@ -27,7 +27,7 @@ func createRandomFlight(t *testing.T) Flight {
 		Status:                 FlightStatusScheduled,
 	}
 
-	flight, err := testQueries.CreateFlight(context.Background(), arg)
+	flight, err := testStore.CreateFlight(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, flight)
 	require.NotEmpty(t, flight.FlightID)
@@ -47,7 +47,7 @@ func TestCreateFlight(t *testing.T) {
 func TestGetFlight(t *testing.T) {
 	flight1 := createRandomFlight(t)
 
-	flight2, err := testQueries.GetFlight(context.Background(), flight1.FlightNumber)
+	flight2, err := testStore.GetFlight(context.Background(), flight1.FlightID)
 	require.NoError(t, err)
 	require.NotEmpty(t, flight2)
 
@@ -78,17 +78,17 @@ func TestGetFlight(t *testing.T) {
 func TestDeleteFlight(t *testing.T) {
 	flight1 := createRandomFlight(t)
 
-	err := testQueries.DeleteFlight(context.Background(), flight1.FlightNumber)
+	err := testStore.DeleteFlight(context.Background(), flight1.FlightNumber)
 	require.NoError(t, err)
 
-	flight2, err := testQueries.GetFlight(context.Background(), flight1.FlightNumber)
+	flight2, err := testStore.GetFlight(context.Background(), flight1.FlightID)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, flight2)
 }
 func TestDeleteNonExistentFlight(t *testing.T) {
 	nonExistentFlightCode := "FLIGHT-404-NOTFOUND"
-	err := testQueries.DeleteFlight(context.Background(), nonExistentFlightCode)
+	err := testStore.DeleteFlight(context.Background(), nonExistentFlightCode)
 	require.NoError(t, err)
 }
 
@@ -102,7 +102,7 @@ func TestListFlights(t *testing.T) {
 		Offset: 5,
 	}
 
-	flights, err := testQueries.ListFlights(context.Background(), arg)
+	flights, err := testStore.ListFlights(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, flights, 5)
 

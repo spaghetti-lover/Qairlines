@@ -17,7 +17,7 @@ func createRandomAirport(t *testing.T) Airport {
 		Name:        utils.RandomName(),
 	}
 
-	airport, err := testQueries.CreateAirport(context.Background(), arg)
+	airport, err := testStore.CreateAirport(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, airport)
 	require.NotEmpty(t, airport.AirportID)
@@ -36,7 +36,7 @@ func TestCreateAirport(t *testing.T) {
 
 func TestGetAirport(t *testing.T) {
 	airport1 := createRandomAirport(t)
-	airport2, err := testQueries.GetAirport(context.Background(), airport1.AirportCode)
+	airport2, err := testStore.GetAirport(context.Background(), airport1.AirportCode)
 	require.NoError(t, err)
 	require.NotEmpty(t, airport2)
 
@@ -49,10 +49,10 @@ func TestGetAirport(t *testing.T) {
 
 func TestDeleteAirport(t *testing.T) {
 	airport1 := createRandomAirport(t)
-	err := testQueries.DeleteAirport(context.Background(), airport1.AirportCode)
+	err := testStore.DeleteAirport(context.Background(), airport1.AirportCode)
 	require.NoError(t, err)
 
-	airport2, err := testQueries.GetAirport(context.Background(), airport1.AirportCode)
+	airport2, err := testStore.GetAirport(context.Background(), airport1.AirportCode)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, airport2)
@@ -68,7 +68,7 @@ func TestListAirport(t *testing.T) {
 		Offset: 5,
 	}
 
-	airports, err := testQueries.ListAirports(context.Background(), arg)
+	airports, err := testStore.ListAirports(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, airports, 5)
 

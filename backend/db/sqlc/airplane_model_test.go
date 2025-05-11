@@ -17,7 +17,7 @@ func createRandomAirplaneModel(t *testing.T) AirplaneModel {
 		TotalSeats:   int64(utils.RandomInt(0, 800)),
 	}
 
-	airplane_model, err := testQueries.CreateAirplaneModel(context.Background(), arg)
+	airplane_model, err := testStore.CreateAirplaneModel(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, airplane_model)
 	require.NotEmpty(t, airplane_model.Name)
@@ -34,7 +34,7 @@ func TestCreateAirplaneModel(t *testing.T) {
 
 func TestGetAirplaneModel(t *testing.T) {
 	airplane_model1 := createRandomAirplaneModel(t)
-	airplane_model2, err := testQueries.GetAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
+	airplane_model2, err := testStore.GetAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
 	require.NoError(t, err)
 	require.NotEmpty(t, airplane_model2)
 
@@ -47,10 +47,10 @@ func TestGetAirplaneModel(t *testing.T) {
 
 func TestDeleteAirplaneModel(t *testing.T) {
 	airplane_model1 := createRandomAirplaneModel(t)
-	err := testQueries.DeleteAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
+	err := testStore.DeleteAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
 	require.NoError(t, err)
 
-	airplane_model2, err := testQueries.GetAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
+	airplane_model2, err := testStore.GetAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, airplane_model2)
@@ -66,7 +66,7 @@ func TestListAirplaneModels(t *testing.T) {
 		Offset: 5,
 	}
 
-	accounts, err := testQueries.ListAirplaneModels(context.Background(), arg)
+	accounts, err := testStore.ListAirplaneModels(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, accounts, 5)
 

@@ -11,17 +11,18 @@ import (
 
 func createRandomFlightSeat(t *testing.T) FlightSeat {
 	airplane := createRandomAirplane(t)
-
+	flight := createRandomFlight(t)
 	arg := CreateFlightSeatParams{
+		FlightID:           flight.FlightID,
 		RegistrationNumber: airplane.RegistrationNumber,
 		FlightClass:        "Economy",
 		ClassMultiplier:    pgtype.Numeric{Int: big.NewInt(100), Exp: -2, Valid: true}, // 1.00
 		ChildMultiplier:    pgtype.Numeric{Int: big.NewInt(50), Exp: -2, Valid: true},  // 0.50
-		MaxRowSeat:         30,
-		MaxColSeat:         6,
+		MaxRowSeat:         200,
+		MaxColSeat:         100,
 	}
 
-	flightSeat, err := testQueries.CreateFlightSeat(context.Background(), arg)
+	flightSeat, err := testStore.CreateFlightSeat(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, flightSeat)
 	require.Equal(t, arg.RegistrationNumber, flightSeat.RegistrationNumber)
@@ -37,7 +38,10 @@ func TestCreateFlightSeat(t *testing.T) {
 func TestGetFlightSeat(t *testing.T) {
 	fs1 := createRandomFlightSeat(t)
 
-	fs2, err := testQueries.GetFlightSeat(context.Background(), fs1.RegistrationNumber)
+	fs2, err := testStore.GetFlightSeat(context.Background(), GetFlightSeatParams{
+		FlightID:    fs1.FlightID,
+		FlightClass: fs1.FlightClass,
+	})
 	require.NoError(t, err)
 	require.NotEmpty(t, fs2)
 	require.Equal(t, fs1.FlightSeatsID, fs2.FlightSeatsID)
@@ -49,10 +53,13 @@ func TestGetFlightSeat(t *testing.T) {
 func TestDeleteFlightSeat(t *testing.T) {
 	fs := createRandomFlightSeat(t)
 
-	err := testQueries.DeleteFlightSeat(context.Background(), fs.RegistrationNumber)
+	err := testStore.DeleteFlightSeat(context.Background(), fs.FlightID)
 	require.NoError(t, err)
 
-	_, err = testQueries.GetFlightSeat(context.Background(), fs.RegistrationNumber)
+	_, err = testStore.GetFlightSeat(context.Background(), GetFlightSeatParams{
+		FlightID:    fs.FlightID,
+		FlightClass: fs.FlightClass,
+	})
 	require.Error(t, err)
 }
 
@@ -66,7 +73,7 @@ func TestListFlightSeats(t *testing.T) {
 		Offset: 1,
 	}
 
-	seats, err := testQueries.ListFlightSeats(context.Background(), arg)
+	seats, err := testStore.ListFlightSeats(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, seats, 3)
 

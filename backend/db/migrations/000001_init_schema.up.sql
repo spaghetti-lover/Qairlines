@@ -39,8 +39,9 @@ CREATE TABLE "flight" (
 
 CREATE TABLE "flight_seats" (
   "flight_seats_id" bigserial PRIMARY KEY,
+  "flight_id" bigint PRIMARY KEY,
   "registration_number" varchar UNIQUE NOT NULL,
-  "flight_class" varchar NOT NULL,
+  "flight_class" flight_class_type NOT NULL,
   "class_multiplier" NUMERIC(12,2),
   "child_multiplier" NUMERIC(12,2),
   "max_row_seat" bigint NOT NULL,
@@ -50,7 +51,7 @@ CREATE TABLE "flight_seats" (
 CREATE TYPE flight_class_type AS ENUM ('Economy', 'Business', 'First');
 
 CREATE TABLE "booking" (
-  "booking_id" varchar PRIMARY KEY,
+  "booking_id" bigserial PRIMARY KEY,
   "booker_email" varchar NOT NULL,
   "number_of_adults" bigint NOT NULL,
   "number_of_children" bigint NOT NULL,
@@ -62,7 +63,7 @@ CREATE TABLE "booking" (
 
 CREATE TABLE "passengers" (
   "passenger_id" bigserial PRIMARY KEY,
-  "booking_id" varchar NOT NULL,
+  "booking_id" bigint NOT NULL,
   "citizen_id" varchar NOT NULL,
   "passport_number" varchar,
   "gender" varchar(10) NOT NULL,
@@ -82,7 +83,7 @@ CREATE TABLE "payment" (
   "currency" varchar DEFAULT 'USD',
   "payment_method" varchar,
   "status" varchar DEFAULT 'pending',
-  "booking_id" varchar UNIQUE
+  "booking_id" bigint NOT NULL UNIQUE
 );
 
 COMMENT ON COLUMN "flight_seats"."max_row_seat" IS 'CHECK > 0';
@@ -102,6 +103,8 @@ ALTER TABLE "flight" ADD FOREIGN KEY ("departure_airport_id") REFERENCES "airpor
 ALTER TABLE "flight" ADD FOREIGN KEY ("destination_airport_id") REFERENCES "airport" ("airport_id") ON DELETE CASCADE;
 
 ALTER TABLE "flight_seats" ADD FOREIGN KEY ("registration_number") REFERENCES "airplane" ("registration_number") ON DELETE CASCADE;
+
+ALTER TABLE "flight_seats" ADD FOREIGN KEY ("flight_id") REFERENCES "flight" ("flight_id") ON DELETE CASCADE;
 
 ALTER TABLE "booking" ADD FOREIGN KEY ("flight_id") REFERENCES "flight" ("flight_id") ON DELETE CASCADE;
 

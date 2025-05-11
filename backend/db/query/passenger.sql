@@ -20,6 +20,22 @@ INSERT INTO passengers (
 SELECT * FROM passengers
 WHERE passenger_id = $1 LIMIT 1;
 
+-- name: CountOccupiedSeats :one
+SELECT COUNT(*) FROM passengers as p
+JOIN booking as b ON p.booking_id = b.booking_id
+WHERE b.flight_id = $1 AND b.flight_class = $2;
+
+-- name: CheckSeatOccupied :one
+SELECT EXISTS (
+  SELECT 1
+  FROM passengers
+  JOIN booking ON passengers.booking_id = booking.booking_id
+  WHERE booking.flight_id = $1
+    AND booking.flight_class = $2
+    AND passengers.seat_row = $3
+    AND passengers.seat_col = $4
+) AS seat_taken;
+
 -- name: ListPassengers :many
 SELECT * FROM passengers
 ORDER BY passenger_id

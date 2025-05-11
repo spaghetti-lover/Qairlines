@@ -28,7 +28,7 @@ type CreatePaymentParams struct {
 	Currency      pgtype.Text    `json:"currency"`
 	PaymentMethod pgtype.Text    `json:"payment_method"`
 	Status        pgtype.Text    `json:"status"`
-	BookingID     pgtype.Text    `json:"booking_id"`
+	BookingID     int64          `json:"booking_id"`
 }
 
 func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error) {

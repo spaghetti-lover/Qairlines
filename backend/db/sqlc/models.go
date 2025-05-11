@@ -123,7 +123,7 @@ type Airport struct {
 }
 
 type Booking struct {
-	BookingID   string `json:"booking_id"`
+	BookingID   int64  `json:"booking_id"`
 	BookerEmail string `json:"booker_email"`
 	// CHECK > 0
 	NumberOfAdults int64 `json:"number_of_adults"`
@@ -150,11 +150,12 @@ type Flight struct {
 }
 
 type FlightSeat struct {
-	FlightSeatsID      int64          `json:"flight_seats_id"`
-	RegistrationNumber string         `json:"registration_number"`
-	FlightClass        string         `json:"flight_class"`
-	ClassMultiplier    pgtype.Numeric `json:"class_multiplier"`
-	ChildMultiplier    pgtype.Numeric `json:"child_multiplier"`
+	FlightSeatsID      int64           `json:"flight_seats_id"`
+	FlightID           int64           `json:"flight_id"`
+	RegistrationNumber string          `json:"registration_number"`
+	FlightClass        FlightClassType `json:"flight_class"`
+	ClassMultiplier    pgtype.Numeric  `json:"class_multiplier"`
+	ChildMultiplier    pgtype.Numeric  `json:"child_multiplier"`
 	// CHECK > 0
 	MaxRowSeat int64 `json:"max_row_seat"`
 	MaxColSeat int64 `json:"max_col_seat"`
@@ -162,7 +163,7 @@ type FlightSeat struct {
 
 type Passenger struct {
 	PassengerID    int64       `json:"passenger_id"`
-	BookingID      string      `json:"booking_id"`
+	BookingID      int64       `json:"booking_id"`
 	CitizenID      string      `json:"citizen_id"`
 	PassportNumber pgtype.Text `json:"passport_number"`
 	// CHECK (gender IN ('Male', 'Female'))
@@ -183,5 +184,5 @@ type Payment struct {
 	Currency            pgtype.Text      `json:"currency"`
 	PaymentMethod       pgtype.Text      `json:"payment_method"`
 	Status              pgtype.Text      `json:"status"`
-	BookingID           pgtype.Text      `json:"booking_id"`
+	BookingID           int64            `json:"booking_id"`
 }

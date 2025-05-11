@@ -83,11 +83,11 @@ func (q *Queries) DeleteFlight(ctx context.Context, flightNumber string) error {
 
 const getFlight = `-- name: GetFlight :one
 SELECT flight_id, flight_number, registration_number, estimated_departure_time, actual_departure_time, estimated_arrival_time, actual_arrival_time, departure_airport_id, destination_airport_id, flight_price, status FROM flight
-WHERE flight_number = $1 LIMIT 1
+WHERE flight_id = $1 LIMIT 1
 `
 
-func (q *Queries) GetFlight(ctx context.Context, flightNumber string) (Flight, error) {
-	row := q.db.QueryRow(ctx, getFlight, flightNumber)
+func (q *Queries) GetFlight(ctx context.Context, flightID int64) (Flight, error) {
+	row := q.db.QueryRow(ctx, getFlight, flightID)
 	var i Flight
 	err := row.Scan(
 		&i.FlightID,

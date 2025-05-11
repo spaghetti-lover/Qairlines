@@ -14,14 +14,14 @@ const (
 	dbSource = "postgresql://root:secret@localhost:5432/qairline?sslmode=disable"
 )
 
-var testQueries *Queries
+var testStore Store
 
 func TestMain(m *testing.M) {
 	connPool, err := pgxpool.New(context.Background(), dbSource)
 	if err != nil {
 		log.Fatal("Khong connect db duoc dcm, quay ve main_test xem di: ", err)
 	}
-	testQueries = New(connPool)
+	testStore = NewStore(connPool)
 	//Stop testing and info test success or not
 	os.Exit(m.Run())
 }

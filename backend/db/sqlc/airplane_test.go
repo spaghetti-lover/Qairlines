@@ -16,7 +16,7 @@ func createRandomAirplane(t *testing.T) Airplane {
 		RegistrationNumber: utils.RandomStringNum(),
 	}
 
-	airplane, err := testQueries.CreateAirplane(context.Background(), arg)
+	airplane, err := testStore.CreateAirplane(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, airplane)
 	require.NotEmpty(t, airplane.AirplaneModelID)
@@ -33,7 +33,7 @@ func TestCreateAirplane(t *testing.T) {
 
 func TestGetAirplane(t *testing.T) {
 	airplane1 := createRandomAirplane(t)
-	airplane2, err := testQueries.GetAirplane(context.Background(), airplane1.RegistrationNumber)
+	airplane2, err := testStore.GetAirplane(context.Background(), airplane1.RegistrationNumber)
 	require.NoError(t, err)
 	require.NotEmpty(t, airplane2)
 
@@ -45,10 +45,10 @@ func TestGetAirplane(t *testing.T) {
 
 func TestDeleteAirplane(t *testing.T) {
 	airplane1 := createRandomAirplane(t)
-	err := testQueries.DeleteAirplane(context.Background(), airplane1.RegistrationNumber)
+	err := testStore.DeleteAirplane(context.Background(), airplane1.RegistrationNumber)
 	require.NoError(t, err)
 
-	airplane2, err := testQueries.GetAirplane(context.Background(), airplane1.RegistrationNumber)
+	airplane2, err := testStore.GetAirplane(context.Background(), airplane1.RegistrationNumber)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, airplane2)
@@ -64,7 +64,7 @@ func TestListAirplanes(t *testing.T) {
 		Offset: 5,
 	}
 
-	accounts, err := testQueries.ListAirplanes(context.Background(), arg)
+	accounts, err := testStore.ListAirplanes(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, accounts, 5)
 

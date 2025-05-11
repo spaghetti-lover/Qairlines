@@ -13,6 +13,7 @@ import (
 
 const createFlightSeat = `-- name: CreateFlightSeat :one
 INSERT INTO flight_seats (
+  flight_id,
   registration_number,
   flight_class,
   class_multiplier,
@@ -20,21 +21,23 @@ INSERT INTO flight_seats (
   max_row_seat,
   max_col_seat
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
-) RETURNING flight_seats_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat
+  $1, $2, $3, $4, $5, $6, $7
+) RETURNING flight_seats_id, flight_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat
 `
 
 type CreateFlightSeatParams struct {
-	RegistrationNumber string         `json:"registration_number"`
-	FlightClass        string         `json:"flight_class"`
-	ClassMultiplier    pgtype.Numeric `json:"class_multiplier"`
-	ChildMultiplier    pgtype.Numeric `json:"child_multiplier"`
-	MaxRowSeat         int64          `json:"max_row_seat"`
-	MaxColSeat         int64          `json:"max_col_seat"`
+	FlightID           int64           `json:"flight_id"`
+	RegistrationNumber string          `json:"registration_number"`
+	FlightClass        FlightClassType `json:"flight_class"`
+	ClassMultiplier    pgtype.Numeric  `json:"class_multiplier"`
+	ChildMultiplier    pgtype.Numeric  `json:"child_multiplier"`
+	MaxRowSeat         int64           `json:"max_row_seat"`
+	MaxColSeat         int64           `json:"max_col_seat"`
 }
 
 func (q *Queries) CreateFlightSeat(ctx context.Context, arg CreateFlightSeatParams) (FlightSeat, error) {
 	row := q.db.QueryRow(ctx, createFlightSeat,
+		arg.FlightID,
 		arg.RegistrationNumber,
 		arg.FlightClass,
 		arg.ClassMultiplier,
@@ -45,6 +48,7 @@ func (q *Queries) CreateFlightSeat(ctx context.Context, arg CreateFlightSeatPara
 	var i FlightSeat
 	err := row.Scan(
 		&i.FlightSeatsID,
+		&i.FlightID,
 		&i.RegistrationNumber,
 		&i.FlightClass,
 		&i.ClassMultiplier,
@@ -57,24 +61,30 @@ func (q *Queries) CreateFlightSeat(ctx context.Context, arg CreateFlightSeatPara
 
 const deleteFlightSeat = `-- name: DeleteFlightSeat :exec
 DELETE FROM flight_seats
-WHERE registration_number = $1
+WHERE flight_id = $1
 `
 
-func (q *Queries) DeleteFlightSeat(ctx context.Context, registrationNumber string) error {
-	_, err := q.db.Exec(ctx, deleteFlightSeat, registrationNumber)
+func (q *Queries) DeleteFlightSeat(ctx context.Context, flightID int64) error {
+	_, err := q.db.Exec(ctx, deleteFlightSeat, flightID)
 	return err
 }
 
 const getFlightSeat = `-- name: GetFlightSeat :one
-SELECT flight_seats_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat FROM flight_seats
-WHERE registration_number = $1 LIMIT 1
+SELECT flight_seats_id, flight_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat FROM flight_seats
+WHERE flight_id = $1 AND flight_class = $2
 `
 
-func (q *Queries) GetFlightSeat(ctx context.Context, registrationNumber string) (FlightSeat, error) {
-	row := q.db.QueryRow(ctx, getFlightSeat, registrationNumber)
+type GetFlightSeatParams struct {
+	FlightID    int64           `json:"flight_id"`
+	FlightClass FlightClassType `json:"flight_class"`
+}
+
+func (q *Queries) GetFlightSeat(ctx context.Context, arg GetFlightSeatParams) (FlightSeat, error) {
+	row := q.db.QueryRow(ctx, getFlightSeat, arg.FlightID, arg.FlightClass)
 	var i FlightSeat
 	err := row.Scan(
 		&i.FlightSeatsID,
+		&i.FlightID,
 		&i.RegistrationNumber,
 		&i.FlightClass,
 		&i.ClassMultiplier,
@@ -86,8 +96,8 @@ func (q *Queries) GetFlightSeat(ctx context.Context, registrationNumber string) 
 }
 
 const listFlightSeats = `-- name: ListFlightSeats :many
-SELECT flight_seats_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat FROM flight_seats
-ORDER BY registration_number
+SELECT flight_seats_id, flight_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat FROM flight_seats
+ORDER BY flight_id
 LIMIT $1
 OFFSET $2
 `
@@ -108,6 +118,41 @@ func (q *Queries) ListFlightSeats(ctx context.Context, arg ListFlightSeatsParams
 		var i FlightSeat
 		if err := rows.Scan(
 			&i.FlightSeatsID,
+			&i.FlightID,
+			&i.RegistrationNumber,
+			&i.FlightClass,
+			&i.ClassMultiplier,
+			&i.ChildMultiplier,
+			&i.MaxRowSeat,
+			&i.MaxColSeat,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFlightSeatsByFlightID = `-- name: ListFlightSeatsByFlightID :many
+SELECT flight_seats_id, flight_id, registration_number, flight_class, class_multiplier, child_multiplier, max_row_seat, max_col_seat FROM flight_seats
+WHERE flight_id = $1
+`
+
+func (q *Queries) ListFlightSeatsByFlightID(ctx context.Context, flightID int64) ([]FlightSeat, error) {
+	rows, err := q.db.Query(ctx, listFlightSeatsByFlightID, flightID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FlightSeat
+	for rows.Next() {
+		var i FlightSeat
+		if err := rows.Scan(
+			&i.FlightSeatsID,
+			&i.FlightID,
 			&i.RegistrationNumber,
 			&i.FlightClass,
 			&i.ClassMultiplier,

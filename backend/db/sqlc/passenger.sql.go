@@ -11,6 +11,55 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkSeatOccupied = `-- name: CheckSeatOccupied :one
+SELECT EXISTS (
+  SELECT 1
+  FROM passengers
+  JOIN booking ON passengers.booking_id = booking.booking_id
+  WHERE booking.flight_id = $1
+    AND booking.flight_class = $2
+    AND passengers.seat_row = $3
+    AND passengers.seat_col = $4
+) AS seat_taken
+`
+
+type CheckSeatOccupiedParams struct {
+	FlightID    int64           `json:"flight_id"`
+	FlightClass FlightClassType `json:"flight_class"`
+	SeatRow     int32           `json:"seat_row"`
+	SeatCol     string          `json:"seat_col"`
+}
+
+func (q *Queries) CheckSeatOccupied(ctx context.Context, arg CheckSeatOccupiedParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkSeatOccupied,
+		arg.FlightID,
+		arg.FlightClass,
+		arg.SeatRow,
+		arg.SeatCol,
+	)
+	var seat_taken bool
+	err := row.Scan(&seat_taken)
+	return seat_taken, err
+}
+
+const countOccupiedSeats = `-- name: CountOccupiedSeats :one
+SELECT COUNT(*) FROM passengers as p
+JOIN booking as b ON p.booking_id = b.booking_id
+WHERE b.flight_id = $1 AND b.flight_class = $2
+`
+
+type CountOccupiedSeatsParams struct {
+	FlightID    int64           `json:"flight_id"`
+	FlightClass FlightClassType `json:"flight_class"`
+}
+
+func (q *Queries) CountOccupiedSeats(ctx context.Context, arg CountOccupiedSeatsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countOccupiedSeats, arg.FlightID, arg.FlightClass)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createPassenger = `-- name: CreatePassenger :one
 INSERT INTO passengers (
   booking_id,
@@ -30,7 +79,7 @@ INSERT INTO passengers (
 `
 
 type CreatePassengerParams struct {
-	BookingID      string      `json:"booking_id"`
+	BookingID      int64       `json:"booking_id"`
 	CitizenID      string      `json:"citizen_id"`
 	PassportNumber pgtype.Text `json:"passport_number"`
 	Gender         string      `json:"gender"`

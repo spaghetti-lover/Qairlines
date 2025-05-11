@@ -14,7 +14,6 @@ import (
 func createRandomBooking(t *testing.T) Booking {
 	flight := createRandomFlight(t)
 	arg := CreateBookingParams{
-		BookingID:        utils.RandomStringNum(),
 		BookerEmail:      utils.RandomEmail(),
 		NumberOfAdults:   2,
 		NumberOfChildren: 1,
@@ -23,11 +22,10 @@ func createRandomBooking(t *testing.T) Booking {
 		FlightID:         flight.FlightID,
 	}
 
-	booking, err := testQueries.CreateBooking(context.Background(), arg)
+	booking, err := testStore.CreateBooking(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, booking)
 
-	require.Equal(t, arg.BookingID, booking.BookingID)
 	require.Equal(t, arg.BookerEmail, booking.BookerEmail)
 	require.Equal(t, arg.NumberOfAdults, booking.NumberOfAdults)
 	require.Equal(t, arg.NumberOfChildren, booking.NumberOfChildren)
@@ -45,7 +43,7 @@ func TestCreateBooking(t *testing.T) {
 
 func TestGetBooking(t *testing.T) {
 	booking1 := createRandomBooking(t)
-	booking2, err := testQueries.GetBooking(context.Background(), booking1.BookingID)
+	booking2, err := testStore.GetBooking(context.Background(), booking1.BookingID)
 	require.NoError(t, err)
 	require.NotEmpty(t, booking2)
 
@@ -57,10 +55,10 @@ func TestGetBooking(t *testing.T) {
 func TestDeleteBooking(t *testing.T) {
 	booking := createRandomBooking(t)
 
-	err := testQueries.DeleteBookings(context.Background(), booking.BookingID)
+	err := testStore.DeleteBookings(context.Background(), booking.BookingID)
 	require.NoError(t, err)
 
-	_, err = testQueries.GetBooking(context.Background(), booking.BookingID)
+	_, err = testStore.GetBooking(context.Background(), booking.BookingID)
 	require.Error(t, err)
 	require.EqualError(t, err, "no rows in result set")
 }
@@ -76,7 +74,7 @@ func TestListBookings(t *testing.T) {
 		Offset: 5,
 	}
 
-	bookings, err := testQueries.ListBookings(context.Background(), arg)
+	bookings, err := testStore.ListBookings(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, bookings, 5)
 

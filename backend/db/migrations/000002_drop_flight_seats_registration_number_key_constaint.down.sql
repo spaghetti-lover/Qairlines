@@ -1,0 +1,1 @@
+ALTER TABLE flight_seats ADD CONSTRAINT flight_seats_registration_number_key UNIQUE(registration_number);

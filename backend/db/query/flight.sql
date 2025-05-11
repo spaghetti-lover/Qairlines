@@ -17,7 +17,7 @@ INSERT INTO flight (
 
 -- name: GetFlight :one
 SELECT * FROM flight
-WHERE flight_number = $1 LIMIT 1;
+WHERE flight_id = $1 LIMIT 1;
 
 -- name: ListFlights :many
 SELECT * FROM flight

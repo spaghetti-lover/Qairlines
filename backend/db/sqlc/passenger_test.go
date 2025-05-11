@@ -10,8 +10,7 @@ import (
 )
 
 func createRandomPassenger(t *testing.T) Passenger {
-	booking := createRandomBooking(t) // giả định bạn đã có hàm này trong test cho booking
-
+	booking := createRandomBooking(t)
 	dob := pgtype.Date{}
 	err := dob.Scan(time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC))
 	require.NoError(t, err)
@@ -30,7 +29,7 @@ func createRandomPassenger(t *testing.T) Passenger {
 		SeatCol:        "C",
 	}
 
-	passenger, err := testQueries.CreatePassenger(context.Background(), arg)
+	passenger, err := testStore.CreatePassenger(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, passenger)
 
@@ -49,7 +48,7 @@ func TestCreatePassenger(t *testing.T) {
 func TestGetPassenger(t *testing.T) {
 	p1 := createRandomPassenger(t)
 
-	p2, err := testQueries.GetPassenger(context.Background(), p1.PassengerID)
+	p2, err := testStore.GetPassenger(context.Background(), p1.PassengerID)
 	require.NoError(t, err)
 	require.NotEmpty(t, p2)
 
@@ -60,10 +59,10 @@ func TestGetPassenger(t *testing.T) {
 func TestDeletePassenger(t *testing.T) {
 	p := createRandomPassenger(t)
 
-	err := testQueries.DeletePassenger(context.Background(), p.PassengerID)
+	err := testStore.DeletePassenger(context.Background(), p.PassengerID)
 	require.NoError(t, err)
 
-	_, err = testQueries.GetPassenger(context.Background(), p.PassengerID)
+	_, err = testStore.GetPassenger(context.Background(), p.PassengerID)
 	require.Error(t, err)
 }
 
@@ -77,11 +76,24 @@ func TestListPassengers(t *testing.T) {
 		Offset: 1,
 	}
 
-	passengers, err := testQueries.ListPassengers(context.Background(), arg)
+	passengers, err := testStore.ListPassengers(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, passengers, 3)
 
 	for _, p := range passengers {
 		require.NotEmpty(t, p)
 	}
+}
+
+func TestCountOccupiedSeats(t *testing.T) {
+	flight_seat := createRandomFlightSeat(t)
+	arg := CountOccupiedSeatsParams{
+		FlightID:    flight_seat.FlightID,
+		FlightClass: flight_seat.FlightClass,
+	}
+
+	count, err := testStore.CountOccupiedSeats(context.Background(), arg)
+	require.NoError(t, err)
+	require.Equal(t, count, int64(0))
+
 }
