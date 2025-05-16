@@ -40,13 +40,12 @@ func (store *SQLStore) CreateFlightWithSeats(ctx context.Context, params CreateF
 
 		for class, config := range seatsConfig {
 			_, err = q.CreateFlightSeat(ctx, CreateFlightSeatParams{
-				FlightID:           flight.FlightID,
-				RegistrationNumber: flight.RegistrationNumber,
-				FlightClass:        class,
-				ClassMultiplier:    pgtype.Numeric{Int: big.NewInt(int64(config.Multiplier * 100)), Exp: -2, Valid: true},
-				ChildMultiplier:    pgtype.Numeric{Int: big.NewInt(75), Exp: -2, Valid: true},
-				MaxRowSeat:         config.MaxRow,
-				MaxColSeat:         config.MaxCol,
+				FlightID:        flight.FlightID,
+				FlightClass:     class,
+				ClassMultiplier: pgtype.Numeric{Int: big.NewInt(int64(config.Multiplier * 100)), Exp: -2, Valid: true},
+				ChildMultiplier: pgtype.Numeric{Int: big.NewInt(75), Exp: -2, Valid: true},
+				MaxRowSeat:      config.MaxRow,
+				MaxColSeat:      config.MaxCol,
 			})
 			if err != nil {
 				return fmt.Errorf("create flight_seats for class %s failed: %w", class, err)

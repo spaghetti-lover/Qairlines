@@ -34,7 +34,7 @@ type PassengerParams struct {
 	BookingID      int64       `json:"booking_id"`
 	CitizenID      string      `json:"citizen_id"`
 	PassportNumber pgtype.Text `json:"passport_number"`
-	Gender         string      `json:"gender"`
+	Gender         GenderEnum  `json:"gender"`
 	PhoneNumber    string      `json:"phone_number"`
 	FirstName      string      `json:"first_name"`
 	LastName       string      `json:"last_name"`

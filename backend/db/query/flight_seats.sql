@@ -1,14 +1,13 @@
 -- name: CreateFlightSeat :one
 INSERT INTO flight_seats (
   flight_id,
-  registration_number,
   flight_class,
   class_multiplier,
   child_multiplier,
   max_row_seat,
   max_col_seat
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
 -- name: GetFlightSeat :one

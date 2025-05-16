@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
@@ -52,7 +51,7 @@ func TestDeleteAirplaneModel(t *testing.T) {
 
 	airplane_model2, err := testStore.GetAirplaneModel(context.Background(), airplane_model1.AirplaneModelID)
 	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
+	require.EqualError(t, err, "no rows in result set")
 	require.Empty(t, airplane_model2)
 }
 

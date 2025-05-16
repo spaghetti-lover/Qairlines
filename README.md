@@ -30,3 +30,4 @@
 ### Take note:
 
 - Tích hợp MinIO với backend, dùng cho việc upload, download file
+- Hoan thien transaction booking voi concurrent request

@@ -1,1 +1,0 @@
-ALTER TABLE flight_seats DROP CONSTRAINT flight_seats_registration_number_key;

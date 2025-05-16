@@ -10,22 +10,19 @@ import (
 )
 
 func createRandomFlightSeat(t *testing.T) FlightSeat {
-	airplane := createRandomAirplane(t)
 	flight := createRandomFlight(t)
 	arg := CreateFlightSeatParams{
-		FlightID:           flight.FlightID,
-		RegistrationNumber: airplane.RegistrationNumber,
-		FlightClass:        "Economy",
-		ClassMultiplier:    pgtype.Numeric{Int: big.NewInt(100), Exp: -2, Valid: true}, // 1.00
-		ChildMultiplier:    pgtype.Numeric{Int: big.NewInt(50), Exp: -2, Valid: true},  // 0.50
-		MaxRowSeat:         200,
-		MaxColSeat:         100,
+		FlightID:        flight.FlightID,
+		FlightClass:     "Economy",
+		ClassMultiplier: pgtype.Numeric{Int: big.NewInt(100), Exp: -2, Valid: true}, // 1.00
+		ChildMultiplier: pgtype.Numeric{Int: big.NewInt(50), Exp: -2, Valid: true},  // 0.50
+		MaxRowSeat:      200,
+		MaxColSeat:      100,
 	}
 
 	flightSeat, err := testStore.CreateFlightSeat(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, flightSeat)
-	require.Equal(t, arg.RegistrationNumber, flightSeat.RegistrationNumber)
 	require.Equal(t, arg.FlightClass, flightSeat.FlightClass)
 
 	return flightSeat

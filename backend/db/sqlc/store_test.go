@@ -21,32 +21,10 @@ func TestBookingTx(t *testing.T) {
 		FlightID:         flight.FlightID,
 	}
 
-	passengers := []PassengerParams{
-		{
-			CitizenID:      "123456789",
-			PassportNumber: pgtype.Text{String: "P123456", Valid: true},
-			Gender:         "male",
-			PhoneNumber:    "0123456789",
-			FirstName:      "John",
-			LastName:       "Doe",
-			Nationality:    "VN",
-			DateOfBirth:    pgtype.Date{Time: time.Now().AddDate(-25, 0, 0), Valid: true},
-			SeatRow:        int32(utils.RandomInt(1, 50)),
-			SeatCol:        string(rune('A' + utils.RandomInt(0, 50))),
-		},
-	}
-
-	payment := PaymentParams{
-		Amount:        utils.RandomPrice(),
-		Currency:      pgtype.Text{String: "VND", Valid: true},
-		PaymentMethod: pgtype.Text{String: "credit_card", Valid: true},
-		Status:        pgtype.Text{String: "paid", Valid: true},
-	}
-
 	ctx := context.Background()
 
 	// Run n cocurrent booking transaction
-	n := 1
+	n := 5
 	errs := make(chan error)
 	results := make(chan BookingTxResult)
 	occupiedBefore, _ := testStore.CountOccupiedSeats(ctx, CountOccupiedSeatsParams{
@@ -55,6 +33,27 @@ func TestBookingTx(t *testing.T) {
 	})
 	for i := 0; i < n; i++ {
 		go func() {
+			passengers := []PassengerParams{
+				{
+					CitizenID:      "123456789",
+					PassportNumber: pgtype.Text{String: "P123456", Valid: true},
+					Gender:         "Male",
+					PhoneNumber:    "0123456789",
+					FirstName:      "John",
+					LastName:       "Doe",
+					Nationality:    "VN",
+					DateOfBirth:    pgtype.Date{Time: time.Now().AddDate(-25, 0, 0), Valid: true},
+					SeatRow:        int32(utils.RandomInt(1, 50)),
+					SeatCol:        string(rune('A' + utils.RandomInt(0, 50))),
+				},
+			}
+
+			payment := PaymentParams{
+				Amount:        utils.RandomPrice(),
+				Currency:      pgtype.Text{String: "VND", Valid: true},
+				PaymentMethod: pgtype.Text{String: "credit_card", Valid: true},
+				Status:        pgtype.Text{String: "paid", Valid: true},
+			}
 			result, err := testStore.BookingTx(ctx, arg, passengers, payment)
 			errs <- err
 			results <- result
@@ -134,7 +133,6 @@ func createRandomFlightWithSeats(t *testing.T) Flight {
 	classExists := map[string]bool{"Economy": false, "Business": false, "First": false}
 	for _, seat := range seats {
 		classExists[string(seat.FlightClass)] = true
-		require.Equal(t, flight.RegistrationNumber, seat.RegistrationNumber)
 		require.Equal(t, flight.FlightID, seat.FlightID)
 	}
 	require.True(t, classExists["Economy"])

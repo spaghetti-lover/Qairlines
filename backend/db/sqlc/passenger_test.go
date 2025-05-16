@@ -19,7 +19,7 @@ func createRandomPassenger(t *testing.T) Passenger {
 		BookingID:      booking.BookingID,
 		CitizenID:      "012345678901",
 		PassportNumber: pgtype.Text{String: "A1234567", Valid: true},
-		Gender:         "M",
+		Gender:         "Male",
 		PhoneNumber:    "0901234567",
 		FirstName:      "John",
 		LastName:       "Doe",
