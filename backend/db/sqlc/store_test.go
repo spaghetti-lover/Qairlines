@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/spaghetti-lover/qairlines/utils"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 	"github.com/stretchr/testify/require"
 )
 

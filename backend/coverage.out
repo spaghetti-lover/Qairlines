@@ -1,14 +1,14 @@
 mode: set
 github.com/spaghetti-lover/qairlines/main.go:10.13,12.2 1 0
-github.com/spaghetti-lover/qairlines/utils/random.go:19.38,21.2 1 0
-github.com/spaghetti-lover/qairlines/utils/random.go:24.33,26.25 2 0
-github.com/spaghetti-lover/qairlines/utils/random.go:26.25,29.3 2 0
-github.com/spaghetti-lover/qairlines/utils/random.go:30.2,30.20 1 0
-github.com/spaghetti-lover/qairlines/utils/random.go:34.26,36.2 1 0
-github.com/spaghetti-lover/qairlines/utils/random.go:39.31,43.2 3 0
-github.com/spaghetti-lover/qairlines/utils/random.go:46.36,55.2 3 0
-github.com/spaghetti-lover/qairlines/utils/random.go:58.35,66.2 2 0
-github.com/spaghetti-lover/qairlines/utils/random.go:69.27,80.2 4 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:19.38,21.2 1 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:24.33,26.25 2 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:26.25,29.3 2 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:30.2,30.20 1 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:34.26,36.2 1 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:39.31,43.2 3 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:46.36,55.2 3 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:58.35,66.2 2 0
+github.com/spaghetti-lover/qairlines/pkg/utils/random.go:69.27,80.2 4 0
 github.com/spaghetti-lover/qairlines/db/sqlc/airplane.sql.go:26.99,36.2 4 1
 github.com/spaghetti-lover/qairlines/db/sqlc/airplane.sql.go:43.88,46.2 2 1
 github.com/spaghetti-lover/qairlines/db/sqlc/airplane.sql.go:53.97,63.2 4 1

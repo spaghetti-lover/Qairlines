@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spaghetti-lover/qairlines/utils"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 	"github.com/stretchr/testify/require"
 )
 

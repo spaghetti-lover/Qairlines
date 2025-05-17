@@ -13,6 +13,7 @@ test:
 	go test -v -cover ./...
 sqlc:
 	sqlc generate
+server:
+	go run cmd/api/main.go
 
-
-.PHONY: createdb, createmigrate, migrateup, postgres
+.PHONY: createdb, createmigrate, migrateup, postgres, server
