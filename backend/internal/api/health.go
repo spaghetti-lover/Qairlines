@@ -20,5 +20,6 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		errorResponse(w, err, http.StatusInternalServerError)
+		return
 	}
 }
