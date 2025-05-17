@@ -33,7 +33,7 @@ CREATE TABLE "flight" (
   "registration_number" varchar UNIQUE NOT NULL,
   "estimated_departure_time" timestamp NOT NULL,
   "actual_departure_time" timestamp,
-  "estimated_arrival_time" timestamp NOT NULl,
+  "estimated_arrival_time" timestamp NOT NULL,
   "actual_arrival_time" timestamp,
   "departure_airport_id" bigint NOT NULL,
   "destination_airport_id" bigint NOT NULL,
@@ -88,6 +88,13 @@ CREATE TABLE "payment" (
   "status" varchar DEFAULT 'pending',
   "booking_id" bigint NOT NULL
 );
+
+CREATE TABLE admin (
+  "admin_id" bigserial PRIMARY KEY,
+  "username" varchar UNIQUE NOT NULL,
+  "password" varchar NOT NULL
+);
+
 
 ALTER TABLE "airplane" ADD FOREIGN KEY ("airplane_model_id") REFERENCES "airplane_model" ("airplane_model_id") ON DELETE CASCADE;
 

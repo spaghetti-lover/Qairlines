@@ -6,3 +6,8 @@ DROP TABLE IF EXISTS "flight";
 DROP TABLE IF EXISTS "airplane";
 DROP TABLE IF EXISTS "airplane_model";
 DROP TABLE IF EXISTS "airport";
+DROP TABLE IF EXISTS "admin";
+
+DROP TYPE IF EXISTS gender_enum;
+DROP TYPE IF EXISTS flight_status;
+DROP TYPE IF EXISTS flight_class_type;
