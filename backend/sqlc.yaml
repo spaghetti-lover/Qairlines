@@ -16,6 +16,7 @@ packages:
     emit_interface: false
     # Nếu true, tên struct sẽ giống hệt tên bảng trong DB.Ở đây là false, SQLC sẽ tự động capitalize và chuyển tên bảng sang kiểu CamelCase (ví dụ: users → User).
     emit_exact_table_names: false
+    emit_empty_slices: true
     overrides:
       - db_type: "timestamptz"
         go_type: "time.Time"

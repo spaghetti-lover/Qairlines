@@ -1,6 +1,7 @@
-package http
+package api
 
 import (
+	"encoding/json"
 	"net/http"
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
@@ -26,7 +27,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-// Simple health check handler
-func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("OK"))
+// 
+func errorResponse(w http.ResponseWriter, err error, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	payload := map[string]string{"error": err.Error()}
+	if encodeErr := json.NewEncoder(w).Encode(payload); encodeErr != nil {
+		http.Error(w, `{"error":"Internal server error"}`, http.StatusInternalServerError)
+	}
 }
