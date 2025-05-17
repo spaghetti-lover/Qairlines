@@ -18,7 +18,7 @@ import (
 
 const (
 	dbSource      = "postgresql://root:secret@localhost:5432/qairline?sslmode=disable"
-	serverAddress = "0.0.0.0:8000"
+	serverAddress = "0.0.0.0:8080"
 )
 
 var interruptSignals = []os.Signal{
