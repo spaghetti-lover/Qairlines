@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -19,7 +18,9 @@ func NewServer(store *db.Store) (*Server, error) {
 		store:  store,
 		router: http.NewServeMux(),
 	}
-	server.router.HandleFunc("GET /health", server.handleHealth)
+	server.router.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		errorResponse(w, errors.New("not implemented"), http.StatusInternalServerError)
+	})
 
 	// User api group
 	server.router.HandleFunc("GET /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
@@ -188,15 +189,4 @@ func NewServer(store *db.Store) (*Server, error) {
 // ServeHTTP satisfies http.Handler interface, so Server can be passed to http.ListenAndServe directly
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
-}
-
-// errorResponse format error reponse for http request
-func errorResponse(w http.ResponseWriter, err error, status int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	payload := map[string]string{"error": err.Error()}
-	if encodeErr := json.NewEncoder(w).Encode(payload); encodeErr != nil {
-		http.Error(w, `{"error":"Internal server error"}`, http.StatusInternalServerError)
-	}
 }

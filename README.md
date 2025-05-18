@@ -1,20 +1,47 @@
 # Clean Architecture for dumb shit web in class
 
-/qairline-backend
-│
-├── main.go
+```text
+qairline-backend/
+├── go.mod
+├── go.sum
+├── README.md
+
+├── cmd/
+│   ├── api/
+│   │   └── main.go         # Entry point for HTTP server
+│   └── migrate/
+│       └── main.go         # Entry point for DB migration CLI
+
 ├── config/
-├── models/
-├── handlers/
-├── services/
-├── repositories/
-├── routes/
-├── utils/
+│   └── config.go           # Config loading (env, flags, etc.)
+
+├── internal/
+│   └── api/
+│       ├── handler.go  # HTTP handler wiring
+│       └── booking.go  # HTTP endpoints for bookings
+
+
+├── domain/
+│   └── booking/
+│       ├── service.go         # Core business logic
+│       ├── service_test.go
+│       ├── model.go           # Booking model
+│       ├── postgres/
+│       │   └── storage.go     # PostgreSQL-specific implementation
+│       └── mock/
+│           └── service.go     # Mock implementation for testing
+
+├── pkg/
+│   └── utils/
+│       └── logger.go          # Logging utility
+
 ├── db/
-│ └── migrations/
-│ └── mocks/
-│ ├── sqlc/
-│ └── queries/
+│   ├── migrations/
+│   │   └── 001_init.sql
+│   └── sqlc/
+│       ├── queries.sql        # SQL queries
+│       └── models.go          # Generated models
+```
 
 ## Reason for techstack:
 

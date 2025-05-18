@@ -13,7 +13,7 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
-	"github.com/spaghetti-lover/qairlines/internal/api"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api"
 )
 
 const (

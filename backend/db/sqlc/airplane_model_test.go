@@ -65,11 +65,11 @@ func TestListAirplaneModels(t *testing.T) {
 		Offset: 5,
 	}
 
-	accounts, err := testStore.ListAirplaneModels(context.Background(), arg)
+	airplaneModels, err := testStore.ListAirplaneModels(context.Background(), arg)
 	require.NoError(t, err)
-	require.Len(t, accounts, 5)
+	require.Len(t, airplaneModels, 5)
 
-	for _, account := range accounts {
-		require.NotEmpty(t, account)
+	for _, airplaneModel := range airplaneModels {
+		require.NotEmpty(t, airplaneModel)
 	}
 }
