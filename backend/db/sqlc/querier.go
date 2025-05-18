@@ -56,11 +56,11 @@ type Querier interface {
 	GetAirplaneModel(ctx context.Context, airplaneModelID int64) (AirplaneModel, error)
 	ListAirplaneModels(ctx context.Context, arg ListAirplaneModelsParams) ([]AirplaneModel, error)
 
-	// Admin
-	GetAdmin(ctx context.Context, adminID int64) (Admin, error)
-	CreateAdmin(ctx context.Context, arg CreateAdminParams) (Admin, error)
-	DeleteAdmin(ctx context.Context, adminID int64) error
-	ListAdmins(ctx context.Context, arg ListAdminsParams) ([]Admin, error)
+	// User
+	GetUser(ctx context.Context, userID int64) (User, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteUser(ctx context.Context, userID int64) error
+	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 }
 
 // Compile-time check to make sure *Queries implement interface Querier

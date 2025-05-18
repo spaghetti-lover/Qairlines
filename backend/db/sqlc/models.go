@@ -142,12 +142,6 @@ func (ns NullGenderEnum) Value() (driver.Value, error) {
 	return string(ns.GenderEnum), nil
 }
 
-type Admin struct {
-	AdminID  int64  `json:"admin_id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 type Airplane struct {
 	AirplaneID         int64       `json:"airplane_id"`
 	AirplaneModelID    int64       `json:"airplane_model_id"`
@@ -229,4 +223,11 @@ type Payment struct {
 	PaymentMethod       pgtype.Text      `json:"payment_method"`
 	Status              pgtype.Text      `json:"status"`
 	BookingID           int64            `json:"booking_id"`
+}
+
+type User struct {
+	UserID   int64  `json:"user_id"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }

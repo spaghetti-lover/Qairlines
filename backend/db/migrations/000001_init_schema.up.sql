@@ -89,10 +89,11 @@ CREATE TABLE "payment" (
   "booking_id" bigint NOT NULL
 );
 
-CREATE TABLE admin (
-  "admin_id" bigserial PRIMARY KEY,
+CREATE TABLE "user" (
+  "user_id" bigserial PRIMARY KEY,
   "username" varchar UNIQUE NOT NULL,
-  "password" varchar NOT NULL
+  "password" varchar NOT NULL,
+  "role" varchar NOT NULL
 );
 
 

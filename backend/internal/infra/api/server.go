@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"strings"
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
@@ -20,8 +19,7 @@ func NewServer(store *db.Store) (*Server, error) {
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
-
-
+	
 
 	server := &Server{
 		store:  store,
@@ -29,115 +27,211 @@ func NewServer(store *db.Store) (*Server, error) {
 	}
 	server.router.Handle("/health", withMethod("GET", healthHandler.ServeHTTP))
 
-	server.router.Handle("/api", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := strings.TrimPrefix(r.URL.Path, "/api")
-		switch {
-		// --- USER ---
-		case path == "/user" && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case path == "/user" && r.Method == http.MethodPost:
-			notImplemented(w, r)
-		case path == "/user/me" && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/user/username/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/user/") && r.Method == http.MethodGet:
-			// GET /api/user/{user_id}
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/user/") && r.Method == http.MethodPut:
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/user/") && r.Method == http.MethodDelete:
-			notImplemented(w, r)
+	// User api group
+	server.router.Handle("GET /api/user", withMethod("GET", healthHandler.ServeHTTP))
 
-		// --- BOOKING ---
-		case path == "/booking" && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case path == "/booking" && r.Method == http.MethodPost:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/booking/flight/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/booking/passengers/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/booking/info/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/booking/cancel/") && r.Method == http.MethodPost:
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/booking/") && r.Method == http.MethodGet:
-			// GET /api/booking/{booking_id}
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/booking/") && r.Method == http.MethodPut:
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/booking/") && r.Method == http.MethodDelete:
-			notImplemented(w, r)
+	server.router.HandleFunc("GET /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
+		withMethod("GET", healthHandler.ServeHTTP)
+	})
 
-		// --- AIRPLANES & MODELS ---
-		case path == "/airplanes" && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case path == "/airplanes" && r.Method == http.MethodPost:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/airplanes/by-regis/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
+	server.router.HandleFunc("PUT /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
 
-		case path == "/airplanes/models" && r.Method == http.MethodPost:
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 3 && strings.HasPrefix(path, "/airplanes/models/"):
-			// method branch
-			switch r.Method {
-			case http.MethodGet, http.MethodPut, http.MethodDelete:
-				notImplemented(w, r)
-			default:
-				methodNotAllowed(w, r)
-			}
+	server.router.HandleFunc("POST /api/user/", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
 
-		// --- AIRPORTS ---
-		case path == "/airports" && (r.Method == http.MethodGet || r.Method == http.MethodPost):
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/airports/"):
-			// GET, PUT, DELETE /api/airports/{airport_id}
-			switch r.Method {
-			case http.MethodGet, http.MethodPut, http.MethodDelete:
-				notImplemented(w, r)
-			default:
-				methodNotAllowed(w, r)
-			}
+	server.router.HandleFunc("GET /api/user/username/{user_name}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
 
-		// --- FLIGHTS ---
-		case path == "/flights" && (r.Method == http.MethodGet || r.Method == http.MethodPost):
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/flights/search") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/flights/passengers/citizen/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/flights/passengers/") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasPrefix(path, "/flights/delay") && r.Method == http.MethodPost:
-			notImplemented(w, r)
-		case strings.HasSuffix(path, "/flight-seats") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.HasSuffix(path, "/flight-seats-available") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.Contains(path, "/flight-seats/") && strings.HasSuffix(path, "/prices") && r.Method == http.MethodGet:
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/flights/") && (r.Method == http.MethodGet || r.Method == http.MethodPut || r.Method == http.MethodDelete):
-			// /api/flights/{flight_id}
-			notImplemented(w, r)
+	server.router.HandleFunc("DELETE /api/user/{user_name}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
 
-		// --- ADVERTS ---
-		case path == "/advert" && (r.Method == http.MethodGet || r.Method == http.MethodPost):
-			notImplemented(w, r)
-		case strings.Count(path, "/") == 2 && strings.HasPrefix(path, "/advert/"):
-			// GET, PUT, DELETE /api/advert/{advert_name}
-			switch r.Method {
-			case http.MethodGet, http.MethodPut, http.MethodDelete:
-				notImplemented(w, r)
-			default:
-				methodNotAllowed(w, r)
-			}
+	server.router.HandleFunc("GET /api/user/me/", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
 
-		default:
-			http.NotFound(w, r)
-		}
-	}))
+	server.router.HandleFunc("POST /api/user/auth", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/user/mail", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	// Booking api group
+
+	server.router.HandleFunc("GET /api/booking/{booking_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("PUT /api/booking/{booking_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("DELETE /api/booking/{booking_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/booking/passengers/{booking_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/booking", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/booking", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/booking/flight/{flight_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/booking/cancel/{booking_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/booking/info/{booking_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	// Airplane api group
+	server.router.HandleFunc("POST /api/airplanes/models", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/airplanes/models/{airplane_model_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("PUT /api/airplanes/models/{airplane_model_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("DELETE /api/airplanes/models/{airplane_model_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/airplanes", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/airplanes/{airplane_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("PUT /api/airplanes/{airplane_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("DELETE /api/airplanes/{airplane_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/airplanes/by-regis/{registration_number}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/airplanes", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	// Airport api group
+
+	server.router.HandleFunc("GET /api/airports", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/airports", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/airports/{airport_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("PUT /api/airports/{airport_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("DELETE /api/airports/{airport_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	// Flight api group
+	server.router.HandleFunc("GET /api/flights/{airport_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("PUT /api/flights/{flight_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("DELETE /api/flights/{flight_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/flights", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights/search", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights/passengers/{flight_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights/passengers/citizen/{citizen_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/flights/delay", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights/flight-seats/{flight_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights/flight-seats-available/{flight_id}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/flights/flight-seats/{flight_id}/prices", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	// Payment api group
+	server.router.HandleFunc("GET /api/advert/{advert_name}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("PUT /api/advert/{advert_name}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("DELETE /api/advert/{advert_name}", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("GET /api/advert", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
+
+	server.router.HandleFunc("POST /api/advert", func(w http.ResponseWriter, r *http.Request) {
+		notImplemented(w, r)
+	})
 	return server, nil
 }
 
