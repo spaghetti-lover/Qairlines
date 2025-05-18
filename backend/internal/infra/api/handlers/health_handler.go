@@ -1,26 +1,13 @@
 package handlers
 
-// import (
-// 	"context"
-// 	"encoding/json"
-// 	"net/http"
-// 	"runtime"
-// 	"time"
+import (
+	"encoding/json"
+	"net/http"
 
-// 	"github.com/spaghetti-lover/qairlines/pkg/utils"
-// )
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
+)
 
-// type Stats struct {
-// 	CPUPercent string `json:"cpu_percent"`
-// 	CPUCore    int    `json:"cpu_core"`
-// }
-// type HealthResponse struct {
-// 	Status  string `json:"status"`
-// 	Version string `json:"version,omitempty"`
-// 	Stats   Stats  `json:"stats,omitempty"`
-// }
-
-// // Health check handler
+// Health check handler
 // func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 // 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 // 	defer cancel()
@@ -47,3 +34,27 @@ package handlers
 // 		return
 // 	}
 // }
+
+type HealthHandler struct {
+	healthUseCase usecases.IHealthUseCase
+}
+
+func NewHealthHandler(healthUseCase usecases.IHealthUseCase) *HealthHandler {
+	return &HealthHandler{
+		healthUseCase: healthUseCase,
+	}
+}
+
+func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	health, err := h.healthUseCase.Execute()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(health); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}

@@ -14,8 +14,8 @@ type AirplaneModelRepositoryPostgres struct {
 }
 
 // NewAirplaneModelRepositoryPostgres creates a new instance of AirplaneModelRepositoryPostgres.
-func NewAirplaneModelRepositoryPostgres() adapters.IAirplaneModelRepository {
-	return &AirplaneModelRepositoryPostgres{}
+func NewAirplaneModelRepositoryPostgres(queries *db.Queries) adapters.IAirplaneModelRepository {
+	return &AirplaneModelRepositoryPostgres{queries: queries}
 }
 
 // NewAirplaneModelRepositoryPostgres creates a new instance of AirplaneModelRepositoryPostgres
