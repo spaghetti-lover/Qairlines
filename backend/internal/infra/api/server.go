@@ -21,6 +21,8 @@ func NewServer(store *db.Store) (*Server, error) {
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 
+
+
 	server := &Server{
 		store:  store,
 		router: http.NewServeMux(),
