@@ -39,3 +39,4 @@ packages/react-devtools-shell/dist
 packages/react-devtools-timeline/dist
 
 backend/coverage.out
+backend/.env

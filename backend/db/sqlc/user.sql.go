@@ -47,6 +47,35 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int64) error {
 	return err
 }
 
+const getAllUser = `-- name: GetAllUser :many
+SELECT user_id, username, password, role FROM "user"
+`
+
+func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, getAllUser)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.Password,
+			&i.Role,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
 SELECT user_id, username, password, role FROM "user"
 WHERE user_id = $1 LIMIT 1

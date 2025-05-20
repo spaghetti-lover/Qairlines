@@ -10,17 +10,17 @@ import (
 
 // AirplaneModelRepositoryPostgres is a struct that implements the IAirplaneModelRepository interface.
 type AirplaneModelRepositoryPostgres struct {
-	queries *db.Queries
+	store db.Store
 }
 
 // NewAirplaneModelRepositoryPostgres creates a new instance of AirplaneModelRepositoryPostgres.
-func NewAirplaneModelRepositoryPostgres(queries *db.Queries) adapters.IAirplaneModelRepository {
-	return &AirplaneModelRepositoryPostgres{queries: queries}
+func NewAirplaneModelRepositoryPostgres(store *db.Store) adapters.IAirplaneModelRepository {
+	return &AirplaneModelRepositoryPostgres{store: *store}
 }
 
 // NewAirplaneModelRepositoryPostgres creates a new instance of AirplaneModelRepositoryPostgres
 func (r *AirplaneModelRepositoryPostgres) CreateAirplaneModel(ctx context.Context, arg entities.CreateAirplaneModelParams) (entities.AirplaneModel, error) {
-	airplaneModel, err := r.queries.CreateAirplaneModel(ctx, db.CreateAirplaneModelParams{
+	airplaneModel, err := r.store.CreateAirplaneModel(ctx, db.CreateAirplaneModelParams{
 		Name:         arg.Name,
 		Manufacturer: arg.Manufacturer,
 		TotalSeats:   arg.TotalSeats,
@@ -41,7 +41,7 @@ func (r *AirplaneModelRepositoryPostgres) CreateAirplaneModel(ctx context.Contex
 
 // DeleteAirplaneModel deletes an airplane model by its ID.
 func (r *AirplaneModelRepositoryPostgres) DeleteAirplaneModel(ctx context.Context, airplaneModelID int64) error {
-	err := r.queries.DeleteAirplaneModel(ctx, airplaneModelID)
+	err := r.store.DeleteAirplaneModel(ctx, airplaneModelID)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (r *AirplaneModelRepositoryPostgres) DeleteAirplaneModel(ctx context.Contex
 
 // GetAirplaneModel retrieves an airplane model by its ID.
 func (r *AirplaneModelRepositoryPostgres) GetAirplaneModel(ctx context.Context, airplaneModelID int64) (entities.AirplaneModel, error) {
-	airplaneModel, err := r.queries.GetAirplaneModel(ctx, airplaneModelID)
+	airplaneModel, err := r.store.GetAirplaneModel(ctx, airplaneModelID)
 
 	if err != nil {
 		return entities.AirplaneModel{}, err
@@ -67,7 +67,7 @@ func (r *AirplaneModelRepositoryPostgres) GetAirplaneModel(ctx context.Context, 
 
 // ListAirplaneModels retrieves a list of airplane models with pagination.
 func (r *AirplaneModelRepositoryPostgres) ListAirplaneModels(ctx context.Context, arg entities.ListAirplaneModelsParams) ([]entities.AirplaneModel, error) {
-	airplaneModels, err := r.queries.ListAirplaneModels(ctx, db.ListAirplaneModelsParams{
+	airplaneModels, err := r.store.ListAirplaneModels(ctx, db.ListAirplaneModelsParams{
 		Limit:  arg.Limit,
 		Offset: arg.Offset,
 	})

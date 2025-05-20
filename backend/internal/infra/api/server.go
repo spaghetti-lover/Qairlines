@@ -19,7 +19,10 @@ func NewServer(store *db.Store) (*Server, error) {
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
-	
+
+	userRepo := postgresql.NewUserRepositoryPostgres(store)
+	userGetAllUseCase := usecases.NewUserGetAllUseCase(userRepo)
+	userGetAllHandler := handlers.NewUserGetHandler(userGetAllUseCase)
 
 	server := &Server{
 		store:  store,
@@ -28,7 +31,7 @@ func NewServer(store *db.Store) (*Server, error) {
 	server.router.Handle("/health", withMethod("GET", healthHandler.ServeHTTP))
 
 	// User api group
-	server.router.Handle("GET /api/user", withMethod("GET", healthHandler.ServeHTTP))
+	server.router.Handle("/api/user", withMethod("GET", userGetAllHandler.ServeHTTP))
 
 	server.router.HandleFunc("GET /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
 		withMethod("GET", healthHandler.ServeHTTP)

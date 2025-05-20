@@ -12,6 +12,9 @@ INSERT INTO "user" (
 SELECT * FROM "user"
 WHERE user_id = $1 LIMIT 1;
 
+-- name: GetAllUser :many
+SELECT * FROM "user";
+
 -- name: ListUsers :many
 SELECT * FROM "user"
 ORDER BY user_id

@@ -61,6 +61,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, userID int64) error
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	GetAllUser(ctx context.Context) ([]User, error)
 }
 
 // Compile-time check to make sure *Queries implement interface Querier

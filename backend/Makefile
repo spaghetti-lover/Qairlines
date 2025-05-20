@@ -15,5 +15,3 @@ sqlc:
 	sqlc generate
 server:
 	go run cmd/api/main.go
-
-.PHONY: createdb, createmigrate, migrateup, postgres, server

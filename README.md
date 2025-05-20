@@ -58,3 +58,4 @@ qairline-backend/
 
 - Tích hợp MinIO với backend, dùng cho việc upload, download file
 - Hoan thien transaction booking voi concurrent request
+- Test chuc nang sending mail va test performance sao lai cham vay

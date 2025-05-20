@@ -12,6 +12,7 @@ func createRandomUser(t *testing.T) User {
 	arg := CreateUserParams{
 		Username: utils.RandomName(),
 		Password: utils.RandomName(),
+		Role:     "admin",
 	}
 
 	user, err := testStore.CreateUser(context.Background(), arg)
@@ -19,6 +20,7 @@ func createRandomUser(t *testing.T) User {
 	require.NotEmpty(t, user)
 	require.NotEmpty(t, user.Username)
 	require.NotEmpty(t, user.Password)
+	require.NotEmpty(t, user.Role)
 
 	return user
 
@@ -66,5 +68,17 @@ func TestListUser(t *testing.T) {
 
 	for _, User := range Users {
 		require.NotEmpty(t, User)
+	}
+}
+
+func TestGetAllUser(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		createRandomUser(t)
+	}
+	users, err := testStore.GetAllUser(context.Background())
+	require.NotEmpty(t, users)
+	require.NoError(t, err)
+	for _, user := range users {
+		require.NotEmpty(t, user)
 	}
 }
