@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	config, err := config.LoadConfig("../backend")
+	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}

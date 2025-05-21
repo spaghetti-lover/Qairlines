@@ -24,7 +24,7 @@ var interruptSignals = []os.Signal{
 }
 
 func main() {
-	config, err := config.LoadConfig("../backend")
+	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
@@ -48,13 +48,13 @@ func main() {
 
 	// Setup HTTP server
 	httpServer := &http.Server{
-		Addr:    config.ServerAddress,
+		Addr:    config.ServerAddressPort,
 		Handler: server,
 	}
 
 	// Start server in goroutine
 	go func() {
-		log.Println("Server started on", config.ServerAddress)
+		log.Println("Server started on", config.ServerAddressPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("ListenAndServe failed: %v", err)
 		}

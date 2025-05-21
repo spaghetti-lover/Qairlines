@@ -1,11 +1,16 @@
 package api
 
 import (
+	"context"
+	"log"
 	"net/http"
 
+	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
+	"github.com/spaghetti-lover/qairlines/internal/infra/kafka"
+	"github.com/spaghetti-lover/qairlines/internal/infra/mailer"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 )
 
@@ -16,9 +21,46 @@ type Server struct {
 
 // NewServer creates a new HTTP server and set up routing.
 func NewServer(store *db.Store) (*Server, error) {
+	config, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+	}
+	//Check Health
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
+
+	// Mail api group
+	smtpMailer := &mailer.SMTPMailer{
+		From:     config.MailFrom,
+		Password: config.MailPassword,
+		Host:     config.MailHost,
+		Port:     config.MailPort,
+	}
+
+	consumer := kafka.NewMailConsumer(
+		config.KafkaBrokerURL,
+		config.KafkaTopic,
+		config.KafkaGroupID,
+		smtpMailer,
+	)
+
+	go func() {
+		log.Println("Starting mail consumer...")
+		if err := consumer.Start(context.Background()); err != nil {
+			log.Fatalf("Mail consumer error: %v", err)
+		}
+	}()
+
+	// Khởi tạo producer và inject vào handler
+	producer := kafka.NewMailProducer(
+		config.KafkaBrokerURL,
+		config.KafkaTopic,
+	)
+
+	mailRepo := mailer.NewMailRepository(producer)
+	mailUseCase := usecases.NewMailUseCase(mailRepo)
+	mailHandler := handlers.NewSendMailHandler(mailUseCase)
 
 	userRepo := postgresql.NewUserRepositoryPostgres(store)
 	userGetAllUseCase := usecases.NewUserGetAllUseCase(userRepo)
@@ -29,6 +71,8 @@ func NewServer(store *db.Store) (*Server, error) {
 		router: http.NewServeMux(),
 	}
 	server.router.Handle("/health", withMethod("GET", healthHandler.ServeHTTP))
+
+	server.router.Handle("/send-mail", mailHandler)
 
 	// User api group
 	server.router.Handle("/api/user", withMethod("GET", userGetAllHandler.ServeHTTP))
