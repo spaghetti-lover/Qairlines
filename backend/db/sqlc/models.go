@@ -226,8 +226,11 @@ type Payment struct {
 }
 
 type User struct {
-	UserID   int64  `json:"user_id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	UserID            int64     `json:"user_id"`
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	Role              string    `json:"role"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }

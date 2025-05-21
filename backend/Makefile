@@ -15,3 +15,5 @@ sqlc:
 	sqlc generate
 server:
 	go run cmd/api/main.go
+mail:
+	go run cmd/mail/main.go

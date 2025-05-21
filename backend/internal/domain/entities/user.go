@@ -12,10 +12,10 @@ const (
 )
 
 type User struct {
-	UserID   int64
-	Username string
-	Password string
-	Role     UserRole
+	UserID         int64
+	Username       string
+	HashedPassword string
+	Role           UserRole
 }
 
 type ListUsersParams struct {
@@ -40,8 +40,8 @@ func NewUser(username string, password string, role string) (*User, error) {
 		return nil, errors.New("role must be either 'admin' or 'client'")
 	}
 	return &User{
-		Username: username,
-		Password: password,
-		Role:     UserRole(role),
+		Username:       username,
+		HashedPassword: password,
+		Role:           UserRole(role),
 	}, nil
 }

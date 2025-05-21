@@ -29,7 +29,7 @@ func (h *UserGetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response = append(response, usecases.UserGetOutput{
 			UserID:   user.UserID,
 			Name:     user.Username,
-			Password: user.Password,
+			Password: user.HashedPassword,
 			Role:     user.Role,
 		})
 	}

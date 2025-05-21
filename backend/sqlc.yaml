@@ -13,7 +13,7 @@ packages:
     # Nếu true, SQLC sẽ generate code dùng prepared statements.
     emit_prepared_queries: false
     # Nếu true, SQLC sẽ tạo ra một interface cho các query methods, giúp dễ dàng mock và test.
-    emit_interface: false
+    emit_interface: true
     # Nếu true, tên struct sẽ giống hệt tên bảng trong DB.Ở đây là false, SQLC sẽ tự động capitalize và chuyển tên bảng sang kiểu CamelCase (ví dụ: users → User).
     emit_exact_table_names: false
     emit_empty_slices: true

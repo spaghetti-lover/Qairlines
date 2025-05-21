@@ -12,9 +12,9 @@ import (
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api"
-	"github.com/spaghetti-lover/qairlines/pkg/config"
 )
 
 var interruptSignals = []os.Signal{

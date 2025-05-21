@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/kafka"
 	"github.com/spaghetti-lover/qairlines/internal/infra/mailer"
-	"github.com/spaghetti-lover/qairlines/pkg/config"
 )
 
 func main() {

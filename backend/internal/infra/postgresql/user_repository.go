@@ -27,10 +27,10 @@ func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.Use
 	usersList := make([]entities.User, len(users))
 	for i, user := range users {
 		usersList[i] = entities.User{
-			UserID:   user.UserID,
-			Username: user.Username,
-			Password: user.Password,
-			Role:     entities.UserRole(user.Role),
+			UserID:         user.UserID,
+			Username:       user.Username,
+			HashedPassword: user.HashedPassword,
+			Role:           entities.UserRole(user.Role),
 		}
 	}
 	return usersList, nil
@@ -42,27 +42,27 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 		return entities.User{}, err
 	}
 	return entities.User{
-		UserID:   user.UserID,
-		Username: user.Username,
-		Password: user.Password,
-		Role:     entities.UserRole(user.Role),
+		UserID:         user.UserID,
+		Username:       user.Username,
+		HashedPassword: user.HashedPassword,
+		Role:           entities.UserRole(user.Role),
 	}, nil
 }
 
 func (r *UserRepositoryPostgres) CreateUser(ctx context.Context, arg entities.CreateUserParams) (entities.User, error) {
 	user, err := r.store.CreateUser(ctx, db.CreateUserParams{
-		Username: arg.Username,
-		Password: arg.Password,
-		Role:     string(arg.Role),
+		Username:       arg.Username,
+		HashedPassword: arg.Password,
+		Role:           string(arg.Role),
 	})
 	if err != nil {
 		return entities.User{}, err
 	}
 	return entities.User{
-		UserID:   user.UserID,
-		Username: user.Username,
-		Password: user.Password,
-		Role:     entities.UserRole(user.Role),
+		UserID:         user.UserID,
+		Username:       user.Username,
+		HashedPassword: user.HashedPassword,
+		Role:           entities.UserRole(user.Role),
 	}, nil
 }
 
@@ -85,10 +85,10 @@ func (r *UserRepositoryPostgres) ListUsers(ctx context.Context, arg entities.Lis
 	usersList := make([]entities.User, len(users))
 	for i, user := range users {
 		usersList[i] = entities.User{
-			UserID:   user.UserID,
-			Username: user.Username,
-			Password: user.Password,
-			Role:     entities.UserRole(user.Role),
+			UserID:         user.UserID,
+			Username:       user.Username,
+			HashedPassword: user.HashedPassword,
+			Role:           entities.UserRole(user.Role),
 		}
 	}
 	return usersList, nil

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/spaghetti-lover/qairlines/pkg/config"
+	"github.com/spaghetti-lover/qairlines/config"
 )
 
 var testStore Store
