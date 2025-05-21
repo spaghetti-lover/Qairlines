@@ -28,22 +28,24 @@ jobs:
 
     steps:
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4 # ✅ update version mới nhất
         with:
-          go-version: ^1.24
-        id: go
+          go-version: "1.21" # ✅ Go 1.24 chưa chính thức, dùng bản ổn định
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v3 # ✅ version mới nhất
 
       - name: Install golang-migrate
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate.linux-amd64 /usr/bin/migrate
-          which migrate
+          sudo mv migrate.linux-amd64 /usr/local/bin/migrate
+
+      - name: Create app.env from GitHub Secret
+        run: |
+          printf "%s" "${{ secrets.APP_ENV_CONTENT }}" > backend/app.env
 
       - name: Run migrations
         run: make -C backend migrateup
 
-      - name: Test
+      - name: Run unit tests
         run: make -C backend test
