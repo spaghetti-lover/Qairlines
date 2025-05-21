@@ -8,33 +8,34 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/kafka"
 	"github.com/spaghetti-lover/qairlines/internal/infra/mailer"
+	"github.com/spaghetti-lover/qairlines/pkg/config"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: Error loading .env file: %v", err)
+	config, err := config.LoadConfig("../backend")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	// Tạo mailer
 	smtpMailer := &mailer.SMTPMailer{
-		From:     os.Getenv("MAIL_FROM"),
-		Password: os.Getenv("MAIL_PASSWORD"),
-		Host:     os.Getenv("MAIL_HOST"),
-		Port:     os.Getenv("MAIL_PORT"),
+		From:     config.MailFrom,
+		Password: config.MailPassword,
+		Host:     config.MailHost,
+		Port:     config.MailPort,
 	}
 
 	// Khởi tạo và chạy consumer
 	consumer := kafka.NewMailConsumer(
-		os.Getenv("KAFKA_BROKER_URL"),
-		os.Getenv("KAFKA_TOPIC"),
-		os.Getenv("KAFKA_GROUP_ID"),
+		config.KafkaBrokerURL,
+		config.KafkaTopic,
+		config.KafkaGroupID,
 		smtpMailer,
 	)
 
@@ -47,8 +48,8 @@ func main() {
 
 	// Khởi tạo producer và inject vào handler
 	producer := kafka.NewMailProducer(
-		os.Getenv("KAFKA_BROKER"),
-		os.Getenv("KAFKA_TOPIC"),
+		config.KafkaBrokerURL,
+		config.KafkaTopic,
 	)
 
 	// Setup HTTP server
@@ -60,7 +61,7 @@ func main() {
 	mux.Handle("/send-mail", mailHandler)
 
 	server := &http.Server{
-		Addr:    ":8081",
+		Addr:    config.MailServer,
 		Handler: mux,
 	}
 

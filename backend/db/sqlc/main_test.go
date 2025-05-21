@@ -7,21 +7,22 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-)
-
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:secret@localhost:5432/qairline?sslmode=disable"
+	"github.com/spaghetti-lover/qairlines/pkg/config"
 )
 
 var testStore Store
 
 func TestMain(m *testing.M) {
-	connPool, err := pgxpool.New(context.Background(), dbSource)
+	config, err := config.LoadConfig("../..")
 	if err != nil {
-		log.Fatal("Khong connect db duoc dcm, quay ve main_test xem di: ", err)
+		log.Fatal("cannot load config:", err)
 	}
+
+	connPool, err := pgxpool.New(context.Background(), config.DBSource)
+	if err != nil {
+		log.Fatal("cannot connect to db:", err)
+	}
+
 	testStore = NewStore(connPool)
-	//Stop testing and info test success or not
 	os.Exit(m.Run())
 }

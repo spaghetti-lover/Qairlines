@@ -14,11 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api"
-)
-
-const (
-	dbSource      = "postgresql://root:secret@localhost:5432/qairline?sslmode=disable"
-	serverAddress = "0.0.0.0:8080"
+	"github.com/spaghetti-lover/qairlines/pkg/config"
 )
 
 var interruptSignals = []os.Signal{
@@ -28,10 +24,15 @@ var interruptSignals = []os.Signal{
 }
 
 func main() {
+	config, err := config.LoadConfig("../backend")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
 	defer stop()
 
-	connPool, err := pgxpool.New(ctx, dbSource)
+	connPool, err := pgxpool.New(ctx, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to database: ", err)
 	}
@@ -47,13 +48,13 @@ func main() {
 
 	// Setup HTTP server
 	httpServer := &http.Server{
-		Addr:    serverAddress,
+		Addr:    config.ServerAddress,
 		Handler: server,
 	}
 
 	// Start server in goroutine
 	go func() {
-		log.Println("Server started on", serverAddress)
+		log.Println("Server started on", config.ServerAddress)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("ListenAndServe failed: %v", err)
 		}
