@@ -31,12 +31,12 @@ export const useSignup = (onSuccess) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/customer/new`, {
+      const response = await fetch(`${API_BASE_URL}/api/user`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           email: formData.email,
           password: formData.password,
         }),
