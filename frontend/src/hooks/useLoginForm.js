@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "@/hooks/use-toast"; 
+import { toast } from "@/hooks/use-toast";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const useLogin = (onSuccess) => {
   const { login } = useAuth(); // Lấy hàm login từ AuthContext
@@ -17,7 +17,7 @@ export const useLogin = (onSuccess) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/login/customer/`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
