@@ -6,6 +6,8 @@ import (
 	"github.com/rs/cors"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 )
@@ -23,11 +25,12 @@ func NewServer(store *db.Store) (*Server, error) {
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 
 	userRepo := postgresql.NewUserRepositoryPostgres(store)
-	userGetAllUseCase := usecases.NewUserGetAllUseCase(userRepo)
-	userGetAllHandler := handlers.NewUserGetHandler(userGetAllUseCase)
+	userGetAllUseCase := user.NewUserGetAllUseCase(userRepo)
+	userCreateUseCase := user.NewUserCreateUseCase(userRepo)
+	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase)
 
 	newsRepo := postgresql.NewNewsModelRepositoryPostgres(store)
-	newsGetAllUseCase := usecases.NewNewsGetAllUseCase(newsRepo)
+	newsGetAllUseCase := news.NewNewsGetAllUseCase(newsRepo)
 	newsHandler := handlers.NewNewsHandler(newsGetAllUseCase)
 
 	mux := http.NewServeMux()
@@ -38,7 +41,7 @@ func NewServer(store *db.Store) (*Server, error) {
 	mux.Handle("/api/news", withMethod("GET", newsHandler.GetAllNews))
 
 	// User api group
-	mux.Handle("/api/user", withMethod("GET", userGetAllHandler.ServeHTTP))
+	mux.Handle("/api/user", withMethod("POST", userHandler.CreateUser))
 
 	mux.HandleFunc("GET /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
 		withMethod("GET", healthHandler.ServeHTTP)

@@ -1,4 +1,4 @@
-package usecases
+package user
 
 import (
 	"context"
@@ -7,17 +7,12 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
-type UserGetOutput struct {
-	UserID   int64
-	Name     string
-	Password string
-	Role     entities.UserRole
-}
-
+// UserGetAllUseCase is a use case for getting all users.
 type IUserGetAllUseCase interface {
 	Execute(ctx context.Context) ([]entities.User, error)
 }
 
+// UserGetAllUseCase is a use case for getting all users.
 type UserGetAllUseCase struct {
 	userRepository adapters.IUserRepository
 }

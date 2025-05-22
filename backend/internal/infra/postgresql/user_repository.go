@@ -28,7 +28,7 @@ func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.Use
 	for i, user := range users {
 		usersList[i] = entities.User{
 			UserID:         user.UserID,
-			Username:       user.Username,
+			FirstName:      user.FirstName,
 			HashedPassword: user.HashedPassword,
 			Role:           entities.UserRole(user.Role),
 		}
@@ -43,7 +43,8 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 	}
 	return entities.User{
 		UserID:         user.UserID,
-		Username:       user.Username,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
 		HashedPassword: user.HashedPassword,
 		Role:           entities.UserRole(user.Role),
 	}, nil
@@ -51,16 +52,18 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 
 func (r *UserRepositoryPostgres) CreateUser(ctx context.Context, arg entities.CreateUserParams) (entities.User, error) {
 	user, err := r.store.CreateUser(ctx, db.CreateUserParams{
-		Username:       arg.Username,
+		FirstName:      arg.FirstName,
+		LastName:       arg.LastName,
 		HashedPassword: arg.Password,
-		Role:           string(arg.Role),
+		Email:          arg.Email,
 	})
 	if err != nil {
 		return entities.User{}, err
 	}
 	return entities.User{
 		UserID:         user.UserID,
-		Username:       user.Username,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
 		HashedPassword: user.HashedPassword,
 		Role:           entities.UserRole(user.Role),
 	}, nil
@@ -86,7 +89,8 @@ func (r *UserRepositoryPostgres) ListUsers(ctx context.Context, arg entities.Lis
 	for i, user := range users {
 		usersList[i] = entities.User{
 			UserID:         user.UserID,
-			Username:       user.Username,
+			FirstName:      user.FirstName,
+			LastName:       user.LastName,
 			HashedPassword: user.HashedPassword,
 			Role:           entities.UserRole(user.Role),
 		}

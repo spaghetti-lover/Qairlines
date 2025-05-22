@@ -12,10 +12,14 @@ const (
 )
 
 type User struct {
-	UserID         int64
-	Username       string
-	HashedPassword string
-	Role           UserRole
+	UserID            int64
+	FirstName         string
+	LastName          string
+	HashedPassword    string
+	Role              UserRole
+	Email             string
+	PasswordChangedAt string
+	CreatedAt         string
 }
 
 type ListUsersParams struct {
@@ -24,14 +28,18 @@ type ListUsersParams struct {
 }
 
 type CreateUserParams struct {
-	Username string
-	Password string
-	Role     UserRole
+	FirstName string
+	LastName  string
+	Password  string
+	Email     string
 }
 
-func NewUser(username string, password string, role string) (*User, error) {
-	if username == "" {
+func NewUser(firstname string, lastname string, password string, role string) (*User, error) {
+	if firstname == "" {
 		return nil, errors.New("username is required")
+	}
+	if lastname == "" {
+		return nil, errors.New("lastname is required")
 	}
 	if password == "" {
 		return nil, errors.New("password is required")
@@ -40,7 +48,8 @@ func NewUser(username string, password string, role string) (*User, error) {
 		return nil, errors.New("role must be either 'admin' or 'client'")
 	}
 	return &User{
-		Username:       username,
+		FirstName:      firstname,
+		LastName:       lastname,
 		HashedPassword: password,
 		Role:           UserRole(role),
 	}, nil

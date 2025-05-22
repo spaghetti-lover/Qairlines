@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 )
 
 type NewsHandler struct {
-	getAllNewsUseCase usecases.INewsGetAllUseCase
+	getAllNewsUseCase news.INewsGetAllUseCase
 }
 
-func NewNewsHandler(getAllNewsUseCase usecases.INewsGetAllUseCase) *NewsHandler {
+func NewNewsHandler(getAllNewsUseCase news.INewsGetAllUseCase) *NewsHandler {
 	return &NewsHandler{
 		getAllNewsUseCase: getAllNewsUseCase,
 	}

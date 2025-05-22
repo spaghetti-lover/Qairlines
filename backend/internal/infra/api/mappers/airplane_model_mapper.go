@@ -1,13 +1,13 @@
 package mappers
 
 import (
-	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
+	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 )
 
 // AirplaneModelCreateRequestToInput converts a request DTO to a use case input.
-func AirplaneModelCreateRequestToInput(req dto.AirplaneModelCreateRequest) usecases.AirplaneModelCreateInput {
-	return usecases.AirplaneModelCreateInput{
+func AirplaneModelCreateRequestToInput(req dto.AirplaneModelCreateRequest) entities.CreateAirplaneModelParams {
+	return entities.CreateAirplaneModelParams{
 		Name:         req.Name,
 		Manufacturer: req.Manufacturer,
 		TotalSeats:   req.TotalSeats,
@@ -15,7 +15,7 @@ func AirplaneModelCreateRequestToInput(req dto.AirplaneModelCreateRequest) useca
 }
 
 // AirplaneModelCreateInputToRequest converts a use case input to a request DTO.
-func AirplaneModelCreateOutputToResponse(output usecases.AirplaneModelCreateOutput) dto.AirplaneModelCreateResponse {
+func AirplaneModelCreateOutputToResponse(output entities.AirplaneModel) dto.AirplaneModelCreateResponse {
 	return dto.AirplaneModelCreateResponse{
 		AirplaneModelID: output.AirplaneModelID,
 		Name:            output.Name,

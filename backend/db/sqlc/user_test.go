@@ -10,7 +10,8 @@ import (
 
 func createRandomUser(t *testing.T) User {
 	arg := CreateUserParams{
-		Username:       utils.RandomName(),
+		FirstName:      utils.RandomName(),
+		LastName:       utils.RandomName(),
 		HashedPassword: utils.RandomName(),
 		Email:          utils.RandomEmail(),
 		Role:           "admin",
@@ -19,7 +20,8 @@ func createRandomUser(t *testing.T) User {
 	user, err := testStore.CreateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
-	require.NotEmpty(t, user.Username)
+	require.NotEmpty(t, user.FirstName)
+	require.NotEmpty(t, user.LastName)
 	require.NotEmpty(t, user.HashedPassword)
 	require.NotEmpty(t, user.Role)
 
@@ -38,7 +40,8 @@ func TestGetUser(t *testing.T) {
 	require.NotEmpty(t, user2)
 
 	require.Equal(t, user1.UserID, user2.UserID)
-	require.Equal(t, user1.Username, user2.Username)
+	require.Equal(t, user1.FirstName, user2.FirstName)
+	require.Equal(t, user1.LastName, user2.LastName)
 	require.Equal(t, user1.HashedPassword, user2.HashedPassword)
 }
 

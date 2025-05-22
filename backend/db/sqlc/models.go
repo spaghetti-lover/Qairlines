@@ -238,7 +238,8 @@ type Payment struct {
 
 type User struct {
 	UserID            int64     `json:"user_id"`
-	Username          string    `json:"username"`
+	FirstName         string    `json:"first_name"`
+	LastName          string    `json:"last_name"`
 	HashedPassword    string    `json:"hashed_password"`
 	Role              string    `json:"role"`
 	Email             string    `json:"email"`

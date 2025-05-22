@@ -1,11 +1,12 @@
 -- name: CreateUser :one
 INSERT INTO "user" (
-  username,
+  first_name,
+  last_name,
   hashed_password,
   role,
   email
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 ) RETURNING *;
 
 
