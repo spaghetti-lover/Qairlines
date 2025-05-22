@@ -67,7 +67,7 @@ func main() {
 
 	// Start HTTP server in a goroutine
 	go func() {
-		log.Println("Server started at :8081")
+		log.Println("Server started at :", config.MailServer)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("HTTP server error: %v", err)
 		}
