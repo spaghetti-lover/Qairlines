@@ -12,7 +12,7 @@ import { useRouter } from 'next/router'
 
 export default function PostManagementPage() {
   const router = useRouter()
-  
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
@@ -25,13 +25,13 @@ export default function PostManagementPage() {
   const [posts, setPosts] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredPosts = posts.filter(post => 
+  const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.author.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/all`
+    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news`
 
     try {
       const response = await fetch(getAllNewsApi, {
@@ -39,7 +39,7 @@ export default function PostManagementPage() {
           headers: {
               "admin": "true",
               "authorization": "Bearer " + localStorage.getItem("token")
-          }, 
+          },
       })
       if (!response.ok) {
           throw new Error("Send request failed")
@@ -47,10 +47,10 @@ export default function PostManagementPage() {
 
       const res = await response.json()
       setPosts(res.data.map(a => {return {
-        "id": a.newsId, 
-        "title": a.title, 
-        "author": a.authorId, 
-        "description": a.description, 
+        "id": a.newsId,
+        "title": a.title,
+        "author": a.authorId,
+        "description": a.description,
         "createdAt": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0]
       }}))
     } catch (error) {
@@ -67,7 +67,7 @@ export default function PostManagementPage() {
     const deleteNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/delete?`
 
     try {
-        const response = await fetch(deleteNewsApi + 
+        const response = await fetch(deleteNewsApi +
         new URLSearchParams({
           "id": id,
         }).toString(), {
@@ -75,7 +75,7 @@ export default function PostManagementPage() {
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")

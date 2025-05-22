@@ -43,7 +43,7 @@ export default function Benefit() {
   }, [router]);
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/all`
+    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}GET /api/news`
 
     try {
       const response = await fetch(getAllNewsApi, {
@@ -56,11 +56,11 @@ export default function Benefit() {
       const res = await response.json()
 
       setFeaturedArticles(res.data.map(a => {return {
-        "slug": a.newsId, 
+        "slug": a.newsId,
         "image": a.image,
-        "title": a.title, 
-        "description": a.description, 
-        "author": a.authorId, 
+        "title": a.title,
+        "description": a.description,
+        "author": a.authorId,
         "content": a.content,
         "date": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0],
         "buttonText": "Đọc thêm",
@@ -77,12 +77,12 @@ export default function Benefit() {
       {/* Phần giới thiệu */}
       <section className="lg:flex">
         <div className="lg:w-[45%]" data-aos="fade-down">
-        <Image 
-          src="/bg-2.jpg" 
-          alt="Background" 
+        <Image
+          src="/bg-2.jpg"
+          alt="Background"
           width={1000}
           height={900}
-          className="h-full" 
+          className="h-full"
         />
         </div>
         <div className="relative lg:w-[55%] bg-[url(/bg-map-2.png)] bg-[#313041] bg-right-bottom bg-contain flex flex-col justify-center py-16">
@@ -221,17 +221,17 @@ export default function Benefit() {
             </div>
           </div>
           <div className="flex justify-center lg:w-1/2 w-full lg:mt-0 mt-14">
-          <Image 
-            src="/image-app.png" 
-            alt="Image description" 
-            width={500} 
-            height={500} 
-            priority 
+          <Image
+            src="/image-app.png"
+            alt="Image description"
+            width={500}
+            height={500}
+            priority
           />
           </div>
         </div>
       </div>
-    
+
     </div>
   );
 }

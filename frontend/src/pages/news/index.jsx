@@ -36,7 +36,7 @@ const NewsPage = () => {
   }, [router]);
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/all`
+    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news`
 
     try {
       const response = await fetch(getAllNewsApi, {
@@ -47,21 +47,22 @@ const NewsPage = () => {
       }
 
       const res = await response.json()
-
-      setFeaturedArticles(res.data.map(a => {return {
-        "slug": a.newsId, 
+      console.log("API Response:", res);
+      setFeaturedArticles(res.map(a => {return {
+        "slug": a.newsId,
         "image": a.image,
-        "title": a.title, 
-        "description": a.description, 
-        "author": a.authorId, 
+        "title": a.title,
+        "description": a.description,
+        "author": a.authorId,
         "content": a.content,
-        "date": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0],
+        "date": a.createdAt.seconds ? new Date(a.createdAt.seconds*1000).toISOString().split('T')[0] : a.createdAt.split("T")[0],
         "buttonText": "Đọc thêm",
         "authorTitle": "Nhà báo",
         "authorImage": "/AvatarUser/no_avatar.jpg",
       }}))
 
     } catch (error) {
+
       toast({
         title: "Lỗi",
         description: "Đã có lỗi xảy ra khi kết nối với máy chủ, vui lòng tải lại trang hoặc đăng nhập lại",
@@ -113,5 +114,5 @@ const NewsPage = () => {
     </main>
   );
 };
-  
+
 export default NewsPage;

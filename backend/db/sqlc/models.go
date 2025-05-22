@@ -200,6 +200,17 @@ type FlightSeat struct {
 	MaxColSeat      int64           `json:"max_col_seat"`
 }
 
+type News struct {
+	NewsID      int64     `json:"news_id"`
+	Slug        string    `json:"slug"`
+	ImageUrl    string    `json:"image_url"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Author      string    `json:"author"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
 type Passenger struct {
 	PassengerID    int64       `json:"passenger_id"`
 	BookingID      int64       `json:"booking_id"`

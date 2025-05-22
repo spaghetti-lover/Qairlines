@@ -40,7 +40,7 @@ const NewsDetail = () => {
   }, [featuredArticles, slug]);
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/all`
+    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news`
 
     try {
       const response = await fetch(getAllNewsApi, {
@@ -53,11 +53,11 @@ const NewsDetail = () => {
       const res = await response.json()
 
       setFeaturedArticles(res.data.map(a => {return {
-        "slug": a.newsId, 
+        "slug": a.newsId,
         "image": a.image,
-        "title": a.title, 
-        "description": a.description, 
-        "author": a.authorId, 
+        "title": a.title,
+        "description": a.description,
+        "author": a.authorId,
         "content": a.content,
         "date": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0],
         "buttonText": "Đọc thêm",
@@ -140,7 +140,7 @@ const NewsDetail = () => {
                     <Image
                       src={item.image}
                       alt={item.title}
-                      width={70} 
+                      width={70}
                       height={50}
                       className="object-cover rounded"
                     />

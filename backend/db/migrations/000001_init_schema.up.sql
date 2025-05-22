@@ -100,6 +100,17 @@ CREATE TABLE "user" (
 );
 
 
+CREATE TABLE "news" (
+  "news_id" bigserial PRIMARY KEY,
+  "slug" varchar UNIQUE NOT NULL,
+  "image_url" varchar NOT NULL,
+  "title" varchar NOT NULL,
+  "description" text NOT NULL,
+  "author" varchar NOT NULL,
+  "content" text NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
 ALTER TABLE "airplane" ADD FOREIGN KEY ("airplane_model_id") REFERENCES "airplane_model" ("airplane_model_id") ON DELETE CASCADE;
 
 ALTER TABLE "flight" ADD FOREIGN KEY ("registration_number") REFERENCES "airplane" ("registration_number") ON DELETE CASCADE;
