@@ -5,17 +5,21 @@ import (
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
+	"github.com/spaghetti-lover/qairlines/pkg/token"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type UserRepositoryPostgres struct {
-	store db.Store
+	store      db.Store
+	tokenMaker token.Maker
 }
 
 // NewUserRepositoryPostgres creates a new UserRepositoryPostgres instance through using dependency injection with store is dependency that is injected
 // into the UserRepositoryPostgres struct. This allows for better separation of concerns and makes it easier to test the code.
-func NewUserRepositoryPostgres(store *db.Store) *UserRepositoryPostgres {
+func NewUserRepositoryPostgres(store *db.Store, tokenMaker token.Maker) *UserRepositoryPostgres {
 	return &UserRepositoryPostgres{
-		store: *store,
+		store:      *store,
+		tokenMaker: tokenMaker,
 	}
 }
 
@@ -37,10 +41,16 @@ func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.Use
 }
 
 func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (entities.User, error) {
+	// config, err := config.LoadConfig(".")
+	// if err != nil {
+	// 	log.Fatal("cannot load config:", err)
+	// }
+	// accessToken, accessPayload, err := r.tokenMaker.CreateToken(user.FirstName+user.LastName, user.Role, config.AccessTokenDuration, token.TokenTypeAccessToken)
 	user, err := r.store.GetUser(ctx, userID)
 	if err != nil {
 		return entities.User{}, err
 	}
+
 	return entities.User{
 		UserID:         user.UserID,
 		FirstName:      user.FirstName,
@@ -51,12 +61,17 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 }
 
 func (r *UserRepositoryPostgres) CreateUser(ctx context.Context, arg entities.CreateUserParams) (entities.User, error) {
+	hashedPassword, err := utils.HashPassword(arg.Password)
+	if err != nil {
+		return entities.User{}, err
+	}
 	user, err := r.store.CreateUser(ctx, db.CreateUserParams{
 		FirstName:      arg.FirstName,
 		LastName:       arg.LastName,
-		HashedPassword: arg.Password,
+		HashedPassword: hashedPassword,
 		Email:          arg.Email,
 	})
+
 	if err != nil {
 		return entities.User{}, err
 	}
@@ -96,4 +111,18 @@ func (r *UserRepositoryPostgres) ListUsers(ctx context.Context, arg entities.Lis
 		}
 	}
 	return usersList, nil
+}
+
+func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {
+	user, err := r.store.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return &entities.User{
+		UserID:         user.UserID,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		HashedPassword: user.HashedPassword,
+		Role:           entities.UserRole(user.Role),
+	}, nil
 }

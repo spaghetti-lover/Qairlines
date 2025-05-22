@@ -14,7 +14,6 @@ func createRandomUser(t *testing.T) User {
 		LastName:       utils.RandomName(),
 		HashedPassword: utils.RandomName(),
 		Email:          utils.RandomEmail(),
-		Role:           "admin",
 	}
 
 	user, err := testStore.CreateUser(context.Background(), arg)

@@ -3,12 +3,21 @@ INSERT INTO "user" (
   first_name,
   last_name,
   hashed_password,
+  email
+) VALUES (
+  $1, $2, $3, $4
+) RETURNING *;
+
+-- name: CreateAdmin :one
+INSERT INTO "user" (
+  first_name,
+  last_name,
+  hashed_password,
   role,
   email
 ) VALUES (
   $1, $2, $3, $4, $5
 ) RETURNING *;
-
 
 -- name: GetUser :one
 SELECT * FROM "user"
@@ -22,6 +31,10 @@ SELECT * FROM "user"
 ORDER BY user_id
 LIMIT $1
 OFFSET $2;
+
+-- name: GetUserByEmail :one
+SELECT * FROM "user"
+WHERE email = $1 LIMIT 1;
 
 
 -- name: DeleteUser :exec

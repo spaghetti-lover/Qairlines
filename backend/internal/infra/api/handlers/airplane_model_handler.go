@@ -7,6 +7,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/airplane_model"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 // AirplaneModelHandler handles the creation of airplane models.
@@ -25,21 +26,21 @@ func NewAirplaneModelCreateHandler(airplaneModelCreateUseCase airplane_model.IAi
 func (h *AirplaneModelHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var req dto.AirplaneModelCreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "bad request", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "failed to decode request body", err)
 		return
 	}
 
 	input := mappers.AirplaneModelCreateRequestToInput(req)
 	output, err := h.airplaneModelCreateUseCase.Execute(r.Context(), input)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "failed to create airplane model", err)
 		return
 	}
 
 	response := mappers.AirplaneModelCreateOutputToResponse(output)
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
 		return
 	}
 }

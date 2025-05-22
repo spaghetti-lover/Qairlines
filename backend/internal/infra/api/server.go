@@ -1,33 +1,43 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/rs/cors"
+	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
+	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
 
 type Server struct {
-	store  *db.Store
-	router http.Handler
+	store      *db.Store
+	router     http.Handler
+	tokenMaker token.Maker
 }
 
 // NewServer creates a new HTTP server and set up routing.
-func NewServer(store *db.Store) (*Server, error) {
+func NewServer(config config.Config, store *db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
 	//Check Health
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 
-	userRepo := postgresql.NewUserRepositoryPostgres(store)
+	userRepo := postgresql.NewUserRepositoryPostgres(store, tokenMaker)
 	userGetAllUseCase := user.NewUserGetAllUseCase(userRepo)
 	userCreateUseCase := user.NewUserCreateUseCase(userRepo)
-	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase)
+	userGetByEmailUseCase := user.NewUserGetByEmailUseCase(userRepo)
+	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase, userGetByEmailUseCase)
 
 	newsRepo := postgresql.NewNewsModelRepositoryPostgres(store)
 	newsGetAllUseCase := news.NewNewsGetAllUseCase(newsRepo)
@@ -254,8 +264,9 @@ func NewServer(store *db.Store) (*Server, error) {
 	}).Handler(mux)
 
 	server := &Server{
-		store:  store,
-		router: corsHandler, // Gán corsHandler trực tiếp mà không cần ép kiểu
+		store:      store,
+		router:     corsHandler,
+		tokenMaker: tokenMaker,
 	}
 
 	return server, nil

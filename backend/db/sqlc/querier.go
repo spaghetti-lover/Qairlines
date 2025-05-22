@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	CheckSeatOccupied(ctx context.Context, arg CheckSeatOccupiedParams) (bool, error)
 	CountOccupiedSeats(ctx context.Context, arg CountOccupiedSeatsParams) (int64, error)
+	CreateAdmin(ctx context.Context, arg CreateAdminParams) (User, error)
 	CreateAirplane(ctx context.Context, arg CreateAirplaneParams) (Airplane, error)
 	CreateAirplaneModel(ctx context.Context, arg CreateAirplaneModelParams) (AirplaneModel, error)
 	CreateAirport(ctx context.Context, arg CreateAirportParams) (Airport, error)
@@ -42,6 +43,7 @@ type Querier interface {
 	GetPassenger(ctx context.Context, passengerID int64) (Passenger, error)
 	GetPayment(ctx context.Context, paymentID int64) (Payment, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	ListAirplaneModels(ctx context.Context, arg ListAirplaneModelsParams) ([]AirplaneModel, error)
 	ListAirplanes(ctx context.Context, arg ListAirplanesParams) ([]Airplane, error)
 	ListAirports(ctx context.Context, arg ListAirportsParams) ([]Airport, error)
