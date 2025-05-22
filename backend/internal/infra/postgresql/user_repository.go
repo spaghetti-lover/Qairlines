@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"errors"
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -116,12 +117,13 @@ func (r *UserRepositoryPostgres) ListUsers(ctx context.Context, arg entities.Lis
 func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {
 	user, err := r.store.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("ERR_INVALID_CREDENTIALS")
 	}
 	return &entities.User{
 		UserID:         user.UserID,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
+		Email:          user.Email,
 		HashedPassword: user.HashedPassword,
 		Role:           entities.UserRole(user.Role),
 	}, nil

@@ -15,6 +15,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 var interruptSignals = []os.Signal{
@@ -27,6 +28,11 @@ func main() {
 	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
+	}
+
+	err = utils.LoadMessages("./message.json")
+	if err != nil {
+		log.Fatalf("Failed to load messages: %v", err)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)

@@ -1,0 +1,6 @@
+{
+  "ERR_INVALID_CREDENTIALS": {
+    "vi": "Email hoặc mật khẩu không đúng.",
+    "en": "Invalid email or password."
+  }
+}

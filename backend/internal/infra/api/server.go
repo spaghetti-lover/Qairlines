@@ -8,6 +8,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
@@ -28,16 +29,21 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 
-	//Check Health
+	//Health
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 
+	// User
 	userRepo := postgresql.NewUserRepositoryPostgres(store, tokenMaker)
 	userGetAllUseCase := user.NewUserGetAllUseCase(userRepo)
 	userCreateUseCase := user.NewUserCreateUseCase(userRepo)
 	userGetByEmailUseCase := user.NewUserGetByEmailUseCase(userRepo)
 	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase, userGetByEmailUseCase)
+
+	//Auth
+	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
+	authHandler := handlers.NewAuthHandler(loginUseCase)
 
 	newsRepo := postgresql.NewNewsModelRepositoryPostgres(store)
 	newsGetAllUseCase := news.NewNewsGetAllUseCase(newsRepo)
@@ -45,45 +51,15 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/health", withMethod("GET", healthHandler.ServeHTTP))
+	mux.HandleFunc("/health", healthHandler.ServeHTTP)
 
 	// News api group
-	mux.Handle("/api/news", withMethod("GET", newsHandler.GetAllNews))
+	mux.HandleFunc("GET /api/news", newsHandler.GetAllNews)
 
 	// User api group
-	mux.Handle("/api/user", withMethod("POST", userHandler.CreateUser))
+	mux.HandleFunc("POST /api/user", userHandler.CreateUser)
 
-	mux.HandleFunc("GET /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
-		withMethod("GET", healthHandler.ServeHTTP)
-	})
-
-	mux.HandleFunc("PUT /api/user/{user_id}", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
-
-	mux.HandleFunc("POST /api/user/", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
-
-	mux.HandleFunc("GET /api/user/username/{user_name}", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
-
-	mux.HandleFunc("DELETE /api/user/{user_name}", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
-
-	mux.HandleFunc("GET /api/user/me/", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
-
-	mux.HandleFunc("POST /api/user/auth", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
-
-	mux.HandleFunc("POST /api/user/mail", func(w http.ResponseWriter, r *http.Request) {
-		notImplemented(w, r)
-	})
+	mux.HandleFunc("POST /api/auth/login", authHandler.Login)
 
 	// Booking api group
 
@@ -275,16 +251,6 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 // ServeHTTP satisfies http.Handler interface, so Server can be passed to http.ListenAndServe directly
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
-}
-
-func withMethod(method string, h http.HandlerFunc) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != method {
-			methodNotAllowed(w, r)
-			return
-		}
-		h(w, r)
-	})
 }
 
 func notImplemented(w http.ResponseWriter, r *http.Request) {
