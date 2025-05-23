@@ -55,6 +55,7 @@ type Querier interface {
 	ListPassengers(ctx context.Context, arg ListPassengersParams) ([]Passenger, error)
 	ListPayment(ctx context.Context, arg ListPaymentParams) ([]Payment, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 }
 
 var _ Querier = (*Queries)(nil)

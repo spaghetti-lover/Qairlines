@@ -40,3 +40,8 @@ WHERE email = $1 LIMIT 1;
 -- name: DeleteUser :exec
 DELETE FROM "user"
 WHERE user_id = $1;
+
+-- name: UpdatePassword :exec
+UPDATE "user"
+SET hashed_password = $2
+WHERE user_id = $1;

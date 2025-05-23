@@ -127,3 +127,19 @@ func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email strin
 		Role:           entities.UserRole(user.Role),
 	}, nil
 }
+
+func (r *UserRepositoryPostgres) UpdatePassword(ctx context.Context, userID int64, newPassword string) error {
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	err = r.store.UpdatePassword(ctx, db.UpdatePasswordParams{
+		UserID:         userID,
+		HashedPassword: hashedPassword,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
