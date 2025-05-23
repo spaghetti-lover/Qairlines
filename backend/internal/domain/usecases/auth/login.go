@@ -2,7 +2,8 @@ package auth
 
 import (
 	"context"
-	"errors"
+
+	appErrors "github.com/spaghetti-lover/qairlines/pkg/errors"
 
 	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
@@ -45,18 +46,19 @@ func (u *LoginUseCase) Execute(ctx context.Context, input LoginInput) (*LoginOut
 	// Get user info by email
 	user, err := u.userRepository.GetUserByEmail(ctx, input.Email)
 	if err != nil {
-		return nil, err
+		message := utils.GetErrorMessage("ERR_USER_NOT_FOUND", "vi")
+		return nil, &appErrors.AppError{Message: message}
 	}
 	if user == nil {
 		message := utils.GetErrorMessage("ERR_INVALID_CREDENTIALS", "vi")
-		return nil, errors.New(`{"message": "` + message + `"}`)
+		return nil, &appErrors.AppError{Message: message}
 	}
 
 	// Verify password
 	err = utils.CheckPassword(input.Password, user.HashedPassword)
 	if err != nil {
 		message := utils.GetErrorMessage("ERR_INVALID_CREDENTIALS", "vi")
-		return nil, errors.New(`{"message": "` + message + `"}`)
+		return nil, &appErrors.AppError{Message: message}
 	}
 
 	// Generate token

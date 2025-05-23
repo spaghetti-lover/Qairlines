@@ -28,7 +28,7 @@ func (u *UserCreateUseCase) Execute(ctx context.Context, arg entities.CreateUser
 	// Kiểm tra email đã tồn tại
 	existingUser, err := u.userRepository.GetUserByEmail(ctx, arg.Email)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return entities.User{}, fmt.Errorf("internal error: %w", err)
+		return entities.User{}, err
 	}
 	if existingUser != nil {
 		return entities.User{}, fmt.Errorf("email already in use")

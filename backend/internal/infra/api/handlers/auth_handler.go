@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
+	appErrors "github.com/spaghetti-lover/qairlines/pkg/errors"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
@@ -27,12 +28,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	output, err := h.loginUseCase.Execute(r.Context(), input)
 	if err != nil {
-		if errors.Is(err, errors.New("ERR_INVALID_CREDENTIALS")) {
-			message := utils.GetErrorMessage("ERR_INVALID_CREDENTIALS", "vi")
-			utils.WriteError(w, http.StatusUnauthorized, `{"message": "`+message+`"}`, nil)
+		if appErr, ok := err.(*appErrors.AppError); ok {
+			http.Error(w, fmt.Sprintf(`{"message": "%s"}`, appErr.Message), http.StatusUnauthorized)
 			return
 		}
-		utils.WriteError(w, http.StatusInternalServerError, "", err)
+		http.Error(w, `{"message": "Internal server error"}`, http.StatusInternalServerError)
 		return
 	}
 

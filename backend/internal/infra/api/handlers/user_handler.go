@@ -53,7 +53,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"message": "Email đã được sử dụng."}`, http.StatusBadRequest)
 			return
 		}
-		utils.WriteError(w, http.StatusInternalServerError, `{"message": "Đã xảy ra lỗi, vui lòng thử lại sau."}`, err)
+		http.Error(w, `{"message": "Tạo người dùng không thành công: `+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 
@@ -85,4 +85,3 @@ func (h *UserHandler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

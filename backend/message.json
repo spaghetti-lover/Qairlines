@@ -2,5 +2,9 @@
   "ERR_INVALID_CREDENTIALS": {
     "vi": "Email hoặc mật khẩu không đúng.",
     "en": "Invalid email or password."
+  },
+  "ERR_USER_NOT_FOUND": {
+    "vi": "Người dùng không tồn tại.",
+    "en": "User not found."
   }
 }
