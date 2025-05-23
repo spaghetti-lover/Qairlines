@@ -93,10 +93,17 @@ CREATE TABLE "user" (
   "user_id" bigserial PRIMARY KEY,
   "first_name" varchar NOT NULL,
   "last_name" varchar NOT NULL,
+  "phone_number" varchar,
+  "gender" varchar,
+  "address" varchar,
+  "date_of_birth" timestamptz,
+  "passport_number" varchar,
+  "identification_number" varchar,
   "hashed_password" varchar NOT NULL,
-  "role" varchar NOT NULL DEFAULT 'client',
+  "role" varchar NOT NULL DEFAULT 'customer',
   "email" varchar UNIQUE NOT NULL,
-  "password_changed_at" timestamptz NOT NULL DEFAULT('0001-01-01 00:00:00Z'),
+  "loyalty_points" bigint DEFAULT 0,
+  "updated_at" timestamptz NOT NULL DEFAULT(now()),
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

@@ -42,7 +42,7 @@ export default function AdminProfilePage() {
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -70,7 +70,7 @@ export default function AdminProfilePage() {
                 "Content-Type": "application/json",
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
             body: JSON.stringify(editForm)
         })
         if (!response.ok) {
@@ -99,7 +99,7 @@ export default function AdminProfilePage() {
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -130,7 +130,7 @@ export default function AdminProfilePage() {
     }
 
     try {
-        const response = await fetch(changePasswordApi + 
+        const response = await fetch(changePasswordApi +
           new URLSearchParams({
             id: admin.uid,
             admin: "true",
@@ -140,7 +140,7 @@ export default function AdminProfilePage() {
                 "Content-Type": "application/json",
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
             body: JSON.stringify({"email": admin.email, "oldPassword": oldPassword, "newPassword": newPassword})
         })
         if (!response.ok) {

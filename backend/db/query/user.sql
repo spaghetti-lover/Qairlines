@@ -45,3 +45,15 @@ WHERE user_id = $1;
 UPDATE "user"
 SET hashed_password = $2
 WHERE user_id = $1;
+
+-- name: UpdateUser :exec
+UPDATE "user"
+SET first_name = $1,
+    last_name = $2,
+    phone_number = $3,
+    gender = $4,
+    address = $5,
+    passport_number = $6,
+    identification_number = $7,
+    updated_at = NOW()
+WHERE user_id = $8;

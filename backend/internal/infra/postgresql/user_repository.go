@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
@@ -41,22 +42,26 @@ func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.Use
 }
 
 func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (entities.User, error) {
-	// config, err := config.LoadConfig(".")
-	// if err != nil {
-	// 	log.Fatal("cannot load config:", err)
-	// }
-	// accessToken, accessPayload, err := r.tokenMaker.CreateToken(user.FirstName+user.LastName, user.Role, config.AccessTokenDuration, token.TokenTypeAccessToken)
 	user, err := r.store.GetUser(ctx, userID)
 	if err != nil {
 		return entities.User{}, err
 	}
 
 	return entities.User{
-		UserID:         user.UserID,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		HashedPassword: user.HashedPassword,
-		Role:           entities.UserRole(user.Role),
+		UserID:               user.UserID,
+		FirstName:            user.FirstName,
+		LastName:             user.LastName,
+		HashedPassword:       user.HashedPassword,
+		PhoneNumber:          user.PhoneNumber.String,
+		Gender:               user.Gender.String,
+		Address:              user.Address.String,
+		PassportNumber:       user.PassportNumber.String,
+		IdentificationNumber: user.IdentificationNumber.String,
+		Role:                 entities.UserRole(user.Role),
+		Email:                user.Email,
+		LoyaltyPoints:        user.LoyaltyPoints.Int64,
+		CreatedAt:            user.CreatedAt,
+		UpdatedAt:            user.UpdatedAt,
 	}, nil
 }
 
@@ -79,6 +84,7 @@ func (r *UserRepositoryPostgres) CreateUser(ctx context.Context, arg entities.Cr
 		UserID:         user.UserID,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
+		Email:          user.Email,
 		HashedPassword: user.HashedPassword,
 		Role:           entities.UserRole(user.Role),
 	}, nil
@@ -137,6 +143,23 @@ func (r *UserRepositoryPostgres) UpdatePassword(ctx context.Context, userID int6
 	err = r.store.UpdatePassword(ctx, db.UpdatePasswordParams{
 		UserID:         userID,
 		HashedPassword: hashedPassword,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepositoryPostgres) UpdateUser(ctx context.Context, user entities.User) error {
+	err := r.store.UpdateUser(ctx, db.UpdateUserParams{
+		UserID:               user.UserID,
+		FirstName:            user.FirstName,
+		LastName:             user.LastName,
+		PhoneNumber:          pgtype.Text{String: user.PhoneNumber, Valid: true},
+		Gender:               pgtype.Text{String: user.Gender, Valid: true},
+		Address:              pgtype.Text{String: user.Address, Valid: true},
+		PassportNumber:       pgtype.Text{String: user.PassportNumber, Valid: true},
+		IdentificationNumber: pgtype.Text{String: user.IdentificationNumber, Valid: true},
 	})
 	if err != nil {
 		return err

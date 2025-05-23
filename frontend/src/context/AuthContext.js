@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setIsAuthenticated(false);
-    router.push("/login"); 
+    router.push("/login");
   };
 
   return (

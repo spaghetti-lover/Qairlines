@@ -29,7 +29,7 @@ func AuthMiddleware(tokenMaker token.Maker) func(http.Handler) http.Handler {
 			// Xác thực token
 			payload, err := tokenMaker.VerifyToken(accessToken, 1)
 			if err != nil {
-				utils.WriteError(w, http.StatusUnauthorized, "Invalid or expired token", err)
+				http.Error(w, `{"message": "Authentication failed. Access token required."}`, http.StatusUnauthorized)
 				return
 			}
 

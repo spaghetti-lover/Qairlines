@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/hooks/use-toast"; 
+import { toast } from "@/hooks/use-toast";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function PasswordChange({ personalInfo }) {
@@ -43,7 +43,7 @@ export default function PasswordChange({ personalInfo }) {
         }
 
         const response = await fetch(
-            `${API_BASE_URL}/api/customer/change-password?id=${personalInfo.uid}`,
+            `${API_BASE_URL}/api/user/id=${personalInfo.uid}/password`,
             {
                 method: "PUT",
                 headers: {

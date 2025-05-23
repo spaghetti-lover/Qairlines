@@ -20,7 +20,7 @@ export function EditCustomerDialog({ customer, onClose, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const updateCustomerApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/customer/update?id=${editedCustomer.uid}`
+    const updateCustomerApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user`
 
     try {
         const response = await fetch(updateCustomerApi, {
@@ -29,7 +29,7 @@ export function EditCustomerDialog({ customer, onClose, onSave }) {
                 "Content-Type": "application/json",
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
             body: JSON.stringify(editedCustomer)
         })
         if (!response.ok) {

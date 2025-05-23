@@ -40,7 +40,9 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	userGetAllUseCase := user.NewUserGetAllUseCase(userRepo)
 	userCreateUseCase := user.NewUserCreateUseCase(userRepo)
 	userGetByEmailUseCase := user.NewUserGetByEmailUseCase(userRepo)
-	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase, userGetByEmailUseCase)
+	userUpdateUseCase := user.NewUserUpdateUseCase(userRepo)
+	userGetUseCase := user.NewUserGetUseCase(userRepo)
+	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase, userGetByEmailUseCase, userUpdateUseCase, userGetUseCase)
 
 	// Auth
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
@@ -69,7 +71,8 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// User API
 	apiRouter.HandleFunc("/user", userHandler.CreateUser).Methods("POST")
-	// apiRouter.HandlerFunc("/user/{id}", userHandler.GetUserByID).Methods("PUT")
+	apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.UpdateUser))).Methods("PUT")
+	apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.GetUserByToken))).Methods("GET")
 
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")

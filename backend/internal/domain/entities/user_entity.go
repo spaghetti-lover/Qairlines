@@ -1,21 +1,30 @@
 package entities
 
+import "time"
+
 type UserRole string
 
 const (
 	RoleAdmin  UserRole = "admin"
-	RoleClient UserRole = "client"
+	RoleClient UserRole = "customer"
 )
 
 type User struct {
-	UserID            int64
-	FirstName         string
-	LastName          string
-	HashedPassword    string
-	Role              UserRole
-	Email             string
-	PasswordChangedAt string
-	CreatedAt         string
+	UserID               int64
+	FirstName            string
+	LastName             string
+	PhoneNumber          string
+	DateOfBirth          time.Time
+	Gender               string
+	Address              string
+	PassportNumber       string
+	IdentificationNumber string
+	HashedPassword       string
+	Role                 UserRole
+	Email                string
+	LoyaltyPoints        int64
+	UpdatedAt            time.Time
+	CreatedAt            time.Time
 }
 
 type ListUsersParams struct {

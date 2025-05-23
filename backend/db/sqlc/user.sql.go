@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAdmin = `-- name: CreateAdmin :one
@@ -18,7 +20,7 @@ INSERT INTO "user" (
   email
 ) VALUES (
   $1, $2, $3, $4, $5
-) RETURNING user_id, first_name, last_name, hashed_password, role, email, password_changed_at, created_at
+) RETURNING user_id, first_name, last_name, phone_number, gender, address, date_of_birth, passport_number, identification_number, hashed_password, role, email, loyalty_points, updated_at, created_at
 `
 
 type CreateAdminParams struct {
@@ -42,10 +44,17 @@ func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (User,
 		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
+		&i.PhoneNumber,
+		&i.Gender,
+		&i.Address,
+		&i.DateOfBirth,
+		&i.PassportNumber,
+		&i.IdentificationNumber,
 		&i.HashedPassword,
 		&i.Role,
 		&i.Email,
-		&i.PasswordChangedAt,
+		&i.LoyaltyPoints,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -59,7 +68,7 @@ INSERT INTO "user" (
   email
 ) VALUES (
   $1, $2, $3, $4
-) RETURNING user_id, first_name, last_name, hashed_password, role, email, password_changed_at, created_at
+) RETURNING user_id, first_name, last_name, phone_number, gender, address, date_of_birth, passport_number, identification_number, hashed_password, role, email, loyalty_points, updated_at, created_at
 `
 
 type CreateUserParams struct {
@@ -81,10 +90,17 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
+		&i.PhoneNumber,
+		&i.Gender,
+		&i.Address,
+		&i.DateOfBirth,
+		&i.PassportNumber,
+		&i.IdentificationNumber,
 		&i.HashedPassword,
 		&i.Role,
 		&i.Email,
-		&i.PasswordChangedAt,
+		&i.LoyaltyPoints,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -101,7 +117,7 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int64) error {
 }
 
 const getAllUser = `-- name: GetAllUser :many
-SELECT user_id, first_name, last_name, hashed_password, role, email, password_changed_at, created_at FROM "user"
+SELECT user_id, first_name, last_name, phone_number, gender, address, date_of_birth, passport_number, identification_number, hashed_password, role, email, loyalty_points, updated_at, created_at FROM "user"
 `
 
 func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
@@ -117,10 +133,17 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 			&i.UserID,
 			&i.FirstName,
 			&i.LastName,
+			&i.PhoneNumber,
+			&i.Gender,
+			&i.Address,
+			&i.DateOfBirth,
+			&i.PassportNumber,
+			&i.IdentificationNumber,
 			&i.HashedPassword,
 			&i.Role,
 			&i.Email,
-			&i.PasswordChangedAt,
+			&i.LoyaltyPoints,
+			&i.UpdatedAt,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -134,7 +157,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT user_id, first_name, last_name, hashed_password, role, email, password_changed_at, created_at FROM "user"
+SELECT user_id, first_name, last_name, phone_number, gender, address, date_of_birth, passport_number, identification_number, hashed_password, role, email, loyalty_points, updated_at, created_at FROM "user"
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -145,17 +168,24 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
+		&i.PhoneNumber,
+		&i.Gender,
+		&i.Address,
+		&i.DateOfBirth,
+		&i.PassportNumber,
+		&i.IdentificationNumber,
 		&i.HashedPassword,
 		&i.Role,
 		&i.Email,
-		&i.PasswordChangedAt,
+		&i.LoyaltyPoints,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT user_id, first_name, last_name, hashed_password, role, email, password_changed_at, created_at FROM "user"
+SELECT user_id, first_name, last_name, phone_number, gender, address, date_of_birth, passport_number, identification_number, hashed_password, role, email, loyalty_points, updated_at, created_at FROM "user"
 WHERE email = $1 LIMIT 1
 `
 
@@ -166,17 +196,24 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.UserID,
 		&i.FirstName,
 		&i.LastName,
+		&i.PhoneNumber,
+		&i.Gender,
+		&i.Address,
+		&i.DateOfBirth,
+		&i.PassportNumber,
+		&i.IdentificationNumber,
 		&i.HashedPassword,
 		&i.Role,
 		&i.Email,
-		&i.PasswordChangedAt,
+		&i.LoyaltyPoints,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT user_id, first_name, last_name, hashed_password, role, email, password_changed_at, created_at FROM "user"
+SELECT user_id, first_name, last_name, phone_number, gender, address, date_of_birth, passport_number, identification_number, hashed_password, role, email, loyalty_points, updated_at, created_at FROM "user"
 ORDER BY user_id
 LIMIT $1
 OFFSET $2
@@ -200,10 +237,17 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.UserID,
 			&i.FirstName,
 			&i.LastName,
+			&i.PhoneNumber,
+			&i.Gender,
+			&i.Address,
+			&i.DateOfBirth,
+			&i.PassportNumber,
+			&i.IdentificationNumber,
 			&i.HashedPassword,
 			&i.Role,
 			&i.Email,
-			&i.PasswordChangedAt,
+			&i.LoyaltyPoints,
+			&i.UpdatedAt,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -229,5 +273,43 @@ type UpdatePasswordParams struct {
 
 func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
 	_, err := q.db.Exec(ctx, updatePassword, arg.UserID, arg.HashedPassword)
+	return err
+}
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE "user"
+SET first_name = $1,
+    last_name = $2,
+    phone_number = $3,
+    gender = $4,
+    address = $5,
+    passport_number = $6,
+    identification_number = $7,
+    updated_at = NOW()
+WHERE user_id = $8
+`
+
+type UpdateUserParams struct {
+	FirstName            string      `json:"first_name"`
+	LastName             string      `json:"last_name"`
+	PhoneNumber          pgtype.Text `json:"phone_number"`
+	Gender               pgtype.Text `json:"gender"`
+	Address              pgtype.Text `json:"address"`
+	PassportNumber       pgtype.Text `json:"passport_number"`
+	IdentificationNumber pgtype.Text `json:"identification_number"`
+	UserID               int64       `json:"user_id"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.Exec(ctx, updateUser,
+		arg.FirstName,
+		arg.LastName,
+		arg.PhoneNumber,
+		arg.Gender,
+		arg.Address,
+		arg.PassportNumber,
+		arg.IdentificationNumber,
+		arg.UserID,
+	)
 	return err
 }

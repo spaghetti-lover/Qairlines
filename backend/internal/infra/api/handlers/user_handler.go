@@ -15,13 +15,17 @@ type UserHandler struct {
 	userGetAllUseCase     usecases.IUserGetAllUseCase
 	userCreateUseCase     usecases.IUserCreateUseCase
 	userGetByEmailUseCase usecases.IUserGetByEmailUseCase
+	userUpdateUseCase     usecases.IUserUpdateUseCase
+	userGetUseCase        usecases.IUserGetUseCase
 }
 
-func NewUserHandler(userGetAllUseCase usecases.IUserGetAllUseCase, userCreateUseCase usecases.IUserCreateUseCase, userGetByEmailUseCase usecases.IUserGetByEmailUseCase) *UserHandler {
+func NewUserHandler(userGetAllUseCase usecases.IUserGetAllUseCase, userCreateUseCase usecases.IUserCreateUseCase, userGetByEmailUseCase usecases.IUserGetByEmailUseCase, userUpdateUseCase usecases.IUserUpdateUseCase, userUserGetUseCase usecases.IUserGetUseCase) *UserHandler {
 	return &UserHandler{
 		userGetAllUseCase:     userGetAllUseCase,
 		userCreateUseCase:     userCreateUseCase,
 		userGetByEmailUseCase: userGetByEmailUseCase,
+		userUpdateUseCase:     userUpdateUseCase,
+		userGetUseCase:        userUserGetUseCase,
 	}
 }
 
@@ -79,6 +83,56 @@ func (h *UserHandler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := mappers.UserGetOutputToResponse(*user)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
+		return
+	}
+}
+
+func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	id := utils.UserIdFromContext(r.Context())
+	if id == 0 {
+		http.Error(w, `{"message": "Extract userID from token failed"}`, http.StatusBadRequest)
+		return
+	}
+	// Parse request body
+	var userUpdateInput dto.UserUpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&userUpdateInput); err != nil {
+		http.Error(w, `{"message": "Invalid customer data. Please check the input fields."}`, http.StatusBadRequest)
+		return
+	}
+
+	// Gọi usecase để xử lý logic
+	updatedUser, err := h.userUpdateUseCase.Execute(r.Context(), id, mappers.UserUpdateInputToRequest(userUpdateInput))
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to update user", err)
+		return
+	}
+
+	// Trả về response thành công
+	response := mappers.UserUpdateOutputToResponse(updatedUser)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to encode response", err)
+		return
+	}
+}
+
+func (h *UserHandler) GetUserByToken(w http.ResponseWriter, r *http.Request) {
+	// Lấy `id` từ query string
+	tokenUserID := utils.UserIdFromContext(r.Context())
+	if tokenUserID == 0 {
+		http.Error(w, `{"message": "Extract userID from token failed"}`, http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.userGetUseCase.Execute(r.Context(), tokenUserID)
+	if err != nil {
+		http.Error(w, `{"message": "Failed to get user by token"}`, http.StatusInternalServerError)
+		return
+	}
+	response := mappers.UserGetOutputToResponseByToken(user)
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)

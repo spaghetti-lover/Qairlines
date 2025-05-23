@@ -237,12 +237,19 @@ type Payment struct {
 }
 
 type User struct {
-	UserID            int64     `json:"user_id"`
-	FirstName         string    `json:"first_name"`
-	LastName          string    `json:"last_name"`
-	HashedPassword    string    `json:"hashed_password"`
-	Role              string    `json:"role"`
-	Email             string    `json:"email"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	CreatedAt         time.Time `json:"created_at"`
+	UserID               int64              `json:"user_id"`
+	FirstName            string             `json:"first_name"`
+	LastName             string             `json:"last_name"`
+	PhoneNumber          pgtype.Text        `json:"phone_number"`
+	Gender               pgtype.Text        `json:"gender"`
+	Address              pgtype.Text        `json:"address"`
+	DateOfBirth          pgtype.Timestamptz `json:"date_of_birth"`
+	PassportNumber       pgtype.Text        `json:"passport_number"`
+	IdentificationNumber pgtype.Text        `json:"identification_number"`
+	HashedPassword       string             `json:"hashed_password"`
+	Role                 string             `json:"role"`
+	Email                string             `json:"email"`
+	LoyaltyPoints        pgtype.Int8        `json:"loyalty_points"`
+	UpdatedAt            time.Time          `json:"updated_at"`
+	CreatedAt            time.Time          `json:"created_at"`
 }

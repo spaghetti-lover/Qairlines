@@ -14,4 +14,5 @@ type IUserRepository interface {
 	GetAllUser(ctx context.Context) ([]entities.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*entities.User, error)
 	UpdatePassword(ctx context.Context, userID int64, newPassword string) error
+	UpdateUser(ctx context.Context, user entities.User) error
 }
