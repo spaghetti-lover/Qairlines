@@ -62,6 +62,13 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Lấy userID từ token (nếu cần xác thực quyền)
+	tokenUserID := utils.UserIdFromContext(r.Context())
+	if tokenUserID != userID {
+		http.Error(w, `{"message": "You are not allowed to change this password"}`, http.StatusUnauthorized)
+		return
+	}
+
 	var req PasswordChangeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, "Invalid request body", err)
@@ -75,7 +82,7 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		NewPassword: req.NewPassword,
 	})
 	if err != nil {
-		utils.WriteError(w, http.StatusUnauthorized, err.Error(), nil)
+		http.Error(w, `{"message": "Mật khẩu cũ không đúng."}`, http.StatusBadRequest)
 		return
 	}
 

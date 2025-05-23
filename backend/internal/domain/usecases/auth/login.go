@@ -62,7 +62,7 @@ func (u *LoginUseCase) Execute(ctx context.Context, input LoginInput) (*LoginOut
 	}
 
 	// Generate token
-	accessToken, _, err := u.tokenMaker.CreateToken(user.FirstName+user.LastName, string(user.Role), config.AccessTokenDuration, token.TokenTypeAccessToken)
+	accessToken, _, err := u.tokenMaker.CreateToken(user.UserID, string(user.Role), config.AccessTokenDuration, token.TokenTypeAccessToken)
 	if err != nil {
 		return nil, err
 	}

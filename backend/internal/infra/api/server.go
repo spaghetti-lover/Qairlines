@@ -13,6 +13,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
@@ -51,6 +52,9 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	newsGetAllUseCase := news.NewNewsGetAllUseCase(newsRepo)
 	newsHandler := handlers.NewNewsHandler(newsGetAllUseCase)
 
+	// Middleware
+	authMiddleware := middleware.AuthMiddleware(tokenMaker)
+
 	// Use gorilla/mux for routing
 	router := mux.NewRouter()
 
@@ -65,10 +69,11 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// User API
 	apiRouter.HandleFunc("/user", userHandler.CreateUser).Methods("POST")
+	// apiRouter.HandlerFunc("/user/{id}", userHandler.GetUserByID).Methods("PUT")
 
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
-	apiRouter.HandleFunc("/user/{id}/password", authHandler.ChangePassword).Methods("PUT")
+	apiRouter.Handle("/user/{id}/password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{
