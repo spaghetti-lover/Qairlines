@@ -54,18 +54,21 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	// Use gorilla/mux for routing
 	router := mux.NewRouter()
 
+	// Group all APIs under "/api"
+	apiRouter := router.PathPrefix("/api").Subrouter()
+
 	// Health API
 	router.HandleFunc("/health", healthHandler.ServeHTTP).Methods("GET")
 
 	// News API
-	router.HandleFunc("/api/news", newsHandler.GetAllNews).Methods("GET")
+	apiRouter.HandleFunc("/news", newsHandler.GetAllNews).Methods("GET")
 
 	// User API
-	router.HandleFunc("/api/user", userHandler.CreateUser).Methods("POST")
+	apiRouter.HandleFunc("/user", userHandler.CreateUser).Methods("POST")
 
 	// Auth API
-	router.HandleFunc("/api/auth/login", authHandler.Login).Methods("POST")
-	router.HandleFunc("/api/user/{id}/password", authHandler.ChangePassword).Methods("PUT")
+	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
+	apiRouter.HandleFunc("/user/{id}/password", authHandler.ChangePassword).Methods("PUT")
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{
