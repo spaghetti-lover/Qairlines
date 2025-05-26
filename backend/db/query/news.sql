@@ -30,3 +30,7 @@ UPDATE "news"
 SET author_id = NULL,
     updated_at = NOW()
 WHERE author_id = $1;
+
+-- name: DeleteNews :execrows
+DELETE FROM "news"
+WHERE id = $1;

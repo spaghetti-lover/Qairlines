@@ -54,6 +54,19 @@ func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, e
 	return i, err
 }
 
+const deleteNews = `-- name: DeleteNews :execrows
+DELETE FROM "news"
+WHERE id = $1
+`
+
+func (q *Queries) DeleteNews(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteNews, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getAllNewsWithAuthor = `-- name: GetAllNewsWithAuthor :many
 SELECT id, title, description, content, image, author_id, n.created_at, n.updated_at, user_id, email, hashed_password, first_name, last_name, role, is_active, u.created_at, u.updated_at
 FROM "news" n

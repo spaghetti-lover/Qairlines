@@ -28,6 +28,7 @@ type Querier interface {
 	DeleteBookings(ctx context.Context, bookingID int64) error
 	DeleteCustomer(ctx context.Context, userID int64) error
 	DeleteFlight(ctx context.Context, flightID int64) error
+	DeleteNews(ctx context.Context, id int64) (int64, error)
 	DeleteTicket(ctx context.Context, ticketID int64) error
 	DeleteUser(ctx context.Context, userID int64) error
 	GetAdmin(ctx context.Context, userID int64) (int64, error)

@@ -52,6 +52,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
 	changePasswordUseCase := auth.NewChangePasswordUseCase(userRepo)
 	newsGetAllWithAuthorUseCase := news.NewNewsGetAllWithAuthorUseCase(newsRepo)
+	newsDeleteUseCase := news.NewDeleteNewsUseCase(newsRepo)
 	adminCreateUseCase := admin.NewCreateAdminUseCase(adminRepo, userRepo)
 	getAllAdminsUseCase := admin.NewGetAllAdminsUseCase(adminRepo)
 	updateAdminUseCase := admin.NewUpdateAdminUseCase(adminRepo, userRepo)
@@ -64,7 +65,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
-	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase)
+	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketCancelUseCase)
@@ -82,6 +83,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// News API
 	apiRouter.HandleFunc("/news", newsHandler.GetAllNews).Methods("GET")
+	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.DeleteNews))).Methods("DELETE")
 
 	// User API
 	// apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.GetUserByToken))).Methods("GET")
@@ -96,7 +98,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Admin API
 	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.GetCurrentAdmin))).Methods("GET")
-	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.CreateAdminTx))).Methods("POST")
+	apiRouter.HandleFunc("/admin", adminHandler.CreateAdminTx).Methods("POST")
 	apiRouter.Handle("/admin/all", authMiddleware(http.HandlerFunc(adminHandler.GetAllAdmins))).Methods("GET")
 	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.UpdateAdmin))).Methods("PUT")
 	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.DeleteAdmin))).Methods("DELETE")

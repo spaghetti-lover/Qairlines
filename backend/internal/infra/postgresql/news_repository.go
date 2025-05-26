@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
@@ -35,4 +36,17 @@ func (r *NewsModelRepositoryPostgres) GetAllNewsWithAuthor(ctx context.Context) 
 	}
 
 	return newsList, nil
+}
+
+func (r *NewsModelRepositoryPostgres) DeleteNewsByID(ctx context.Context, newsID int64) error {
+	rowsAffected, err := r.store.DeleteNews(ctx, newsID)
+	if err != nil {
+		return fmt.Errorf("failed to delete news post: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return adapters.ErrNewsNotFound // Trả về lỗi nếu không có hàng nào bị xóa
+	}
+
+	return nil
 }
