@@ -34,10 +34,12 @@ WHERE email = $1;
 DELETE FROM users
 WHERE user_id = $1;
 
--- name: UpdatePassword :exec
-UPDATE users
-SET hashed_password = $2
-WHERE user_id = $1;
+-- name: UpdateUserPassword :exec
+UPDATE Users
+SET
+  hashed_password = $2,
+  updated_at = now()
+WHERE email = $1;
 
 -- name: UpdateUser :exec
 UPDATE users

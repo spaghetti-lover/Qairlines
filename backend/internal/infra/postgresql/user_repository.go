@@ -2,12 +2,12 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type UserRepositoryPostgres struct {
@@ -23,7 +23,6 @@ func NewUserRepositoryPostgres(store *db.Store, tokenMaker token.Maker) *UserRep
 		tokenMaker: tokenMaker,
 	}
 }
-
 
 func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.User, error) {
 	users, err := r.store.GetAllUser(ctx)
@@ -61,7 +60,6 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
-
 
 // func (r *UserRepositoryPostgres) DeleteUser(ctx context.Context, userID int64) error {
 // 	err := r.store.DeleteUser(ctx, userID)
@@ -107,19 +105,16 @@ func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email strin
 	}, nil
 }
 
-func (r *UserRepositoryPostgres) UpdatePassword(ctx context.Context, userID int64, newPassword string) error {
-	hashedPassword, err := utils.HashPassword(newPassword)
-	if err != nil {
-		return err
-	}
-
-	err = r.store.UpdatePassword(ctx, db.UpdatePasswordParams{
-		UserID:         userID,
+func (r *UserRepositoryPostgres) UpdatePassword(ctx context.Context, email string, hashedPassword string) error {
+	err := r.store.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		Email:          email,
 		HashedPassword: hashedPassword,
 	})
+
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update password: %w", err)
 	}
+
 	return nil
 }
 

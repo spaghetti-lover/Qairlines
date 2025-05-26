@@ -199,22 +199,6 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 	return items, nil
 }
 
-const updatePassword = `-- name: UpdatePassword :exec
-UPDATE users
-SET hashed_password = $2
-WHERE user_id = $1
-`
-
-type UpdatePasswordParams struct {
-	UserID         int64  `json:"user_id"`
-	HashedPassword string `json:"hashed_password"`
-}
-
-func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
-	_, err := q.db.Exec(ctx, updatePassword, arg.UserID, arg.HashedPassword)
-	return err
-}
-
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET first_name = $2,
@@ -231,5 +215,23 @@ type UpdateUserParams struct {
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser, arg.UserID, arg.FirstName, arg.LastName)
+	return err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE Users
+SET
+  hashed_password = $2,
+  updated_at = now()
+WHERE email = $1
+`
+
+type UpdateUserPasswordParams struct {
+	Email          string `json:"email"`
+	HashedPassword string `json:"hashed_password"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.Exec(ctx, updateUserPassword, arg.Email, arg.HashedPassword)
 	return err
 }

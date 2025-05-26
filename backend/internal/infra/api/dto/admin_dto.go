@@ -60,3 +60,13 @@ type AdminUpdateResponse struct {
 		Email     string `json:"email"`
 	} `json:"data"`
 }
+
+type ChangePasswordRequest struct {
+	Email       string `json:"email"`
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+type ChangePasswordResponse struct {
+	Message string `json:"message"`
+}

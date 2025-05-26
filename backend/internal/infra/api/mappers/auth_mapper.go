@@ -2,6 +2,7 @@ package mappers
 
 import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 )
 
 type LoginResponse struct {
@@ -25,5 +26,19 @@ func LoginOutputToResponse(output auth.LoginOutput) LoginResponse {
 			Name:  output.User.FirstName + " " + output.User.LastName,
 			Role:  string(output.User.Role),
 		},
+	}
+}
+
+func ChangePasswordRequestToInput(req dto.ChangePasswordRequest) auth.ChangePasswordInput {
+	return auth.ChangePasswordInput{
+		Email:       req.Email,
+		OldPassword: req.OldPassword,
+		NewPassword: req.NewPassword,
+	}
+}
+
+func ChangePasswordResponseFromResult() dto.ChangePasswordResponse {
+	return dto.ChangePasswordResponse{
+		Message: "Password changed successfully.",
 	}
 }

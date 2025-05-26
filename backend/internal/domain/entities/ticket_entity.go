@@ -1,5 +1,7 @@
 package entities
 
+import "time"
+
 type TicketStatus string
 
 const (
@@ -9,13 +11,14 @@ const (
 )
 
 type Ticket struct {
-	TicketID    string `json:"ticket_id"`
-	SeatCode    string `json:"seat_code"`
-	FlightClass string `json:"flight_class"`
-	Price       int32  `json:"price"`
-	Status      string `json:"status"`
-	BookingID   string `json:"booking_id"`
-	FlightID    string `json:"flight_id"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	TicketID    string       `json:"ticket_id"`
+	Status      TicketStatus `json:"status"`
+	FlightClass FlightStatus `json:"flight_class"`
+	Price       int32        `json:"price"`
+	BookingID   string       `json:"booking_id"`
+	FlightID    string       `json:"flight_id"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+	Owner       TicketOwner
+	Seat        Seat
 }

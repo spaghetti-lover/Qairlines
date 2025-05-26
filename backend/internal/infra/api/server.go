@@ -15,6 +15,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
@@ -42,6 +43,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	newsRepo := postgresql.NewNewsModelRepositoryPostgres(store)
 	adminRepo := postgresql.NewAdminRepositoryPostgres(store, tokenMaker)
 	flightRepo := postgresql.NewFlightRepositoryPostgres(store)
+	ticketRepo := postgresql.NewTicketRepositoryPostgres(store)
 
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	userUpdateUseCase := user.NewUserUpdateUseCase(userRepo)
@@ -56,6 +58,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	getCurrentAdminUseCase := admin.NewGetCurrentAdminUseCase(adminRepo)
 	deleteAdminUseCase := admin.NewDeleteAdminUseCase(adminRepo)
 	flightCreateUseCase := flight.NewCreateFlightUseCase(flightRepo)
+	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase)
@@ -63,7 +66,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase)
-
+	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
@@ -87,6 +90,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/customer/{id}", authMiddleware(http.HandlerFunc(customerHandler.UpdateCustomer))).Methods("PUT")
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
+	apiRouter.Handle("/change-password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
 	apiRouter.Handle("/auth/{id}/password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
 
 	// Admin API
@@ -98,6 +102,9 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Flight API
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
+
+	// Ticket API
+	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")
 	// Statistic API
 	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

@@ -2,14 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	appErrors "github.com/spaghetti-lover/qairlines/pkg/errors"
+	"github.com/spaghetti-lover/qairlines/pkg/token"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
@@ -58,41 +61,61 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// ChangePassword handles password change requests
 func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	// Lấy userID từ URL
-	vars := mux.Vars(r)
-	userID, err := strconv.ParseInt(vars["id"], 10, 64)
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		http.Error(w, `{"message": "Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
+		return
+	}
+
+	// Lấy token payload từ context
+	authPayload, ok := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	if !ok || authPayload == nil {
+		http.Error(w, `{"message": "Authentication failed. Invalid token."}`, http.StatusUnauthorized)
+		return
+	}
+
+	// Parse request
+	var request dto.ChangePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, `{"message": "Invalid request format."}`, http.StatusBadRequest)
+		return
+	}
+
+	// Validate request
+	if request.Email == "" || request.OldPassword == "" || request.NewPassword == "" {
+		http.Error(w, `{"message": "Email, old password, and new password are required."}`, http.StatusBadRequest)
+		return
+	}
+
+	// Convert request to use case input
+	input := mappers.ChangePasswordRequestToInput(request)
+
+	// Call use case
+	err := h.changePasswordUseCase.Execute(r.Context(), input)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid user ID", err)
+		switch {
+		case errors.Is(err, auth.ErrOldPasswordIncorrect):
+			http.Error(w, `{"message": "Old password is incorrect."}`, http.StatusBadRequest)
+		case errors.Is(err, auth.ErrPasswordValidationFailed):
+			http.Error(w, `{"message": "New password does not meet the required criteria."}`, http.StatusUnprocessableEntity)
+		case errors.Is(err, auth.ErrUserNotFound):
+			http.Error(w, `{"message": "User not found with the provided email."}`, http.StatusNotFound)
+		default:
+			log.Printf("Error type: %T, Error value: %v", err, err)
+			http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		}
 		return
 	}
 
-	// Lấy userID từ token (nếu cần xác thực quyền)
-	tokenUserID := utils.UserIdFromContext(r.Context())
-	if tokenUserID != userID {
-		http.Error(w, `{"message": "You are not allowed to change this password"}`, http.StatusUnauthorized)
-		return
+	// Return success response
+	response := dto.ChangePasswordResponse{
+		Message: "Password changed successfully.",
 	}
 
-	var req PasswordChangeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid request body", err)
-		return
-	}
-
-	// Gọi usecase để xử lý logic
-	err = h.changePasswordUseCase.Execute(r.Context(), auth.ChangePasswordInput{
-		UserID:      userID,
-		OldPassword: req.OldPassword,
-		NewPassword: req.NewPassword,
-	})
-	if err != nil {
-		http.Error(w, `{"message": "Mật khẩu cũ không đúng."}`, http.StatusBadRequest)
-		return
-	}
-
-	// Trả về response thành công
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password changed successfully."})
+	json.NewEncoder(w).Encode(response)
 }

@@ -38,3 +38,24 @@ SET
   flight_id = $6,
   updated_at = NOW()
 WHERE ticket_id = $1;
+
+-- name: GetTicketsByFlightID :many
+SELECT
+    t.ticket_id,
+    t.status,
+    t.flight_class,
+    t.price,
+    t.booking_id,
+    t.flight_id,
+    t.created_at,
+    t.updated_at,
+    tos.first_name,
+    tos.last_name,
+    tos.phone_number,
+    tos.gender,
+    s.seat_code,
+    s.class AS seat_class
+FROM Tickets t
+LEFT JOIN TicketOwnerSnapshot tos ON t.ticket_id = tos.ticket_id
+LEFT JOIN Seats s ON t.flight_id = s.flight_id
+WHERE t.flight_id = $1;

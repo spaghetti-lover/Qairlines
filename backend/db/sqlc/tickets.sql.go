@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -108,6 +109,80 @@ func (q *Queries) GetTicketByFlightId(ctx context.Context, flightID pgtype.Int8)
 			&i.FlightID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTicketsByFlightID = `-- name: GetTicketsByFlightID :many
+SELECT
+    t.ticket_id,
+    t.status,
+    t.flight_class,
+    t.price,
+    t.booking_id,
+    t.flight_id,
+    t.created_at,
+    t.updated_at,
+    tos.first_name,
+    tos.last_name,
+    tos.phone_number,
+    tos.gender,
+    s.seat_code,
+    s.class AS seat_class
+FROM Tickets t
+LEFT JOIN TicketOwnerSnapshot tos ON t.ticket_id = tos.ticket_id
+LEFT JOIN Seats s ON t.flight_id = s.flight_id
+WHERE t.flight_id = $1
+`
+
+type GetTicketsByFlightIDRow struct {
+	TicketID    int64           `json:"ticket_id"`
+	Status      TicketStatus    `json:"status"`
+	FlightClass FlightClass     `json:"flight_class"`
+	Price       int32           `json:"price"`
+	BookingID   pgtype.Int8     `json:"booking_id"`
+	FlightID    pgtype.Int8     `json:"flight_id"`
+	CreatedAt   time.Time       `json:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at"`
+	FirstName   pgtype.Text     `json:"first_name"`
+	LastName    pgtype.Text     `json:"last_name"`
+	PhoneNumber pgtype.Text     `json:"phone_number"`
+	Gender      NullGenderType  `json:"gender"`
+	SeatCode    pgtype.Text     `json:"seat_code"`
+	SeatClass   NullFlightClass `json:"seat_class"`
+}
+
+func (q *Queries) GetTicketsByFlightID(ctx context.Context, flightID pgtype.Int8) ([]GetTicketsByFlightIDRow, error) {
+	rows, err := q.db.Query(ctx, getTicketsByFlightID, flightID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTicketsByFlightIDRow{}
+	for rows.Next() {
+		var i GetTicketsByFlightIDRow
+		if err := rows.Scan(
+			&i.TicketID,
+			&i.Status,
+			&i.FlightClass,
+			&i.Price,
+			&i.BookingID,
+			&i.FlightID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.FirstName,
+			&i.LastName,
+			&i.PhoneNumber,
+			&i.Gender,
+			&i.SeatCode,
+			&i.SeatClass,
 		); err != nil {
 			return nil, err
 		}

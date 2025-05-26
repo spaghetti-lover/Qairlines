@@ -48,6 +48,7 @@ type Querier interface {
 	GetTicket(ctx context.Context, ticketID int64) (Ticket, error)
 	GetTicketByFlightId(ctx context.Context, flightID pgtype.Int8) ([]Ticket, error)
 	GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (Ticketownersnapshot, error)
+	GetTicketsByFlightID(ctx context.Context, flightID pgtype.Int8) ([]GetTicketsByFlightIDRow, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
@@ -64,10 +65,10 @@ type Querier interface {
 	RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error
 	RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
-	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
 	UpdateSeat(ctx context.Context, arg UpdateSeatParams) error
 	UpdateTicket(ctx context.Context, arg UpdateTicketParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }
 
 var _ Querier = (*Queries)(nil)

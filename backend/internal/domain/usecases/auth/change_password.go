@@ -2,48 +2,78 @@ package auth
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
-	appErrors "github.com/spaghetti-lover/qairlines/pkg/errors"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
+// Define errors
+var (
+	ErrOldPasswordIncorrect     = errors.New("old password is incorrect")
+	ErrPasswordValidationFailed = errors.New("new password does not meet the required criteria")
+	ErrUserNotFound             = errors.New("user not found")
+)
+
+// Định nghĩa input cho use case đổi mật khẩu
 type ChangePasswordInput struct {
-	UserID      int64
+	Email       string
 	OldPassword string
 	NewPassword string
 }
 
+// Interface cho use case đổi mật khẩu
 type IChangePasswordUseCase interface {
 	Execute(ctx context.Context, input ChangePasswordInput) error
 }
 
+// Implement use case
 type ChangePasswordUseCase struct {
 	userRepository adapters.IUserRepository
 }
 
+// Constructor
 func NewChangePasswordUseCase(userRepository adapters.IUserRepository) IChangePasswordUseCase {
-	return &ChangePasswordUseCase{userRepository: userRepository}
+	return &ChangePasswordUseCase{
+		userRepository: userRepository,
+	}
 }
 
+// Execute thực hiện việc đổi mật khẩu
 func (u *ChangePasswordUseCase) Execute(ctx context.Context, input ChangePasswordInput) error {
-	// Lấy thông tin người dùng
-	user, err := u.userRepository.GetUser(ctx, input.UserID)
+	// 1. Kiểm tra người dùng tồn tại
+	if input.Email == "" {
+		return fmt.Errorf("%w: email cannot be empty", ErrUserNotFound)
+	}
+	if input.OldPassword == "" {
+		return fmt.Errorf("%w: old password cannot be empty", ErrOldPasswordIncorrect)
+	}
+	if input.NewPassword == "" {
+		return fmt.Errorf("%w: new password cannot be empty", ErrPasswordValidationFailed)
+	}
+	user, err := u.userRepository.GetUserByEmail(ctx, input.Email)
 	if err != nil {
-		return &appErrors.AppError{Message: "User not found."}
+		// Xử lý lỗi "no rows"
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%w: email %s", ErrUserNotFound, input.Email)
+		}
+		return fmt.Errorf("error fetching user: %w", err)
 	}
 
-	// Kiểm tra mật khẩu cũ
+	// 2. Kiểm tra mật khẩu cũ có đúng không
 	err = utils.CheckPassword(input.OldPassword, user.HashedPwd)
 	if err != nil {
-		return &appErrors.AppError{Message: "Old password is incorrect."}
+		return ErrOldPasswordIncorrect
 	}
 
-	// Cập nhật mật khẩu mới
-	err = u.userRepository.UpdatePassword(ctx, input.UserID, input.NewPassword)
+	// 3. Hash mật khẩu mới
+	hashedPassword, err := utils.HashPassword(input.NewPassword)
 	if err != nil {
-		return &appErrors.AppError{Message: "Failed to update password."}
+		return err
 	}
 
-	return nil
+	// 4. Cập nhật mật khẩu
+	return u.userRepository.UpdatePassword(ctx, input.Email, hashedPassword)
 }
