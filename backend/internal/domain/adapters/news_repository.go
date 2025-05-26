@@ -12,4 +12,5 @@ var ErrNewsNotFound = errors.New("news post not found")
 type INewsRepository interface {
 	GetAllNewsWithAuthor(ctx context.Context) ([]entities.News, error)
 	DeleteNewsByID(ctx context.Context, newsID int64) error
+	CreateNews(ctx context.Context, news *entities.News) (*entities.News, error)
 }
