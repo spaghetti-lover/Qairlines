@@ -27,7 +27,7 @@ func (r *TicketRepositoryPostgres) GetTicketsByFlightID(ctx context.Context, fli
 	// Sử dụng query đã được tạo trong SQLC
 	tickets, err := r.store.GetTicketsByFlightID(ctx, pgtype.Int8{Int64: flightID, Valid: true})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get tickets by flight ID: %w", err)
+		return nil, adapters.ErrFlightNotFound
 	}
 
 	// Chuyển đổi từ DB model sang domain entity

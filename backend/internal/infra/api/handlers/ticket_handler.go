@@ -16,12 +16,14 @@ import (
 type TicketHandler struct {
 	getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase
 	cancelTicketUseCase         ticket.ICancelTicketUseCase
+	getTicketUseCase            ticket.IGetTicketUseCase
 }
 
-func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase, cancelTicketUseCase ticket.ICancelTicketUseCase) *TicketHandler {
+func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase, cancelTicketUseCase ticket.ICancelTicketUseCase, getTicketUseCase ticket.IGetTicketUseCase) *TicketHandler {
 	return &TicketHandler{
 		getTicketsByFlightIDUseCase: getTicketsByFlightIDUseCase,
 		cancelTicketUseCase:         cancelTicketUseCase,
+		getTicketUseCase:            getTicketUseCase,
 	}
 }
 
@@ -50,7 +52,7 @@ func (h *TicketHandler) GetTicketsByFlightID(w http.ResponseWriter, r *http.Requ
 	// Gọi use case
 	tickets, err := h.getTicketsByFlightIDUseCase.Execute(r.Context(), flightID)
 	if err != nil {
-		if err == ticket.ErrFlightNotFound {
+		if err == adapters.ErrFlightNotFound {
 			http.Error(w, `{"message": "Flight not found."}`, http.StatusNotFound)
 			return
 		}
@@ -136,4 +138,55 @@ func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
+	// Lấy ID từ query parameter
+	ticketIDStr := r.URL.Query().Get("id")
+	if ticketIDStr == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Ticket ID is required.",
+		})
+		return
+	}
+
+	ticketID, err := strconv.ParseInt(ticketIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Invalid Ticket ID.",
+		})
+		return
+	}
+
+	// Gọi use case để lấy thông tin vé
+	ticketDetails, err := h.getTicketUseCase.Execute(r.Context(), ticketID)
+	if err != nil {
+		if errors.Is(err, adapters.ErrTicketNotFound) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "Ticket not found.",
+			})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "An unexpected error occurred. Please try again later.",
+		})
+		return
+	}
+
+	// Trả về phản hồi thành công
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Ticket retrieved successfully.",
+		"data":    ticketDetails,
+	})
 }
