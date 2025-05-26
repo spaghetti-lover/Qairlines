@@ -43,7 +43,7 @@ export default function PasswordChange({ personalInfo }) {
         }
 
         const response = await fetch(
-            `${API_BASE_URL}/api/user/id=${personalInfo.uid}/password`,
+            `${API_BASE_URL}/api/auth/id=${personalInfo.uid}/password`,
             {
                 method: "PUT",
                 headers: {

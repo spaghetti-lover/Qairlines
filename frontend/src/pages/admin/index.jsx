@@ -16,7 +16,7 @@ export default function LoginForm() {
     })
     const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
     const router = useRouter()
-  
+
     const handleInputChange = (e) => {
       const { name, value } = e.target
       setFormData(prevData => ({
@@ -24,23 +24,23 @@ export default function LoginForm() {
         [name]: value
       }))
     }
-  
+
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const loginApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login/admin`
-  
+        const loginApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`
+
         try {
             const response = await fetch(loginApi, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                }, 
+                },
                 body: JSON.stringify(formData)
             })
             if (!response.ok) {
                 throw new Error("Login failed")
             }
-  
+
             const data = await response.json()
             localStorage.setItem("token", data.token)
             router.push("/admin/dashboard")
@@ -49,7 +49,7 @@ export default function LoginForm() {
             setIsErrorDialogOpen(true)
         }
     }
-  
+
     return (
         <>
         <div className="flex items-center justify-center min-h-screen bg-cover bg-center"

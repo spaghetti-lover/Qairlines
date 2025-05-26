@@ -34,7 +34,7 @@ export default function AdminManagementPage() {
   })
 
   const registerAdmin = async () => {
-    const registerAdminApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/new`
+    const registerAdminApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin`
 
     try {
         const response = await fetch(registerAdminApi, {
@@ -43,7 +43,7 @@ export default function AdminManagementPage() {
                 "Content-Type": "application/json",
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
             body: JSON.stringify(formData)
         })
         if (!response.ok) {
@@ -69,7 +69,7 @@ export default function AdminManagementPage() {
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -77,8 +77,8 @@ export default function AdminManagementPage() {
 
         const res = await response.json()
         setAdmins(res.data.map(a => {return {
-          "name": `${a.firstName} ${a.lastName}`, 
-          "email": a.email, 
+          "name": `${a.firstName} ${a.lastName}`,
+          "email": a.email,
           "createdAt": a.createdAt ? new Date(a.createdAt.seconds*1000).toISOString().split('T')[0] : '2024-12-21'
         }}))
     } catch (error) {
@@ -93,7 +93,7 @@ export default function AdminManagementPage() {
 
   const validateForm = () => {
     const newErrors = {}
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'Thiếu tên'
     }
@@ -101,19 +101,19 @@ export default function AdminManagementPage() {
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Thiếu họ'
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Thiếu email'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email không hợp lệ'
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Thiếu mật khẩu'
     } else if (formData.password.length < 6) {
       newErrors.password = 'Độ dài mật khẩu tối thiểu 6 ký tự'
     }
-    
+
     if (formData.password !== formData.repeatPassword) {
       newErrors.repeatPassword = 'Mật khẩu không khớp'
     }
@@ -124,7 +124,7 @@ export default function AdminManagementPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    
+
     if (validateForm()) {
       // Send the data to backend
       registerAdmin()
@@ -190,7 +190,7 @@ export default function AdminManagementPage() {
                   <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
                 )}
               </div>
-  
+
               <div>
                 <Input
                   type="text"
@@ -218,7 +218,7 @@ export default function AdminManagementPage() {
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
               </div>
-  
+
               <div>
                 <Input
                   type="password"
@@ -232,7 +232,7 @@ export default function AdminManagementPage() {
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}
               </div>
-  
+
               <div>
                 <Input
                   type="password"
@@ -246,9 +246,9 @@ export default function AdminManagementPage() {
                   <p className="text-red-500 text-sm mt-1">{errors.repeatPassword}</p>
                 )}
               </div>
-  
-              <Button 
-                type="submit" 
+
+              <Button
+                type="submit"
                 className="w-full bg-blue-500 hover:bg-blue-600"
               >
                 Lưu

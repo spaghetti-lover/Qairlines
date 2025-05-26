@@ -31,7 +31,7 @@ export const useSignup = (onSuccess) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/user`, {
+      const response = await fetch(`${API_BASE_URL}/api/customer`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

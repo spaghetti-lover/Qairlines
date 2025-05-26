@@ -61,7 +61,7 @@ export default function AdminProfilePage() {
 
   const handleUpdateAdmin = async (e) => {
     e.preventDefault()
-    const updateAdminApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/update`
+    const updateAdminApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin`
 
     try {
         const response = await fetch(updateAdminApi, {
@@ -91,7 +91,7 @@ export default function AdminProfilePage() {
   }
 
   const handleDeleteAccount = async () => {
-    const deleteAdminApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/delete`
+    const deleteAdminApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin`
 
     try {
         const response = await fetch(deleteAdminApi, {

@@ -20,7 +20,7 @@ export function EditCustomerDialog({ customer, onClose, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const updateCustomerApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user`
+    const updateCustomerApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/customer/{id=${editedCustomer.id}}`
 
     try {
         const response = await fetch(updateCustomerApi, {

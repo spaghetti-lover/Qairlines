@@ -64,7 +64,7 @@ export default function PostManagementPage() {
 
   const handleDeletePost = async (id) => {
     setPosts(posts.filter(post => post.id !== id))
-    const deleteNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/delete?`
+    const deleteNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news?`
 
     try {
         const response = await fetch(deleteNewsApi +

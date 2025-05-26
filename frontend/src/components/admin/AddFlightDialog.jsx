@@ -37,8 +37,8 @@ export function AddFlightDialog() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const createFlightApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flight/new`
-  
+    const createFlightApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flight`
+
     try {
         const response = await fetch(createFlightApi, {
             method: "POST",
@@ -46,7 +46,7 @@ export function AddFlightDialog() {
               "Content-Type": "application/json",
               "admin": "true",
               "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
             body: JSON.stringify(flightData)
         })
         if (!response.ok) {
