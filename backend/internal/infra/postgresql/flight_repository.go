@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 )
 
 type FlightRepositoryPostgres struct {
@@ -52,7 +53,7 @@ func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight enti
 func (r *FlightRepositoryPostgres) GetFlightByID(ctx context.Context, flightID int64) (*entities.Flight, error) {
 	dbFlight, err := r.store.GetFlight(ctx, flightID)
 	if err != nil {
-		return nil, err
+		return nil, flight.ErrFlightNotFound
 	}
 	return &entities.Flight{
 		FlightID:         dbFlight.FlightID,
