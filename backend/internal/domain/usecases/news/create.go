@@ -11,8 +11,6 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 )
 
-var ErrInvalidNewsData = errors.New("invalid news data")
-
 type ICreateNewsUseCase interface {
 	Execute(ctx context.Context, req dto.CreateNewsRequest) (*dto.CreateNewsResponse, error)
 }

@@ -77,3 +77,48 @@ func (r *NewsModelRepositoryPostgres) CreateNews(ctx context.Context, news *enti
 		UpdatedAt:   createdNews.UpdatedAt,
 	}, nil
 }
+
+func (r *NewsModelRepositoryPostgres) UpdateNews(ctx context.Context, news *entities.News) (*entities.News, error) {
+	newsModel := db.UpdateNewsParams{
+		ID:          news.ID,
+		Title:       news.Title,
+		Description: pgtype.Text{String: news.Description, Valid: true},
+		Content:     pgtype.Text{String: news.Content, Valid: true},
+		Image:       pgtype.Text{String: news.Image, Valid: true},
+		AuthorID:    pgtype.Int8{Int64: news.AuthorID, Valid: true},
+	}
+
+	updatedNews, err := r.store.UpdateNews(ctx, newsModel)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update news post: %w", err)
+	}
+
+	return &entities.News{
+		ID:          updatedNews.ID,
+		Title:       updatedNews.Title,
+		Description: updatedNews.Description.String,
+		Content:     updatedNews.Content.String,
+		Image:       updatedNews.Image.String,
+		AuthorID:    updatedNews.AuthorID.Int64,
+		CreatedAt:   updatedNews.CreatedAt,
+		UpdatedAt:   updatedNews.UpdatedAt,
+	}, nil
+}
+
+func (r *NewsModelRepositoryPostgres) GetNews(ctx context.Context, newsID int64) (entities.News, error) {
+	news, err := r.store.GetNews(ctx, newsID)
+	if err != nil {
+		return entities.News{}, err
+	}
+
+	return entities.News{
+		ID:          news.ID,
+		Title:       news.Title,
+		Description: news.Description.String,
+		Content:     news.Content.String,
+		Image:       news.Image.String,
+		AuthorID:    news.AuthorID.Int64,
+		CreatedAt:   news.CreatedAt,
+		UpdatedAt:   news.UpdatedAt,
+	}, nil
+}

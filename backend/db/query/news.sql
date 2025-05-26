@@ -34,3 +34,23 @@ WHERE author_id = $1;
 -- name: DeleteNews :execrows
 DELETE FROM "news"
 WHERE id = $1;
+
+-- name: UpdateNews :one
+UPDATE "news"
+SET
+  title = $1,
+  description = $2,
+  content = $3,
+  image = $4,
+  author_id = $5,
+  updated_at = $6
+WHERE id = $7
+RETURNING
+  id,
+  title,
+  description,
+  content,
+  image,
+  author_id,
+  created_at,
+  updated_at;

@@ -29,3 +29,21 @@ type CreateNewsResponse struct {
 	Image       string `json:"image"`
 	CreatedAt   string `json:"createdAt"`
 }
+
+type UpdateNewsRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Content     string `json:"content"`
+	Image       string `json:"image"`
+	AuthorID    string `json:"authorId"`
+}
+
+type UpdateNewsResponse struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Content     string `json:"content"`
+	AuthorID    string `json:"authorId"`
+	Image       string `json:"image"`
+	UpdatedAt   string `json:"updatedAt"`
+}

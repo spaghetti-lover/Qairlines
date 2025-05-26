@@ -68,6 +68,7 @@ type Querier interface {
 	RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error
 	RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
+	UpdateNews(ctx context.Context, arg UpdateNewsParams) (News, error)
 	UpdateSeat(ctx context.Context, arg UpdateSeatParams) error
 	UpdateSeatAvailability(ctx context.Context, arg UpdateSeatAvailabilityParams) error
 	UpdateTicket(ctx context.Context, arg UpdateTicketParams) error

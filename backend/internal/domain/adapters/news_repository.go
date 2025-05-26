@@ -13,4 +13,6 @@ type INewsRepository interface {
 	GetAllNewsWithAuthor(ctx context.Context) ([]entities.News, error)
 	DeleteNewsByID(ctx context.Context, newsID int64) error
 	CreateNews(ctx context.Context, news *entities.News) (*entities.News, error)
+	UpdateNews(ctx context.Context, news *entities.News) (*entities.News, error)
+	GetNews(ctx context.Context, id int64) (entities.News, error)
 }

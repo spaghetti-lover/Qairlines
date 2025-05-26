@@ -35,7 +35,7 @@ func (h *TicketHandler) GetTicketsByFlightID(w http.ResponseWriter, r *http.Requ
 
 	// Lấy flightID từ query
 	flightIDStr := r.URL.Query().Get("flightId")
-	fmt.Print(flightIDStr)
+
 	if flightIDStr == "" {
 		http.Error(w, `{"message": "Flight ID is required."}`, http.StatusBadRequest)
 		return

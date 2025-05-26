@@ -205,3 +205,58 @@ func (q *Queries) RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype
 	_, err := q.db.Exec(ctx, removeAuthorFromBlogPosts, authorID)
 	return err
 }
+
+const updateNews = `-- name: UpdateNews :one
+UPDATE "news"
+SET
+  title = $1,
+  description = $2,
+  content = $3,
+  image = $4,
+  author_id = $5,
+  updated_at = $6
+WHERE id = $7
+RETURNING
+  id,
+  title,
+  description,
+  content,
+  image,
+  author_id,
+  created_at,
+  updated_at
+`
+
+type UpdateNewsParams struct {
+	Title       string      `json:"title"`
+	Description pgtype.Text `json:"description"`
+	Content     pgtype.Text `json:"content"`
+	Image       pgtype.Text `json:"image"`
+	AuthorID    pgtype.Int8 `json:"author_id"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          int64       `json:"id"`
+}
+
+func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (News, error) {
+	row := q.db.QueryRow(ctx, updateNews,
+		arg.Title,
+		arg.Description,
+		arg.Content,
+		arg.Image,
+		arg.AuthorID,
+		arg.UpdatedAt,
+		arg.ID,
+	)
+	var i News
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.Content,
+		&i.Image,
+		&i.AuthorID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

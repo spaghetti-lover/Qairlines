@@ -54,6 +54,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	newsGetAllWithAuthorUseCase := news.NewNewsGetAllWithAuthorUseCase(newsRepo)
 	newsDeleteUseCase := news.NewDeleteNewsUseCase(newsRepo)
 	newsCreateUseCase := news.NewCreateNewsUseCase(newsRepo)
+	newsUpdateUseCase := news.NewUpdateNewsUseCase(newsRepo)
 	adminCreateUseCase := admin.NewCreateAdminUseCase(adminRepo, userRepo)
 	getAllAdminsUseCase := admin.NewGetAllAdminsUseCase(adminRepo)
 	updateAdminUseCase := admin.NewUpdateAdminUseCase(adminRepo, userRepo)
@@ -66,7 +67,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
-	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase)
+	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketCancelUseCase)
@@ -86,6 +87,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.HandleFunc("/news", newsHandler.GetAllNews).Methods("GET")
 	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.DeleteNews))).Methods("DELETE")
 	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.CreateNews))).Methods("POST")
+	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.UpdateNews))).Methods("PUT")
 
 	// User API
 	// apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.GetUserByToken))).Methods("GET")
