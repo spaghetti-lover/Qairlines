@@ -82,9 +82,20 @@ CREATE TABLE Bookings (
   created_at timestamptz NOT NULL DEFAULT (now()),
   updated_at timestamptz NOT NULL DEFAULT (now())
 );
+
+CREATE TABLE Seats (
+  seat_id BIGSERIAL PRIMARY KEY,
+  flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE,
+  seat_code VARCHAR(3) NOT NULL,
+  is_available BOOLEAN NOT NULL DEFAULT TRUE,
+  class flight_class NOT NULL DEFAULT 'Economy',
+  UNIQUE (flight_id, seat_code)
+);
+
 -- Create Tickets table
 CREATE TABLE Tickets (
   ticket_id BIGSERIAL PRIMARY KEY,
+  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE,
   flight_class flight_class NOT NULL DEFAULT 'Economy',
   price INT NOT NULL CHECK (price >= 0),
   status ticket_status NOT NULL DEFAULT 'booked',
@@ -103,13 +114,7 @@ CREATE TABLE TicketOwnerSnapshot (
   gender gender_type NOT NULL DEFAULT 'other'
 );
 
-CREATE TABLE Seats (
-  seat_id BIGSERIAL PRIMARY KEY,
-  flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE,
-  seat_code VARCHAR(3) NOT NULL,
-  is_available BOOLEAN NOT NULL DEFAULT TRUE,
-  class flight_class NOT NULL DEFAULT 'Economy'
-);
+
 
 -- Create indexes for Flights
 CREATE INDEX idx_flights_departure_time ON Flights (departure_time);
@@ -124,3 +129,9 @@ CREATE INDEX idx_bookings_return_flight_id ON Bookings (return_flight_id);
 -- Create indexes for Tickets
 CREATE INDEX idx_tickets_booking_id ON Tickets (booking_id);
 CREATE INDEX idx_tickets_flight_id ON Tickets (flight_id);
+
+-- Thêm ràng buộc UNIQUE trong bảng Seats
+ALTER TABLE Seats ADD CONSTRAINT unique_flight_seat UNIQUE (flight_id, seat_code);
+
+-- Đảm bảo ngày đi trước ngày đến
+ALTER TABLE Flights ADD CONSTRAINT departure_before_arrival CHECK (departure_time < arrival_time);

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -55,7 +56,7 @@ func (h *CustomerHandler) CreateCustomerTx(w http.ResponseWriter, r *http.Reques
 	createdCustomer, err := h.customerCreateUseCase.Execute(r.Context(), customerParams)
 
 	if err != nil {
-		http.Error(w, `{"message": "Email được sử dụng hoặc mật khẩu không hợp lệ."}`, http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf(`{"message": "Email được sử dụng hoặc mật khẩu không hợp lệ, %v"}`, err.Error()), http.StatusBadRequest)
 		return
 	}
 

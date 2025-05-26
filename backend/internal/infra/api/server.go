@@ -59,6 +59,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	deleteAdminUseCase := admin.NewDeleteAdminUseCase(adminRepo)
 	flightCreateUseCase := flight.NewCreateFlightUseCase(flightRepo)
 	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
+	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase)
@@ -66,7 +67,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase)
-	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase)
+	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketCancelUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
@@ -105,6 +106,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Ticket API
 	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")
+	apiRouter.Handle("/ticket/cancel", authMiddleware(http.HandlerFunc(ticketHandler.CancelTicket))).Methods("PUT")
 	// Statistic API
 	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

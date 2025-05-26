@@ -124,6 +124,32 @@ func (q *Queries) GetSeat(ctx context.Context, seatID int64) (Seat, error) {
 	return i, err
 }
 
+const getSeatByTicketID = `-- name: GetSeatByTicketID :one
+SELECT s.seat_id, s.seat_code, s.class, s.is_available
+FROM Seats s
+JOIN Tickets t ON s.seat_id = t.seat_id
+WHERE t.ticket_id = $1
+`
+
+type GetSeatByTicketIDRow struct {
+	SeatID      int64       `json:"seat_id"`
+	SeatCode    string      `json:"seat_code"`
+	Class       FlightClass `json:"class"`
+	IsAvailable bool        `json:"is_available"`
+}
+
+func (q *Queries) GetSeatByTicketID(ctx context.Context, ticketID int64) (GetSeatByTicketIDRow, error) {
+	row := q.db.QueryRow(ctx, getSeatByTicketID, ticketID)
+	var i GetSeatByTicketIDRow
+	err := row.Scan(
+		&i.SeatID,
+		&i.SeatCode,
+		&i.Class,
+		&i.IsAvailable,
+	)
+	return i, err
+}
+
 const listSeatsWithFlightId = `-- name: ListSeatsWithFlightId :many
 SELECT seat_id, flight_id, seat_code, is_available, class FROM "seats"
 WHERE flight_id = $1
@@ -194,5 +220,21 @@ func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) error {
 		arg.IsAvailable,
 		arg.Class,
 	)
+	return err
+}
+
+const updateSeatAvailability = `-- name: UpdateSeatAvailability :exec
+UPDATE Seats
+SET is_available = $2
+WHERE seat_id = (SELECT seat_id FROM Tickets WHERE ticket_id = $1)
+`
+
+type UpdateSeatAvailabilityParams struct {
+	TicketID    int64 `json:"ticket_id"`
+	IsAvailable bool  `json:"is_available"`
+}
+
+func (q *Queries) UpdateSeatAvailability(ctx context.Context, arg UpdateSeatAvailabilityParams) error {
+	_, err := q.db.Exec(ctx, updateSeatAvailability, arg.TicketID, arg.IsAvailable)
 	return err
 }

@@ -34,6 +34,7 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 		LastName:       pgtype.Text{String: arg.LastName, Valid: true},
 		HashedPassword: hashedPassword,
 		Email:          arg.Email,
+		Role:           db.UserRoleCustomer,
 	})
 
 	if err != nil {

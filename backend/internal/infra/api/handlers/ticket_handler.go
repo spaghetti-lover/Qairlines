@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
@@ -13,11 +15,13 @@ import (
 
 type TicketHandler struct {
 	getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase
+	cancelTicketUseCase         ticket.ICancelTicketUseCase
 }
 
-func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase) *TicketHandler {
+func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase, cancelTicketUseCase ticket.ICancelTicketUseCase) *TicketHandler {
 	return &TicketHandler{
 		getTicketsByFlightIDUseCase: getTicketsByFlightIDUseCase,
+		cancelTicketUseCase:         cancelTicketUseCase,
 	}
 }
 
@@ -59,6 +63,74 @@ func (h *TicketHandler) GetTicketsByFlightID(w http.ResponseWriter, r *http.Requ
 		Message: "Tickets retrieved successfully.",
 		Data:    mappers.TicketsEntitiesToResponse(tickets),
 	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Authentication failed. Admin privileges required.",
+		})
+		return
+	}
+
+	// Lấy ticketID từ query
+	ticketIDStr := r.URL.Query().Get("id")
+	if ticketIDStr == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Ticket ID is required.",
+		})
+		return
+	}
+
+	ticketID, err := strconv.ParseInt(ticketIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Invalid Ticket ID.",
+		})
+		return
+	}
+
+	// Gọi use case
+	ticket, err := h.cancelTicketUseCase.Execute(r.Context(), ticketID)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+
+		if errors.Is(err, adapters.ErrTicketNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "Ticket not found.",
+			})
+			return
+		} else if errors.Is(err, adapters.ErrTicketCannotBeCancelled) {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "Ticket cannot be cancelled due to its current status.",
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "An unexpected error occurred. Please try again later" + fmt.Sprintf(": %v", err),
+		})
+		return
+	}
+
+	// Tạo response
+	response := mappers.ToCancelTicketResponse(ticket)
 
 	// Trả về response
 	w.Header().Set("Content-Type", "application/json")

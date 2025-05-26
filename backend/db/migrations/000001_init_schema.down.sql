@@ -1,3 +1,7 @@
+-- Xóa các ràng buộc đã thêm trong file up
+ALTER TABLE Flights DROP CONSTRAINT IF EXISTS departure_before_arrival;
+ALTER TABLE Seats DROP CONSTRAINT IF EXISTS unique_flight_seat;
+
 -- Drop indexes for Tickets
 DROP INDEX IF EXISTS idx_tickets_flight_id;
 DROP INDEX IF EXISTS idx_tickets_booking_id;

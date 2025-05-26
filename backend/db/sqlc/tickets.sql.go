@@ -21,7 +21,7 @@ INSERT INTO tickets (
   flight_id
 ) VALUES (
   $1, $2, $3, $4, $5
-) RETURNING ticket_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
+) RETURNING ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
 `
 
 type CreateTicketParams struct {
@@ -43,6 +43,7 @@ func (q *Queries) CreateTicket(ctx context.Context, arg CreateTicketParams) (Tic
 	var i Ticket
 	err := row.Scan(
 		&i.TicketID,
+		&i.SeatID,
 		&i.FlightClass,
 		&i.Price,
 		&i.Status,
@@ -65,7 +66,7 @@ func (q *Queries) DeleteTicket(ctx context.Context, ticketID int64) error {
 }
 
 const getTicket = `-- name: GetTicket :one
-SELECT ticket_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
+SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
 WHERE ticket_id = $1 LIMIT 1
 `
 
@@ -74,6 +75,7 @@ func (q *Queries) GetTicket(ctx context.Context, ticketID int64) (Ticket, error)
 	var i Ticket
 	err := row.Scan(
 		&i.TicketID,
+		&i.SeatID,
 		&i.FlightClass,
 		&i.Price,
 		&i.Status,
@@ -86,7 +88,7 @@ func (q *Queries) GetTicket(ctx context.Context, ticketID int64) (Ticket, error)
 }
 
 const getTicketByFlightId = `-- name: GetTicketByFlightId :many
-SELECT ticket_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
+SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
 WHERE flight_id = $1
 ORDER BY ticket_id
 `
@@ -102,6 +104,7 @@ func (q *Queries) GetTicketByFlightId(ctx context.Context, flightID pgtype.Int8)
 		var i Ticket
 		if err := rows.Scan(
 			&i.TicketID,
+			&i.SeatID,
 			&i.FlightClass,
 			&i.Price,
 			&i.Status,
@@ -118,6 +121,71 @@ func (q *Queries) GetTicketByFlightId(ctx context.Context, flightID pgtype.Int8)
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTicketByID = `-- name: GetTicketByID :one
+SELECT
+    t.ticket_id,
+    t.seat_id,
+    t.status,
+    t.flight_class,
+    t.price,
+    t.booking_id,
+    t.flight_id,
+    t.created_at,
+    t.updated_at,
+    s.seat_code,
+    s.class AS seat_class,
+    tos.first_name,
+    tos.last_name,
+    tos.phone_number,
+    tos.gender
+FROM Tickets t
+JOIN Seats s ON t.seat_id = s.seat_id
+JOIN TicketOwnerSnapshot tos ON t.ticket_id = tos.ticket_id
+WHERE t.ticket_id = $1
+LIMIT 1
+`
+
+type GetTicketByIDRow struct {
+	TicketID    int64        `json:"ticket_id"`
+	SeatID      pgtype.Int8  `json:"seat_id"`
+	Status      TicketStatus `json:"status"`
+	FlightClass FlightClass  `json:"flight_class"`
+	Price       int32        `json:"price"`
+	BookingID   pgtype.Int8  `json:"booking_id"`
+	FlightID    pgtype.Int8  `json:"flight_id"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+	SeatCode    string       `json:"seat_code"`
+	SeatClass   FlightClass  `json:"seat_class"`
+	FirstName   pgtype.Text  `json:"first_name"`
+	LastName    pgtype.Text  `json:"last_name"`
+	PhoneNumber pgtype.Text  `json:"phone_number"`
+	Gender      GenderType   `json:"gender"`
+}
+
+func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error) {
+	row := q.db.QueryRow(ctx, getTicketByID, ticketID)
+	var i GetTicketByIDRow
+	err := row.Scan(
+		&i.TicketID,
+		&i.SeatID,
+		&i.Status,
+		&i.FlightClass,
+		&i.Price,
+		&i.BookingID,
+		&i.FlightID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.SeatCode,
+		&i.SeatClass,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.Gender,
+	)
+	return i, err
 }
 
 const getTicketsByFlightID = `-- name: GetTicketsByFlightID :many
@@ -195,7 +263,7 @@ func (q *Queries) GetTicketsByFlightID(ctx context.Context, flightID pgtype.Int8
 }
 
 const listTickets = `-- name: ListTickets :many
-SELECT ticket_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
+SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
 ORDER BY ticket_id
 LIMIT $1
 OFFSET $2
@@ -217,6 +285,7 @@ func (q *Queries) ListTickets(ctx context.Context, arg ListTicketsParams) ([]Tic
 		var i Ticket
 		if err := rows.Scan(
 			&i.TicketID,
+			&i.SeatID,
 			&i.FlightClass,
 			&i.Price,
 			&i.Status,
@@ -266,4 +335,33 @@ func (q *Queries) UpdateTicket(ctx context.Context, arg UpdateTicketParams) erro
 		arg.FlightID,
 	)
 	return err
+}
+
+const updateTicketStatus = `-- name: UpdateTicketStatus :one
+UPDATE Tickets
+SET status = $2, updated_at = NOW()
+WHERE ticket_id = $1
+RETURNING ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
+`
+
+type UpdateTicketStatusParams struct {
+	TicketID int64        `json:"ticket_id"`
+	Status   TicketStatus `json:"status"`
+}
+
+func (q *Queries) UpdateTicketStatus(ctx context.Context, arg UpdateTicketStatusParams) (Ticket, error) {
+	row := q.db.QueryRow(ctx, updateTicketStatus, arg.TicketID, arg.Status)
+	var i Ticket
+	err := row.Scan(
+		&i.TicketID,
+		&i.SeatID,
+		&i.FlightClass,
+		&i.Price,
+		&i.Status,
+		&i.BookingID,
+		&i.FlightID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

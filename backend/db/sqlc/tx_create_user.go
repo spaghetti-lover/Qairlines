@@ -18,6 +18,7 @@ func (store *SQLStore) CreateCustomerTx(ctx context.Context, arg CreateUserParam
 			LastName:       arg.LastName,
 			HashedPassword: arg.HashedPassword,
 			Email:          arg.Email,
+			Role:           UserRoleCustomer,
 		})
 		if err != nil {
 			return err

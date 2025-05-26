@@ -39,3 +39,15 @@ WHERE seat_code = $1 and flight_id = $2;
 UPDATE "seats"
 SET is_available = false
 WHERE seat_code = $1 AND flight_id = $2;
+
+-- name: GetSeatByTicketID :one
+SELECT s.seat_id, s.seat_code, s.class, s.is_available
+FROM Seats s
+JOIN Tickets t ON s.seat_id = t.seat_id
+WHERE t.ticket_id = $1;
+
+
+-- name: UpdateSeatAvailability :exec
+UPDATE Seats
+SET is_available = $2
+WHERE seat_id = (SELECT seat_id FROM Tickets WHERE ticket_id = $1);

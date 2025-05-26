@@ -45,8 +45,10 @@ type Querier interface {
 	GetFlightsByStatus(ctx context.Context, flightID int64) (FlightStatus, error)
 	GetNews(ctx context.Context, id int64) (News, error)
 	GetSeat(ctx context.Context, seatID int64) (Seat, error)
+	GetSeatByTicketID(ctx context.Context, ticketID int64) (GetSeatByTicketIDRow, error)
 	GetTicket(ctx context.Context, ticketID int64) (Ticket, error)
 	GetTicketByFlightId(ctx context.Context, flightID pgtype.Int8) ([]Ticket, error)
+	GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error)
 	GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (Ticketownersnapshot, error)
 	GetTicketsByFlightID(ctx context.Context, flightID pgtype.Int8) ([]GetTicketsByFlightIDRow, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
@@ -66,7 +68,9 @@ type Querier interface {
 	RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
 	UpdateSeat(ctx context.Context, arg UpdateSeatParams) error
+	UpdateSeatAvailability(ctx context.Context, arg UpdateSeatAvailabilityParams) error
 	UpdateTicket(ctx context.Context, arg UpdateTicketParams) error
+	UpdateTicketStatus(ctx context.Context, arg UpdateTicketStatusParams) (Ticket, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }
