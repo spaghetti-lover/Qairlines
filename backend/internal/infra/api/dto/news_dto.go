@@ -47,3 +47,14 @@ type UpdateNewsResponse struct {
 	Image       string `json:"image"`
 	UpdatedAt   string `json:"updatedAt"`
 }
+
+type GetNewsResponse struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Content     string `json:"content"`
+	AuthorID    string `json:"authorId"`
+	Image       string `json:"image"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+}

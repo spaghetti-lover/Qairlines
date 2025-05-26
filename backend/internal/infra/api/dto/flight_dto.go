@@ -38,3 +38,19 @@ type CreateFlightResponse struct {
 		Status           string `json:"status"`
 	} `json:"flight"`
 }
+
+type GetFlightResponse struct {
+	FlightID      string `json:"flightId"`
+	FlightNumber  string `json:"flightNumber"`
+	AircraftType  string `json:"aircraftType"`
+	DepartureCity string `json:"departureCity"`
+	ArrivalCity   string `json:"arrivalCity"`
+	DepartureTime struct {
+		Seconds int64 `json:"seconds"`
+	} `json:"departureTime"`
+	ArrivalTime struct {
+		Seconds int64 `json:"seconds"`
+	} `json:"arrivalTime"`
+	BasePrice int32                 `json:"basePrice"`
+	Status    entities.FlightStatus `json:"status"`
+}

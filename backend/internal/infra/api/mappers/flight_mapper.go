@@ -53,3 +53,21 @@ func CreateFlightEntityToResponse(flight entities.Flight) dto.CreateFlightRespon
 		},
 	}
 }
+
+func MapFlightToGetFlightResponse(flight *entities.Flight) *dto.GetFlightResponse {
+	return &dto.GetFlightResponse{
+		FlightID:      strconv.FormatInt(flight.FlightID, 10),
+		FlightNumber:  flight.FlightNumber,
+		AircraftType:  flight.AircraftType,
+		DepartureCity: flight.DepartureCity,
+		ArrivalCity:   flight.ArrivalCity,
+		DepartureTime: struct {
+			Seconds int64 `json:"seconds"`
+		}{Seconds: flight.DepartureTime.Unix()},
+		ArrivalTime: struct {
+			Seconds int64 `json:"seconds"`
+		}{Seconds: flight.ArrivalTime.Unix()},
+		BasePrice: flight.BasePrice,
+		Status:    entities.FlightStatus(flight.Status),
+	}
+}

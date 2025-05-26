@@ -48,3 +48,23 @@ func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight enti
 		Status:           entities.FlightStatus(dbFlight.Status),
 	}, nil
 }
+
+func (r *FlightRepositoryPostgres) GetFlightByID(ctx context.Context, flightID int64) (*entities.Flight, error) {
+	dbFlight, err := r.store.GetFlight(ctx, flightID)
+	if err != nil {
+		return nil, err
+	}
+	return &entities.Flight{
+		FlightID:         dbFlight.FlightID,
+		FlightNumber:     dbFlight.FlightNumber,
+		AircraftType:     dbFlight.AircraftType.String,
+		DepartureCity:    dbFlight.DepartureCity.String,
+		ArrivalCity:      dbFlight.ArrivalCity.String,
+		DepartureAirport: dbFlight.DepartureAirport.String,
+		ArrivalAirport:   dbFlight.ArrivalAirport.String,
+		DepartureTime:    dbFlight.DepartureTime,
+		ArrivalTime:      dbFlight.ArrivalTime,
+		BasePrice:        dbFlight.BasePrice,
+		Status:           entities.FlightStatus(dbFlight.Status),
+	}, nil
+}

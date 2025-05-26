@@ -18,14 +18,16 @@ type NewsHandler struct {
 	deleteNewsUseCase    news.IDeleteNewsUseCase
 	createNewsUseCase    news.ICreateNewsUseCase
 	updateNewsUseCase    news.IUpdateNewsUseCase
+	getNewsUseCase       news.IGetNewsUseCase
 }
 
-func NewNewsHandler(getAllNewsWithAuthor news.IGetAllNewsWithAuthor, deleteNewsUseCase news.IDeleteNewsUseCase, createNewsUseCase news.ICreateNewsUseCase, updateNewsUseCase news.IUpdateNewsUseCase) *NewsHandler {
+func NewNewsHandler(getAllNewsWithAuthor news.IGetAllNewsWithAuthor, deleteNewsUseCase news.IDeleteNewsUseCase, createNewsUseCase news.ICreateNewsUseCase, updateNewsUseCase news.IUpdateNewsUseCase, getNewsUseCase news.IGetNewsUseCase) *NewsHandler {
 	return &NewsHandler{
 		getAllNewsWithAuthor: getAllNewsWithAuthor,
 		deleteNewsUseCase:    deleteNewsUseCase,
 		createNewsUseCase:    createNewsUseCase,
 		updateNewsUseCase:    updateNewsUseCase,
+		getNewsUseCase:       getNewsUseCase,
 	}
 }
 
@@ -251,5 +253,67 @@ func (h *NewsHandler) UpdateNews(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "News post updated successfully.",
 		"data":    updatedNews,
+	})
+}
+
+func (h *NewsHandler) GetNews(w http.ResponseWriter, r *http.Request) {
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Authentication failed. Admin privileges required.",
+		})
+		return
+	}
+
+	// Lấy ID từ query parameter
+	newsIDStr := r.URL.Query().Get("id")
+	if newsIDStr == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "News ID is required.",
+		})
+		return
+	}
+
+	newsID, err := strconv.ParseInt(newsIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Invalid News ID.",
+		})
+		return
+	}
+
+	// Gọi use case để lấy bài viết
+	new, err := h.getNewsUseCase.Execute(r.Context(), newsID)
+	if err != nil {
+		if errors.Is(err, news.ErrNewsNotFound) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{
+				"message": "News post not found.",
+			})
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "An unexpected error occurred. Please try again later.",
+		})
+		return
+	}
+
+	// Trả về phản hồi thành công
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "News post retrieved successfully.",
+		"data":    new,
 	})
 }
