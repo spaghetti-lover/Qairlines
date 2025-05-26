@@ -34,7 +34,7 @@ func (u *ChangePasswordUseCase) Execute(ctx context.Context, input ChangePasswor
 	}
 
 	// Kiểm tra mật khẩu cũ
-	err = utils.CheckPassword(input.OldPassword, user.HashedPassword)
+	err = utils.CheckPassword(input.OldPassword, user.HashedPwd)
 	if err != nil {
 		return &appErrors.AppError{Message: "Old password is incorrect."}
 	}

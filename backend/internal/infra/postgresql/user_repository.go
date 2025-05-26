@@ -24,6 +24,7 @@ func NewUserRepositoryPostgres(store *db.Store, tokenMaker token.Maker) *UserRep
 	}
 }
 
+
 func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.User, error) {
 	users, err := r.store.GetAllUser(ctx)
 	if err != nil {
@@ -32,10 +33,11 @@ func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.Use
 	usersList := make([]entities.User, len(users))
 	for i, user := range users {
 		usersList[i] = entities.User{
-			UserID:         user.UserID,
-			FirstName:      user.FirstName,
-			HashedPassword: user.HashedPassword,
-			Role:           entities.UserRole(user.Role),
+			UserID:    user.UserID,
+			FirstName: user.FirstName.String,
+			LastName:  user.LastName.String,
+			HashedPwd: user.HashedPassword,
+			Role:      entities.UserRole(user.Role),
 		}
 	}
 	return usersList, nil
@@ -48,76 +50,47 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 	}
 
 	return entities.User{
-		UserID:               user.UserID,
-		FirstName:            user.FirstName,
-		LastName:             user.LastName,
-		HashedPassword:       user.HashedPassword,
-		PhoneNumber:          user.PhoneNumber.String,
-		Gender:               user.Gender.String,
-		Address:              user.Address.String,
-		PassportNumber:       user.PassportNumber.String,
-		IdentificationNumber: user.IdentificationNumber.String,
-		Role:                 entities.UserRole(user.Role),
-		Email:                user.Email,
-		LoyaltyPoints:        user.LoyaltyPoints.Int64,
-		CreatedAt:            user.CreatedAt,
-		UpdatedAt:            user.UpdatedAt,
+		UserID:    user.UserID,
+		FirstName: user.FirstName.String,
+		LastName:  user.LastName.String,
+		HashedPwd: user.HashedPassword,
+		Role:      entities.UserRole(user.Role),
+		Email:     user.Email,
+		IsActive:  user.IsActive,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
 
-func (r *UserRepositoryPostgres) CreateUser(ctx context.Context, arg entities.CreateUserParams) (entities.User, error) {
-	hashedPassword, err := utils.HashPassword(arg.Password)
-	if err != nil {
-		return entities.User{}, err
-	}
-	user, err := r.store.CreateUser(ctx, db.CreateUserParams{
-		FirstName:      arg.FirstName,
-		LastName:       arg.LastName,
-		HashedPassword: hashedPassword,
-		Email:          arg.Email,
-	})
 
-	if err != nil {
-		return entities.User{}, err
-	}
-	return entities.User{
-		UserID:         user.UserID,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		Email:          user.Email,
-		HashedPassword: user.HashedPassword,
-		Role:           entities.UserRole(user.Role),
-	}, nil
-}
+// func (r *UserRepositoryPostgres) DeleteUser(ctx context.Context, userID int64) error {
+// 	err := r.store.DeleteUser(ctx, userID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
-func (r *UserRepositoryPostgres) DeleteUser(ctx context.Context, userID int64) error {
-	err := r.store.DeleteUser(ctx, userID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *UserRepositoryPostgres) ListUsers(ctx context.Context, arg entities.ListUsersParams) ([]entities.User, error) {
-	users, err := r.store.ListUsers(ctx, db.ListUsersParams{
-		Limit:  arg.Limit,
-		Offset: arg.Offset,
-	})
-	if err != nil {
-		return nil, err
-	}
-	usersList := make([]entities.User, len(users))
-	for i, user := range users {
-		usersList[i] = entities.User{
-			UserID:         user.UserID,
-			FirstName:      user.FirstName,
-			LastName:       user.LastName,
-			HashedPassword: user.HashedPassword,
-			Role:           entities.UserRole(user.Role),
-		}
-	}
-	return usersList, nil
-}
+// func (r *UserRepositoryPostgres) ListUsers(ctx context.Context, arg entities.ListUsersParams) ([]entities.User, error) {
+// 	users, err := r.store.ListUsers(ctx, db.ListUsersParams{
+// 		Limit:  arg.Limit,
+// 		Offset: arg.Offset,
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	usersList := make([]entities.User, len(users))
+// 	for i, user := range users {
+// 		usersList[i] = entities.User{
+// 			UserID:         user.UserID,
+// 			FirstName:      user.FirstName,
+// 			LastName:       user.LastName,
+// 			HashedPassword: user.HashedPassword,
+// 			Role:           entities.UserRole(user.Role),
+// 		}
+// 	}
+// 	return usersList, nil
+// }
 
 func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {
 	user, err := r.store.GetUserByEmail(ctx, email)
@@ -125,12 +98,12 @@ func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email strin
 		return nil, err
 	}
 	return &entities.User{
-		UserID:         user.UserID,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		Email:          user.Email,
-		HashedPassword: user.HashedPassword,
-		Role:           entities.UserRole(user.Role),
+		UserID:    user.UserID,
+		FirstName: user.FirstName.String,
+		LastName:  user.LastName.String,
+		Email:     user.Email,
+		HashedPwd: user.HashedPassword,
+		Role:      entities.UserRole(user.Role),
 	}, nil
 }
 
@@ -150,19 +123,19 @@ func (r *UserRepositoryPostgres) UpdatePassword(ctx context.Context, userID int6
 	return nil
 }
 
-func (r *UserRepositoryPostgres) UpdateUser(ctx context.Context, user entities.User) error {
+func (r *UserRepositoryPostgres) UpdateUser(ctx context.Context, arg entities.UpdateUserParams) (entities.User, error) {
 	err := r.store.UpdateUser(ctx, db.UpdateUserParams{
-		UserID:               user.UserID,
-		FirstName:            user.FirstName,
-		LastName:             user.LastName,
-		PhoneNumber:          pgtype.Text{String: user.PhoneNumber, Valid: true},
-		Gender:               pgtype.Text{String: user.Gender, Valid: true},
-		Address:              pgtype.Text{String: user.Address, Valid: true},
-		PassportNumber:       pgtype.Text{String: user.PassportNumber, Valid: true},
-		IdentificationNumber: pgtype.Text{String: user.IdentificationNumber, Valid: true},
+		UserID:    arg.UserID,
+		FirstName: pgtype.Text{String: arg.FirstName, Valid: true},
+		LastName:  pgtype.Text{String: arg.LastName, Valid: true},
 	})
 	if err != nil {
-		return err
+		return entities.User{}, err
 	}
-	return nil
+
+	return entities.User{
+		UserID:    arg.UserID,
+		FirstName: arg.FirstName,
+		LastName:  arg.LastName,
+	}, nil
 }

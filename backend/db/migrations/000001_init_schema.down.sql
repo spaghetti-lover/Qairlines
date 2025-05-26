@@ -1,14 +1,49 @@
-DROP TABLE IF EXISTS "payment";
-DROP TABLE IF EXISTS "passengers";
-DROP TABLE IF EXISTS "booking";
-DROP TABLE IF EXISTS "flight_seats";
-DROP TABLE IF EXISTS "flight";
-DROP TABLE IF EXISTS "airplane";
-DROP TABLE IF EXISTS "airplane_model";
-DROP TABLE IF EXISTS "airport";
-DROP TABLE IF EXISTS "user";
-DROP TABLE IF EXISTS "news";
+-- Drop indexes for Tickets
+DROP INDEX IF EXISTS idx_tickets_flight_id;
+DROP INDEX IF EXISTS idx_tickets_booking_id;
 
-DROP TYPE IF EXISTS gender_enum;
+-- Drop indexes for Bookings
+DROP INDEX IF EXISTS idx_bookings_return_flight_id;
+DROP INDEX IF EXISTS idx_bookings_departure_flight_id;
+DROP INDEX IF EXISTS idx_bookings_user_id;
+
+-- Drop indexes for Flights
+DROP INDEX IF EXISTS idx_flights_status;
+DROP INDEX IF EXISTS idx_flights_arrival_time;
+DROP INDEX IF EXISTS idx_flights_departure_time;
+
+-- Drop TicketOwnerSnapshot table
+DROP TABLE IF EXISTS TicketOwnerSnapshot;
+
+-- Drop Tickets table
+DROP TABLE IF EXISTS Tickets;
+
+-- Drop Seats table
+DROP TABLE IF EXISTS Seats;
+
+-- Drop Bookings table
+DROP TABLE IF EXISTS Bookings;
+
+-- Drop Flights table
+DROP TABLE IF EXISTS Flights;
+
+-- Drop News table
+DROP TABLE IF EXISTS News;
+
+-- Drop Admins table
+DROP TABLE IF EXISTS Admins;
+
+-- Drop Customers table
+DROP TABLE IF EXISTS Customers;
+
+-- Drop Users table
+DROP TABLE IF EXISTS Users;
+
+-- Drop ENUM types
+DROP TYPE IF EXISTS user_role;
+DROP TYPE IF EXISTS ticket_status;
+DROP TYPE IF EXISTS booking_status;
+DROP TYPE IF EXISTS trip_type;
+DROP TYPE IF EXISTS gender_type;
 DROP TYPE IF EXISTS flight_status;
-DROP TYPE IF EXISTS flight_class_type;
+DROP TYPE IF EXISTS flight_class;

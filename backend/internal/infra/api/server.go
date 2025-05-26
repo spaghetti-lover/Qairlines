@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,13 +10,17 @@ import (
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/admin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type Server struct {
@@ -32,27 +37,32 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Health
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
-	healthUseCase := usecases.NewHealthUseCase(healthRepo)
-	healthHandler := handlers.NewHealthHandler(healthUseCase)
-
-	// User
+	customerRepo := postgresql.NewCustomerRepositoryPostgres(store, tokenMaker)
 	userRepo := postgresql.NewUserRepositoryPostgres(store, tokenMaker)
-	userGetAllUseCase := user.NewUserGetAllUseCase(userRepo)
-	userCreateUseCase := user.NewUserCreateUseCase(userRepo)
-	userGetByEmailUseCase := user.NewUserGetByEmailUseCase(userRepo)
-	userUpdateUseCase := user.NewUserUpdateUseCase(userRepo)
-	userGetUseCase := user.NewUserGetUseCase(userRepo)
-	userHandler := handlers.NewUserHandler(userGetAllUseCase, userCreateUseCase, userGetByEmailUseCase, userUpdateUseCase, userGetUseCase)
+	newsRepo := postgresql.NewNewsModelRepositoryPostgres(store)
+	adminRepo := postgresql.NewAdminRepositoryPostgres(store, tokenMaker)
+	flightRepo := postgresql.NewFlightRepositoryPostgres(store)
 
-	// Auth
+	healthUseCase := usecases.NewHealthUseCase(healthRepo)
+	userUpdateUseCase := user.NewUserUpdateUseCase(userRepo)
+	customerCreateUseCase := customer.NewCreateCustomerUseCase(customerRepo, userRepo)
+	customerUpdateUseCase := customer.NewCustomerUpdateUseCase(customerRepo)
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
 	changePasswordUseCase := auth.NewChangePasswordUseCase(userRepo)
-	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
+	newsGetAllWithAuthorUseCase := news.NewNewsGetAllWithAuthorUseCase(newsRepo)
+	adminCreateUseCase := admin.NewCreateAdminUseCase(adminRepo, userRepo)
+	getAllAdminsUseCase := admin.NewGetAllAdminsUseCase(adminRepo)
+	updateAdminUseCase := admin.NewUpdateAdminUseCase(adminRepo, userRepo)
+	getCurrentAdminUseCase := admin.NewGetCurrentAdminUseCase(adminRepo)
+	deleteAdminUseCase := admin.NewDeleteAdminUseCase(adminRepo)
+	flightCreateUseCase := flight.NewCreateFlightUseCase(flightRepo)
 
-	// News
-	newsRepo := postgresql.NewNewsModelRepositoryPostgres(store)
-	newsGetAllUseCase := news.NewNewsGetAllUseCase(newsRepo)
-	newsHandler := handlers.NewNewsHandler(newsGetAllUseCase)
+	healthHandler := handlers.NewHealthHandler(healthUseCase)
+	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase)
+	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
+	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase)
+	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
+	flightHandler := handlers.NewFlightHandler(flightCreateUseCase)
 
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
@@ -70,13 +80,39 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.HandleFunc("/news", newsHandler.GetAllNews).Methods("GET")
 
 	// User API
-	apiRouter.HandleFunc("/user", userHandler.CreateUser).Methods("POST")
-	apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.UpdateUser))).Methods("PUT")
-	apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.GetUserByToken))).Methods("GET")
+	// apiRouter.Handle("/user", authMiddleware(http.HandlerFunc(userHandler.GetUserByToken))).Methods("GET")
 
+	// Customer API
+	apiRouter.HandleFunc("/customer", customerHandler.CreateCustomerTx).Methods("POST")
+	apiRouter.Handle("/customer/{id}", authMiddleware(http.HandlerFunc(customerHandler.UpdateCustomer))).Methods("PUT")
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
-	apiRouter.Handle("/user/{id}/password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
+	apiRouter.Handle("/auth/{id}/password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
+
+	// Admin API
+	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.GetCurrentAdmin))).Methods("GET")
+	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.CreateAdminTx))).Methods("POST")
+	apiRouter.Handle("/admin/all", authMiddleware(http.HandlerFunc(adminHandler.GetAllAdmins))).Methods("GET")
+	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.UpdateAdmin))).Methods("PUT")
+	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.DeleteAdmin))).Methods("DELETE")
+
+	// Flight API
+	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
+	// Statistic API
+	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		response := map[string]interface{}{
+			"message": "Statistics retrieved successfully.",
+			"data": map[string]interface{}{
+				"flights": 120,
+				"tickets": 450,
+				"revenue": 1145430000,
+			},
+		}
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
+		}
+	}).Methods("GET")
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{

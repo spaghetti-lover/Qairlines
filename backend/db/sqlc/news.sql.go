@@ -7,75 +7,107 @@ package db
 
 import (
 	"context"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createNews = `-- name: CreateNews :one
 INSERT INTO "news" (
-  slug,
-  image_url,
   title,
   description,
-  author,
-  content
+  content,
+  image,
+  author_id
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
-) RETURNING news_id, slug, image_url, title, description, author, content, created_at
+  $1, $2, $3, $4, $5
+) RETURNING id, title, description, content, image, author_id, created_at, updated_at
 `
 
 type CreateNewsParams struct {
-	Slug        string `json:"slug"`
-	ImageUrl    string `json:"image_url"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Author      string `json:"author"`
-	Content     string `json:"content"`
+	Title       string      `json:"title"`
+	Description pgtype.Text `json:"description"`
+	Content     pgtype.Text `json:"content"`
+	Image       pgtype.Text `json:"image"`
+	AuthorID    pgtype.Int8 `json:"author_id"`
 }
 
 func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, error) {
 	row := q.db.QueryRow(ctx, createNews,
-		arg.Slug,
-		arg.ImageUrl,
 		arg.Title,
 		arg.Description,
-		arg.Author,
 		arg.Content,
+		arg.Image,
+		arg.AuthorID,
 	)
 	var i News
 	err := row.Scan(
-		&i.NewsID,
-		&i.Slug,
-		&i.ImageUrl,
+		&i.ID,
 		&i.Title,
 		&i.Description,
-		&i.Author,
 		&i.Content,
+		&i.Image,
+		&i.AuthorID,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const getAllNews = `-- name: GetAllNews :many
-SELECT news_id, slug, image_url, title, description, author, content, created_at FROM "news"
+const getAllNewsWithAuthor = `-- name: GetAllNewsWithAuthor :many
+SELECT id, title, description, content, image, author_id, n.created_at, n.updated_at, user_id, email, hashed_password, first_name, last_name, role, is_active, u.created_at, u.updated_at
+FROM "news" n
+JOIN "users" u ON n.author_id = u.user_id
+ORDER BY n.created_at DESC
 `
 
-func (q *Queries) GetAllNews(ctx context.Context) ([]News, error) {
-	rows, err := q.db.Query(ctx, getAllNews)
+type GetAllNewsWithAuthorRow struct {
+	ID             int64       `json:"id"`
+	Title          string      `json:"title"`
+	Description    pgtype.Text `json:"description"`
+	Content        pgtype.Text `json:"content"`
+	Image          pgtype.Text `json:"image"`
+	AuthorID       pgtype.Int8 `json:"author_id"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
+	UserID         int64       `json:"user_id"`
+	Email          string      `json:"email"`
+	HashedPassword string      `json:"hashed_password"`
+	FirstName      pgtype.Text `json:"first_name"`
+	LastName       pgtype.Text `json:"last_name"`
+	Role           UserRole    `json:"role"`
+	IsActive       bool        `json:"is_active"`
+	CreatedAt_2    time.Time   `json:"created_at_2"`
+	UpdatedAt_2    time.Time   `json:"updated_at_2"`
+}
+
+func (q *Queries) GetAllNewsWithAuthor(ctx context.Context) ([]GetAllNewsWithAuthorRow, error) {
+	rows, err := q.db.Query(ctx, getAllNewsWithAuthor)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []News{}
+	items := []GetAllNewsWithAuthorRow{}
 	for rows.Next() {
-		var i News
+		var i GetAllNewsWithAuthorRow
 		if err := rows.Scan(
-			&i.NewsID,
-			&i.Slug,
-			&i.ImageUrl,
+			&i.ID,
 			&i.Title,
 			&i.Description,
-			&i.Author,
 			&i.Content,
+			&i.Image,
+			&i.AuthorID,
 			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UserID,
+			&i.Email,
+			&i.HashedPassword,
+			&i.FirstName,
+			&i.LastName,
+			&i.Role,
+			&i.IsActive,
+			&i.CreatedAt_2,
+			&i.UpdatedAt_2,
 		); err != nil {
 			return nil, err
 		}
@@ -88,29 +120,29 @@ func (q *Queries) GetAllNews(ctx context.Context) ([]News, error) {
 }
 
 const getNews = `-- name: GetNews :one
-SELECT news_id, slug, image_url, title, description, author, content, created_at FROM "news"
-WHERE news_id = $1 LIMIT 1
+SELECT id, title, description, content, image, author_id, created_at, updated_at FROM "news"
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetNews(ctx context.Context, newsID int64) (News, error) {
-	row := q.db.QueryRow(ctx, getNews, newsID)
+func (q *Queries) GetNews(ctx context.Context, id int64) (News, error) {
+	row := q.db.QueryRow(ctx, getNews, id)
 	var i News
 	err := row.Scan(
-		&i.NewsID,
-		&i.Slug,
-		&i.ImageUrl,
+		&i.ID,
 		&i.Title,
 		&i.Description,
-		&i.Author,
 		&i.Content,
+		&i.Image,
+		&i.AuthorID,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listNews = `-- name: ListNews :many
-SELECT news_id, slug, image_url, title, description, author, content, created_at FROM "news"
-ORDER BY news_id
+SELECT id, title, description, content, image, author_id, created_at, updated_at FROM "news"
+ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2
 `
@@ -130,14 +162,14 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]News, err
 	for rows.Next() {
 		var i News
 		if err := rows.Scan(
-			&i.NewsID,
-			&i.Slug,
-			&i.ImageUrl,
+			&i.ID,
 			&i.Title,
 			&i.Description,
-			&i.Author,
 			&i.Content,
+			&i.Image,
+			&i.AuthorID,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -147,4 +179,16 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]News, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const removeAuthorFromBlogPosts = `-- name: RemoveAuthorFromBlogPosts :exec
+UPDATE "news"
+SET author_id = NULL,
+    updated_at = NOW()
+WHERE author_id = $1
+`
+
+func (q *Queries) RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error {
+	_, err := q.db.Exec(ctx, removeAuthorFromBlogPosts, authorID)
+	return err
 }

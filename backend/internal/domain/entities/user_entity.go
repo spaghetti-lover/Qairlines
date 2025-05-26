@@ -5,26 +5,20 @@ import "time"
 type UserRole string
 
 const (
-	RoleAdmin  UserRole = "admin"
-	RoleClient UserRole = "customer"
+	RoleAdmin    UserRole = "admin"
+	RoleCustomer UserRole = "customer"
 )
 
 type User struct {
-	UserID               int64
-	FirstName            string
-	LastName             string
-	PhoneNumber          string
-	DateOfBirth          time.Time
-	Gender               string
-	Address              string
-	PassportNumber       string
-	IdentificationNumber string
-	HashedPassword       string
-	Role                 UserRole
-	Email                string
-	LoyaltyPoints        int64
-	UpdatedAt            time.Time
-	CreatedAt            time.Time
+	UserID    int64     `json:"user_id"`
+	Email     string    `json:"email"`
+	HashedPwd string    `json:"hashed_password"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Role      UserRole  `json:"role"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type ListUsersParams struct {
@@ -37,4 +31,10 @@ type CreateUserParams struct {
 	LastName  string
 	Password  string
 	Email     string
+}
+
+type UpdateUserParams struct {
+	UserID    int64
+	FirstName string
+	LastName  string
 }

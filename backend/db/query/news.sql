@@ -1,24 +1,32 @@
 -- name: CreateNews :one
 INSERT INTO "news" (
-  slug,
-  image_url,
   title,
   description,
-  author,
-  content
+  content,
+  image,
+  author_id
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetNews :one
 SELECT * FROM "news"
-WHERE news_id = $1 LIMIT 1;
+WHERE id = $1 LIMIT 1;
 
--- name: GetAllNews :many
-SELECT * FROM "news";
+-- name: GetAllNewsWithAuthor :many
+SELECT *
+FROM "news" n
+JOIN "users" u ON n.author_id = u.user_id
+ORDER BY n.created_at DESC;
 
 -- name: ListNews :many
 SELECT * FROM "news"
-ORDER BY news_id
+ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2;
+
+-- name: RemoveAuthorFromBlogPosts :exec
+UPDATE "news"
+SET author_id = NULL,
+    updated_at = NOW()
+WHERE author_id = $1;

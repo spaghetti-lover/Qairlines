@@ -37,6 +37,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if input.Email == "" || input.Password == "" {
+		http.Error(w, `{"message": "Email and password are required."}`, http.StatusBadRequest)
+		return
+	}
+
 	output, err := h.loginUseCase.Execute(r.Context(), input)
 	if err != nil {
 		if appErr, ok := err.(*appErrors.AppError); ok {

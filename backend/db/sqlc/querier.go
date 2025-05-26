@@ -6,56 +6,67 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
-	CheckSeatOccupied(ctx context.Context, arg CheckSeatOccupiedParams) (bool, error)
-	CountOccupiedSeats(ctx context.Context, arg CountOccupiedSeatsParams) (int64, error)
-	CreateAdmin(ctx context.Context, arg CreateAdminParams) (User, error)
-	CreateAirplane(ctx context.Context, arg CreateAirplaneParams) (Airplane, error)
-	CreateAirplaneModel(ctx context.Context, arg CreateAirplaneModelParams) (AirplaneModel, error)
-	CreateAirport(ctx context.Context, arg CreateAirportParams) (Airport, error)
+	CheckSeatAvailability(ctx context.Context, arg CheckSeatAvailabilityParams) (bool, error)
+	CountOccupiedSeats(ctx context.Context, flightID pgtype.Int8) (int64, error)
+	CreateAdmin(ctx context.Context, userID int64) (int64, error)
+	// booking_id VARCHAR(30) PRIMARY KEY,
 	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
+	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	CreateFlight(ctx context.Context, arg CreateFlightParams) (Flight, error)
-	CreateFlightSeat(ctx context.Context, arg CreateFlightSeatParams) (FlightSeat, error)
 	CreateNews(ctx context.Context, arg CreateNewsParams) (News, error)
-	CreatePassenger(ctx context.Context, arg CreatePassengerParams) (Passenger, error)
-	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
+	CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error)
+	CreateTicket(ctx context.Context, arg CreateTicketParams) (Ticket, error)
+	CreateTicketOwnerSnapshot(ctx context.Context, arg CreateTicketOwnerSnapshotParams) (Ticketownersnapshot, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	DeleteAirplane(ctx context.Context, registrationNumber string) error
-	DeleteAirplaneModel(ctx context.Context, airplaneModelID int64) error
-	DeleteAirport(ctx context.Context, airportCode string) error
+	DeactivateUser(ctx context.Context, userID int64) error
+	DeleteAdmin(ctx context.Context, userID int64) error
 	DeleteBookings(ctx context.Context, bookingID int64) error
-	DeleteFlight(ctx context.Context, flightNumber string) error
-	DeleteFlightSeat(ctx context.Context, flightID int64) error
-	DeletePassenger(ctx context.Context, passengerID int64) error
-	DeletePayment(ctx context.Context, paymentID int64) error
+	DeleteCustomer(ctx context.Context, userID int64) error
+	DeleteFlight(ctx context.Context, flightID int64) error
+	DeleteTicket(ctx context.Context, ticketID int64) error
 	DeleteUser(ctx context.Context, userID int64) error
-	GetAirplane(ctx context.Context, registrationNumber string) (Airplane, error)
-	GetAirplaneModel(ctx context.Context, airplaneModelID int64) (AirplaneModel, error)
-	GetAirport(ctx context.Context, airportCode string) (Airport, error)
-	GetAllNews(ctx context.Context) ([]News, error)
+	GetAdmin(ctx context.Context, userID int64) (int64, error)
+	GetAdminByEmail(ctx context.Context, email string) (GetAdminByEmailRow, error)
+	GetAllAdmin(ctx context.Context) ([]int64, error)
+	GetAllCustomer(ctx context.Context) ([]Customer, error)
+	GetAllNewsWithAuthor(ctx context.Context) ([]GetAllNewsWithAuthorRow, error)
+	GetAllSeats(ctx context.Context) ([]Seat, error)
+	GetAllTicketOwnerSnapshots(ctx context.Context) ([]Ticketownersnapshot, error)
 	GetAllUser(ctx context.Context) ([]User, error)
 	GetBooking(ctx context.Context, bookingID int64) (Booking, error)
+	GetCustomer(ctx context.Context, userID int64) (Customer, error)
+	GetCustomerByEmail(ctx context.Context, email string) (Customer, error)
 	GetFlight(ctx context.Context, flightID int64) (Flight, error)
-	GetFlightSeat(ctx context.Context, arg GetFlightSeatParams) (FlightSeat, error)
-	GetNews(ctx context.Context, newsID int64) (News, error)
-	GetPassenger(ctx context.Context, passengerID int64) (Passenger, error)
-	GetPayment(ctx context.Context, paymentID int64) (Payment, error)
+	GetFlightsByStatus(ctx context.Context, flightID int64) (FlightStatus, error)
+	GetNews(ctx context.Context, id int64) (News, error)
+	GetSeat(ctx context.Context, seatID int64) (Seat, error)
+	GetTicket(ctx context.Context, ticketID int64) (Ticket, error)
+	GetTicketByFlightId(ctx context.Context, flightID pgtype.Int8) ([]Ticket, error)
+	GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (Ticketownersnapshot, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	ListAirplaneModels(ctx context.Context, arg ListAirplaneModelsParams) ([]AirplaneModel, error)
-	ListAirplanes(ctx context.Context, arg ListAirplanesParams) ([]Airplane, error)
-	ListAirports(ctx context.Context, arg ListAirportsParams) ([]Airport, error)
+	IsAdmin(ctx context.Context, userID int64) (bool, error)
+	ListAdmins(ctx context.Context, arg ListAdminsParams) ([]int64, error)
 	ListBookings(ctx context.Context, arg ListBookingsParams) ([]Booking, error)
-	ListFlightSeats(ctx context.Context, arg ListFlightSeatsParams) ([]FlightSeat, error)
-	ListFlightSeatsByFlightID(ctx context.Context, flightID int64) ([]FlightSeat, error)
+	ListCustomers(ctx context.Context, arg ListCustomersParams) ([]Customer, error)
 	ListFlights(ctx context.Context, arg ListFlightsParams) ([]Flight, error)
 	ListNews(ctx context.Context, arg ListNewsParams) ([]News, error)
-	ListPassengers(ctx context.Context, arg ListPassengersParams) ([]Passenger, error)
-	ListPayment(ctx context.Context, arg ListPaymentParams) ([]Payment, error)
+	ListSeatsWithFlightId(ctx context.Context, flightID pgtype.Int8) ([]Seat, error)
+	ListTicketOwnerSnapshots(ctx context.Context, arg ListTicketOwnerSnapshotsParams) ([]Ticketownersnapshot, error)
+	ListTickets(ctx context.Context, arg ListTicketsParams) ([]Ticket, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	MarkSeatUnavailable(ctx context.Context, arg MarkSeatUnavailableParams) error
+	RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error
+	RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error
+	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
 	UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error
+	UpdateSeat(ctx context.Context, arg UpdateSeatParams) error
+	UpdateTicket(ctx context.Context, arg UpdateTicketParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 }
 

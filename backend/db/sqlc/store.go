@@ -9,8 +9,12 @@ import (
 // Store defines all functions to execute db queries and transactions
 type Store interface {
 	Querier
-	BookingTx(ctx context.Context, arg BookingTxParams, passengers []PassengerParams, payment PaymentParams) (BookingTxResult, error)
-	CreateFlightWithSeats(ctx context.Context, params CreateFlightWithSeatsParams) (Flight, error)
+	BookingTx(ctx context.Context, arg BookingTxParams) (BookingTxResult, error)
+	UpdateSeats(ctx context.Context, bookingID int64, seats []SeatUpdateParams) error
+	CreateCustomerTx(ctx context.Context, arg CreateUserParams) (User, error)
+	UpdateCustomerTx(ctx context.Context, arg UpdateCustomerTxParams) error
+	CreateAdminTx(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteAdminTx(ctx context.Context, arg DeleteAdminTxParams) (DeleteAdminTxResult, error)
 }
 
 // SQLStore provides all functions to execute SQL queries and transactions

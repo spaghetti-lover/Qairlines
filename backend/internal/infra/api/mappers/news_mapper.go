@@ -13,7 +13,7 @@ func NewsToResponse(news entities.News) dto.NewsResponse {
 		Description: news.Description,
 		Author:      news.Author,
 		Content:     news.Content,
-		CreatedAt:   news.CreateAt,
+		CreatedAt:   news.CreatedAt,
 	}
 }
 

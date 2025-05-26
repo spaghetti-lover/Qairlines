@@ -4,22 +4,24 @@ import "time"
 
 type News struct {
 	ID          int64     `json:"id"`
-	Slug        string    `json:"slug"`
-	Image       string    `json:"image"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Author      string    `json:"author"`
 	Content     string    `json:"content"`
-	CreateAt    time.Time `json:"createAt"`
+	Image       string    `json:"image"`
+	AuthorID    int64     `json:"author_id"`
+	Author      string    `json:"author"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type CreateNewsParams struct {
-	Slug        string `json:"slug"`
-	Image       string `json:"image"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	Author      string `json:"author"`
 	Content     string `json:"content"`
+	Image       string `json:"image"`
+	AuthorID    int64  `json:"author_id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
 
 type ListNewsParams struct {

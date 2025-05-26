@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 
 	appErrors "github.com/spaghetti-lover/qairlines/pkg/errors"
 
@@ -50,13 +51,15 @@ func (u *LoginUseCase) Execute(ctx context.Context, input LoginInput) (*LoginOut
 		return nil, &appErrors.AppError{Message: message}
 	}
 	if user == nil {
+		log.Printf("User with email %s not found", input.Email)
 		message := utils.GetErrorMessage("ERR_INVALID_CREDENTIALS", "vi")
 		return nil, &appErrors.AppError{Message: message}
 	}
 
 	// Verify password
-	err = utils.CheckPassword(input.Password, user.HashedPassword)
+	err = utils.CheckPassword(input.Password, user.HashedPwd)
 	if err != nil {
+		log.Printf("Password check failed: %v", err)
 		message := utils.GetErrorMessage("ERR_INVALID_CREDENTIALS", "vi")
 		return nil, &appErrors.AppError{Message: message}
 	}

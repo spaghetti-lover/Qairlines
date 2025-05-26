@@ -1,136 +1,126 @@
-CREATE TYPE flight_class_type AS ENUM ('Economy', 'Business', 'First');
-CREATE TYPE flight_status AS ENUM ('Landed', 'Delayed', 'On Time', 'Scheduled');
-CREATE TYPE gender_enum AS ENUM ('Male', 'Female', 'Other');
+-- Define ENUM types
+CREATE TYPE user_role AS ENUM ('customer', 'admin');
+CREATE TYPE gender_type AS ENUM ('male', 'female', 'other');
+CREATE TYPE trip_type AS ENUM ('oneWay', 'roundTrip');
+CREATE TYPE booking_status AS ENUM ('confirmed', 'cancelled', 'pending');
+CREATE TYPE ticket_status AS ENUM ('booked', 'cancelled', 'used');
+CREATE TYPE flight_status AS ENUM ('On Time', 'Delayed', 'Cancelled', 'Boarding', 'Takeoff', 'Landing', 'Landed');
+CREATE TYPE flight_class AS ENUM ('Economy', 'Business', 'First Class');
 
-CREATE TABLE "airport" (
-  "airport_id" bigserial PRIMARY KEY,
-  "airport_code" varchar NOT NULL,
-  "city" varchar NOT NULL,
-  "name" varchar NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now())
+-- Create Users table
+CREATE TABLE Users (
+  user_id BIGSERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  hashed_password VARCHAR(255) NOT NULL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  role user_role NOT NULL DEFAULT 'customer',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at timestamptz NOT NULL DEFAULT (now()),
+  updated_at timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "airplane_model" (
-  "airplane_model_id" bigserial PRIMARY KEY,
-  "name" varchar NOT NULL,
-  "manufacturer" varchar NOT NULL,
-  "total_seats" bigint NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now())
+-- Create Customers table
+CREATE TABLE Customers (
+  user_id BIGINT PRIMARY KEY REFERENCES Users(user_id) ON DELETE CASCADE,
+  phone_number VARCHAR(20),
+  gender gender_type NOT NULL DEFAULT 'other',
+  date_of_birth DATE,
+  passport_number VARCHAR(50),
+  identification_number VARCHAR(50),
+  address TEXT,
+  loyalty_points INT DEFAULT 0 CHECK (loyalty_points >= 0),
+  created_at timestamptz NOT NULL DEFAULT (now()),
+  updated_at timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "airplane" (
-  "airplane_id" bigserial PRIMARY KEY,
-  "airplane_model_id" bigint NOT NULL,
-  "registration_number" varchar UNIQUE NOT NULL,
-  "active" boolean DEFAULT true
+-- Create Admins table
+CREATE TABLE Admins (
+  user_id BIGINT PRIMARY KEY REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
-
-
-CREATE TABLE "flight" (
-  "flight_id" bigserial PRIMARY KEY,
-  "flight_number" varchar UNIQUE NOT NULL,
-  "registration_number" varchar UNIQUE NOT NULL,
-  "estimated_departure_time" timestamp NOT NULL,
-  "actual_departure_time" timestamp,
-  "estimated_arrival_time" timestamp NOT NULL,
-  "actual_arrival_time" timestamp,
-  "departure_airport_id" bigint NOT NULL,
-  "destination_airport_id" bigint NOT NULL,
-  "flight_price" NUMERIC(12,2) NOT NULL CHECK(flight_price >= 0),
-  "status" flight_status NOT NULL
+-- Create News table
+CREATE TABLE News (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  content TEXT,
+  image TEXT,
+  author_id BIGINT REFERENCES Users(user_id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT (now()),
+  updated_at timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "flight_seats" (
-  "flight_seats_id" bigserial PRIMARY KEY,
-  "flight_id" bigint NOT NULL,
-  "flight_class" flight_class_type NOT NULL,
-  "class_multiplier" NUMERIC(12,2),
-  "child_multiplier" NUMERIC(12,2),
-  "max_row_seat" bigint NOT NULL CHECK(max_row_seat > 0),
-  "max_col_seat" bigint NOT NULL CHECK(max_row_seat > 1)
+-- Create Flights table
+CREATE TABLE Flights (
+  flight_id BIGSERIAL PRIMARY KEY,
+  flight_number VARCHAR(20) UNIQUE NOT NULL,
+  aircraft_type VARCHAR(100),
+  departure_city VARCHAR(100),
+  arrival_city VARCHAR(100),
+  departure_airport VARCHAR(255),
+  arrival_airport VARCHAR(255),
+  departure_time TIMESTAMPTZ NOT NULL,
+  arrival_time TIMESTAMPTZ NOT NULL,
+  base_price INT NOT NULL CHECK (base_price >= 0),
+  total_seats_row INT NOT NULL CHECK (total_seats_row > 0) DEFAULT 44,
+  total_seats_column INT NOT NULL CHECK (total_seats_column > 0) DEFAULT 6,
+  status flight_status NOT NULL DEFAULT 'On Time'
 );
 
-
-
-CREATE TABLE "booking" (
-  "booking_id" bigserial PRIMARY KEY,
-  "booker_email" varchar NOT NULL,
-  "number_of_adults" bigint NOT NULL CHECK (number_of_adults > 0),
-  "number_of_children" bigint NOT NULL CHECK (number_of_children >= 0),
-  "flight_class" flight_class_type NOT NULL,
-  "cancelled" BOOLEAN DEFAULT false,
-  "flight_id" bigint NOT NULL,
-  "booking_date" timestamp DEFAULT (CURRENT_TIMESTAMP)
+-- Create Bookings table
+CREATE TABLE Bookings (
+  booking_id BIGSERIAL PRIMARY KEY,
+  user_email VARCHAR(255) REFERENCES Users(email) ON DELETE SET NULL,
+  trip_type trip_type NOT NULL,
+  departure_flight_id BIGINT NOT NULL REFERENCES Flights(flight_id),
+  return_flight_id BIGINT REFERENCES Flights(flight_id) CHECK (
+    trip_type = 'oneWay' AND return_flight_id IS NULL OR
+    trip_type = 'roundTrip' AND return_flight_id IS NOT NULL
+  ),
+  status booking_status NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT (now()),
+  updated_at timestamptz NOT NULL DEFAULT (now())
+);
+-- Create Tickets table
+CREATE TABLE Tickets (
+  ticket_id BIGSERIAL PRIMARY KEY,
+  flight_class flight_class NOT NULL DEFAULT 'Economy',
+  price INT NOT NULL CHECK (price >= 0),
+  status ticket_status NOT NULL DEFAULT 'booked',
+  booking_id BIGINT REFERENCES Bookings(booking_id) ON DELETE CASCADE,
+  flight_id BIGINT REFERENCES Flights(flight_id),
+  created_at timestamptz NOT NULL DEFAULT (now()),
+  updated_at timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "passengers" (
-  "passenger_id" bigserial PRIMARY KEY,
-  "booking_id" bigint NOT NULL,
-  "citizen_id" varchar NOT NULL,
-  "passport_number" varchar,
-  "gender" gender_enum NOT NULL,
-  "phone_number" varchar NOT NULL,
-  "first_name" varchar NOT NULL,
-  "last_name" varchar NOT NULL,
-  "nationality" varchar NOT NULL,
-  "date_of_birth" date NOT NULL,
-  "seat_row" int NOT NULL,
-  "seat_col" varchar(2) NOT NULL
+-- Create TicketOwnerSnapshot table
+CREATE TABLE TicketOwnerSnapshot (
+  ticket_id BIGSERIAL PRIMARY KEY REFERENCES Tickets(ticket_id) ON DELETE CASCADE,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  phone_number VARCHAR(20),
+  gender gender_type NOT NULL DEFAULT 'other'
 );
 
-CREATE TABLE "payment" (
-  "payment_id" bigserial PRIMARY KEY,
-  "transaction_date_time" timestamp DEFAULT NOW() NOT NULL,
-  "amount" NUMERIC(12,2),
-  "currency" varchar DEFAULT 'USD',
-  "payment_method" varchar,
-  "status" varchar DEFAULT 'pending',
-  "booking_id" bigint NOT NULL
+CREATE TABLE Seats (
+  seat_id BIGSERIAL PRIMARY KEY,
+  flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE,
+  seat_code VARCHAR(3) NOT NULL,
+  is_available BOOLEAN NOT NULL DEFAULT TRUE,
+  class flight_class NOT NULL DEFAULT 'Economy'
 );
 
-CREATE TABLE "user" (
-  "user_id" bigserial PRIMARY KEY,
-  "first_name" varchar NOT NULL,
-  "last_name" varchar NOT NULL,
-  "phone_number" varchar,
-  "gender" varchar,
-  "address" varchar,
-  "date_of_birth" timestamptz,
-  "passport_number" varchar,
-  "identification_number" varchar,
-  "hashed_password" varchar NOT NULL,
-  "role" varchar NOT NULL DEFAULT 'customer',
-  "email" varchar UNIQUE NOT NULL,
-  "loyalty_points" bigint DEFAULT 0,
-  "updated_at" timestamptz NOT NULL DEFAULT(now()),
-  "created_at" timestamptz NOT NULL DEFAULT (now())
-);
+-- Create indexes for Flights
+CREATE INDEX idx_flights_departure_time ON Flights (departure_time);
+CREATE INDEX idx_flights_arrival_time ON Flights (arrival_time);
+CREATE INDEX idx_flights_status ON Flights (status);
 
+-- Create indexes for Bookings
+CREATE INDEX idx_bookings_user_id ON Bookings (user_email);
+CREATE INDEX idx_bookings_departure_flight_id ON Bookings (departure_flight_id);
+CREATE INDEX idx_bookings_return_flight_id ON Bookings (return_flight_id);
 
-CREATE TABLE "news" (
-  "news_id" bigserial PRIMARY KEY,
-  "slug" varchar UNIQUE NOT NULL,
-  "image_url" varchar NOT NULL,
-  "title" varchar NOT NULL,
-  "description" text NOT NULL,
-  "author" varchar NOT NULL,
-  "content" text NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (now())
-);
-
-ALTER TABLE "airplane" ADD FOREIGN KEY ("airplane_model_id") REFERENCES "airplane_model" ("airplane_model_id") ON DELETE CASCADE;
-
-ALTER TABLE "flight" ADD FOREIGN KEY ("registration_number") REFERENCES "airplane" ("registration_number") ON DELETE CASCADE;
-
-ALTER TABLE "flight" ADD FOREIGN KEY ("departure_airport_id") REFERENCES "airport" ("airport_id") ON DELETE CASCADE;
-
-ALTER TABLE "flight" ADD FOREIGN KEY ("destination_airport_id") REFERENCES "airport" ("airport_id") ON DELETE CASCADE;
-
-ALTER TABLE "flight_seats" ADD FOREIGN KEY ("flight_id") REFERENCES "flight" ("flight_id") ON DELETE CASCADE;
-
-ALTER TABLE "booking" ADD FOREIGN KEY ("flight_id") REFERENCES "flight" ("flight_id") ON DELETE CASCADE;
-
-ALTER TABLE "passengers" ADD FOREIGN KEY ("booking_id") REFERENCES "booking" ("booking_id") ON DELETE CASCADE;
-
-ALTER TABLE "payment" ADD FOREIGN KEY ("booking_id") REFERENCES "booking" ("booking_id") ON DELETE CASCADE;
+-- Create indexes for Tickets
+CREATE INDEX idx_tickets_booking_id ON Tickets (booking_id);
+CREATE INDEX idx_tickets_flight_id ON Tickets (flight_id);

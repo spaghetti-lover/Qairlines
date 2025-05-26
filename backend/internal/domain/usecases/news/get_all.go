@@ -7,22 +7,22 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
-type INewsGetAllUseCase interface {
+type IGetAllNewsWithAuthor interface {
 	Execute(ctx context.Context) ([]entities.News, error)
 }
 
-type NewsGetAllUseCase struct {
+type NewsGetAllNewsWithAuthorUseCase struct {
 	newsRepository adapters.INewsRepository
 }
 
-func NewNewsGetAllUseCase(newsRepository adapters.INewsRepository) INewsGetAllUseCase {
-	return &NewsGetAllUseCase{
+func NewNewsGetAllWithAuthorUseCase(newsRepository adapters.INewsRepository) IGetAllNewsWithAuthor {
+	return &NewsGetAllNewsWithAuthorUseCase{
 		newsRepository: newsRepository,
 	}
 }
 
-func (r *NewsGetAllUseCase) Execute(ctx context.Context) ([]entities.News, error) {
-	news, err := r.newsRepository.GetAllNews(ctx)
+func (r *NewsGetAllNewsWithAuthorUseCase) Execute(ctx context.Context) ([]entities.News, error) {
+	news, err := r.newsRepository.GetAllNewsWithAuthor(ctx)
 	if err != nil {
 		return []entities.News{}, err
 	}

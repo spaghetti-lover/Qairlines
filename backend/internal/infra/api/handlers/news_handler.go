@@ -10,17 +10,17 @@ import (
 )
 
 type NewsHandler struct {
-	getAllNewsUseCase news.INewsGetAllUseCase
+	getAllNewsWithAuthor news.IGetAllNewsWithAuthor
 }
 
-func NewNewsHandler(getAllNewsUseCase news.INewsGetAllUseCase) *NewsHandler {
+func NewNewsHandler(getAllNewsWithAuthor news.IGetAllNewsWithAuthor) *NewsHandler {
 	return &NewsHandler{
-		getAllNewsUseCase: getAllNewsUseCase,
+		getAllNewsWithAuthor: getAllNewsWithAuthor,
 	}
 }
 
 func (h *NewsHandler) GetAllNews(w http.ResponseWriter, r *http.Request) {
-	news, err := h.getAllNewsUseCase.Execute(r.Context())
+	news, err := h.getAllNewsWithAuthor.Execute(r.Context())
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, "failed to get news", err)
 		return

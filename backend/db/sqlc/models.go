@@ -12,56 +12,102 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type FlightClassType string
+type BookingStatus string
 
 const (
-	FlightClassTypeEconomy  FlightClassType = "Economy"
-	FlightClassTypeBusiness FlightClassType = "Business"
-	FlightClassTypeFirst    FlightClassType = "First"
+	BookingStatusConfirmed BookingStatus = "confirmed"
+	BookingStatusCancelled BookingStatus = "cancelled"
+	BookingStatusPending   BookingStatus = "pending"
 )
 
-func (e *FlightClassType) Scan(src interface{}) error {
+func (e *BookingStatus) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = FlightClassType(s)
+		*e = BookingStatus(s)
 	case string:
-		*e = FlightClassType(s)
+		*e = BookingStatus(s)
 	default:
-		return fmt.Errorf("unsupported scan type for FlightClassType: %T", src)
+		return fmt.Errorf("unsupported scan type for BookingStatus: %T", src)
 	}
 	return nil
 }
 
-type NullFlightClassType struct {
-	FlightClassType FlightClassType `json:"flight_class_type"`
-	Valid           bool            `json:"valid"` // Valid is true if FlightClassType is not NULL
+type NullBookingStatus struct {
+	BookingStatus BookingStatus `json:"booking_status"`
+	Valid         bool          `json:"valid"` // Valid is true if BookingStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullFlightClassType) Scan(value interface{}) error {
+func (ns *NullBookingStatus) Scan(value interface{}) error {
 	if value == nil {
-		ns.FlightClassType, ns.Valid = "", false
+		ns.BookingStatus, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.FlightClassType.Scan(value)
+	return ns.BookingStatus.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullFlightClassType) Value() (driver.Value, error) {
+func (ns NullBookingStatus) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.FlightClassType), nil
+	return string(ns.BookingStatus), nil
+}
+
+type FlightClass string
+
+const (
+	FlightClassEconomy    FlightClass = "Economy"
+	FlightClassBusiness   FlightClass = "Business"
+	FlightClassFirstClass FlightClass = "First Class"
+)
+
+func (e *FlightClass) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FlightClass(s)
+	case string:
+		*e = FlightClass(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FlightClass: %T", src)
+	}
+	return nil
+}
+
+type NullFlightClass struct {
+	FlightClass FlightClass `json:"flight_class"`
+	Valid       bool        `json:"valid"` // Valid is true if FlightClass is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFlightClass) Scan(value interface{}) error {
+	if value == nil {
+		ns.FlightClass, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FlightClass.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFlightClass) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FlightClass), nil
 }
 
 type FlightStatus string
 
 const (
-	FlightStatusLanded    FlightStatus = "Landed"
-	FlightStatusDelayed   FlightStatus = "Delayed"
 	FlightStatusOnTime    FlightStatus = "On Time"
-	FlightStatusScheduled FlightStatus = "Scheduled"
+	FlightStatusDelayed   FlightStatus = "Delayed"
+	FlightStatusCancelled FlightStatus = "Cancelled"
+	FlightStatusBoarding  FlightStatus = "Boarding"
+	FlightStatusTakeoff   FlightStatus = "Takeoff"
+	FlightStatusLanding   FlightStatus = "Landing"
+	FlightStatusLanded    FlightStatus = "Landed"
 )
 
 func (e *FlightStatus) Scan(src interface{}) error {
@@ -99,157 +145,266 @@ func (ns NullFlightStatus) Value() (driver.Value, error) {
 	return string(ns.FlightStatus), nil
 }
 
-type GenderEnum string
+type GenderType string
 
 const (
-	GenderEnumMale   GenderEnum = "Male"
-	GenderEnumFemale GenderEnum = "Female"
-	GenderEnumOther  GenderEnum = "Other"
+	GenderTypeMale   GenderType = "male"
+	GenderTypeFemale GenderType = "female"
+	GenderTypeOther  GenderType = "other"
 )
 
-func (e *GenderEnum) Scan(src interface{}) error {
+func (e *GenderType) Scan(src interface{}) error {
 	switch s := src.(type) {
 	case []byte:
-		*e = GenderEnum(s)
+		*e = GenderType(s)
 	case string:
-		*e = GenderEnum(s)
+		*e = GenderType(s)
 	default:
-		return fmt.Errorf("unsupported scan type for GenderEnum: %T", src)
+		return fmt.Errorf("unsupported scan type for GenderType: %T", src)
 	}
 	return nil
 }
 
-type NullGenderEnum struct {
-	GenderEnum GenderEnum `json:"gender_enum"`
-	Valid      bool       `json:"valid"` // Valid is true if GenderEnum is not NULL
+type NullGenderType struct {
+	GenderType GenderType `json:"gender_type"`
+	Valid      bool       `json:"valid"` // Valid is true if GenderType is not NULL
 }
 
 // Scan implements the Scanner interface.
-func (ns *NullGenderEnum) Scan(value interface{}) error {
+func (ns *NullGenderType) Scan(value interface{}) error {
 	if value == nil {
-		ns.GenderEnum, ns.Valid = "", false
+		ns.GenderType, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
-	return ns.GenderEnum.Scan(value)
+	return ns.GenderType.Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (ns NullGenderEnum) Value() (driver.Value, error) {
+func (ns NullGenderType) Value() (driver.Value, error) {
 	if !ns.Valid {
 		return nil, nil
 	}
-	return string(ns.GenderEnum), nil
+	return string(ns.GenderType), nil
 }
 
-type Airplane struct {
-	AirplaneID         int64       `json:"airplane_id"`
-	AirplaneModelID    int64       `json:"airplane_model_id"`
-	RegistrationNumber string      `json:"registration_number"`
-	Active             pgtype.Bool `json:"active"`
+type TicketStatus string
+
+const (
+	TicketStatusBooked    TicketStatus = "booked"
+	TicketStatusCancelled TicketStatus = "cancelled"
+	TicketStatusUsed      TicketStatus = "used"
+)
+
+func (e *TicketStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TicketStatus(s)
+	case string:
+		*e = TicketStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TicketStatus: %T", src)
+	}
+	return nil
 }
 
-type AirplaneModel struct {
-	AirplaneModelID int64     `json:"airplane_model_id"`
-	Name            string    `json:"name"`
-	Manufacturer    string    `json:"manufacturer"`
-	TotalSeats      int64     `json:"total_seats"`
-	CreatedAt       time.Time `json:"created_at"`
+type NullTicketStatus struct {
+	TicketStatus TicketStatus `json:"ticket_status"`
+	Valid        bool         `json:"valid"` // Valid is true if TicketStatus is not NULL
 }
 
-type Airport struct {
-	AirportID   int64     `json:"airport_id"`
-	AirportCode string    `json:"airport_code"`
-	City        string    `json:"city"`
-	Name        string    `json:"name"`
-	CreatedAt   time.Time `json:"created_at"`
+// Scan implements the Scanner interface.
+func (ns *NullTicketStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.TicketStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TicketStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTicketStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TicketStatus), nil
+}
+
+type TripType string
+
+const (
+	TripTypeOneWay    TripType = "oneWay"
+	TripTypeRoundTrip TripType = "roundTrip"
+)
+
+func (e *TripType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TripType(s)
+	case string:
+		*e = TripType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TripType: %T", src)
+	}
+	return nil
+}
+
+type NullTripType struct {
+	TripType TripType `json:"trip_type"`
+	Valid    bool     `json:"valid"` // Valid is true if TripType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTripType) Scan(value interface{}) error {
+	if value == nil {
+		ns.TripType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TripType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTripType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TripType), nil
+}
+
+type UserRole string
+
+const (
+	UserRoleCustomer UserRole = "customer"
+	UserRoleAdmin    UserRole = "admin"
+)
+
+func (e *UserRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserRole(s)
+	case string:
+		*e = UserRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+	}
+	return nil
+}
+
+type NullUserRole struct {
+	UserRole UserRole `json:"user_role"`
+	Valid    bool     `json:"valid"` // Valid is true if UserRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserRole), nil
+}
+
+type Admin struct {
+	UserID int64 `json:"user_id"`
 }
 
 type Booking struct {
-	BookingID        int64            `json:"booking_id"`
-	BookerEmail      string           `json:"booker_email"`
-	NumberOfAdults   int64            `json:"number_of_adults"`
-	NumberOfChildren int64            `json:"number_of_children"`
-	FlightClass      FlightClassType  `json:"flight_class"`
-	Cancelled        pgtype.Bool      `json:"cancelled"`
-	FlightID         int64            `json:"flight_id"`
-	BookingDate      pgtype.Timestamp `json:"booking_date"`
+	BookingID         int64         `json:"booking_id"`
+	UserEmail         pgtype.Text   `json:"user_email"`
+	TripType          TripType      `json:"trip_type"`
+	DepartureFlightID int64         `json:"departure_flight_id"`
+	ReturnFlightID    pgtype.Int8   `json:"return_flight_id"`
+	Status            BookingStatus `json:"status"`
+	CreatedAt         time.Time     `json:"created_at"`
+	UpdatedAt         time.Time     `json:"updated_at"`
+}
+
+type Customer struct {
+	UserID               int64       `json:"user_id"`
+	PhoneNumber          pgtype.Text `json:"phone_number"`
+	Gender               GenderType  `json:"gender"`
+	DateOfBirth          pgtype.Date `json:"date_of_birth"`
+	PassportNumber       pgtype.Text `json:"passport_number"`
+	IdentificationNumber pgtype.Text `json:"identification_number"`
+	Address              pgtype.Text `json:"address"`
+	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
+	CreatedAt            time.Time   `json:"created_at"`
+	UpdatedAt            time.Time   `json:"updated_at"`
 }
 
 type Flight struct {
-	FlightID               int64            `json:"flight_id"`
-	FlightNumber           string           `json:"flight_number"`
-	RegistrationNumber     string           `json:"registration_number"`
-	EstimatedDepartureTime pgtype.Timestamp `json:"estimated_departure_time"`
-	ActualDepartureTime    pgtype.Timestamp `json:"actual_departure_time"`
-	EstimatedArrivalTime   pgtype.Timestamp `json:"estimated_arrival_time"`
-	ActualArrivalTime      pgtype.Timestamp `json:"actual_arrival_time"`
-	DepartureAirportID     int64            `json:"departure_airport_id"`
-	DestinationAirportID   int64            `json:"destination_airport_id"`
-	FlightPrice            pgtype.Numeric   `json:"flight_price"`
-	Status                 FlightStatus     `json:"status"`
-}
-
-type FlightSeat struct {
-	FlightSeatsID   int64           `json:"flight_seats_id"`
-	FlightID        int64           `json:"flight_id"`
-	FlightClass     FlightClassType `json:"flight_class"`
-	ClassMultiplier pgtype.Numeric  `json:"class_multiplier"`
-	ChildMultiplier pgtype.Numeric  `json:"child_multiplier"`
-	MaxRowSeat      int64           `json:"max_row_seat"`
-	MaxColSeat      int64           `json:"max_col_seat"`
+	FlightID         int64        `json:"flight_id"`
+	FlightNumber     string       `json:"flight_number"`
+	AircraftType     pgtype.Text  `json:"aircraft_type"`
+	DepartureCity    pgtype.Text  `json:"departure_city"`
+	ArrivalCity      pgtype.Text  `json:"arrival_city"`
+	DepartureAirport pgtype.Text  `json:"departure_airport"`
+	ArrivalAirport   pgtype.Text  `json:"arrival_airport"`
+	DepartureTime    time.Time    `json:"departure_time"`
+	ArrivalTime      time.Time    `json:"arrival_time"`
+	BasePrice        int32        `json:"base_price"`
+	TotalSeatsRow    int32        `json:"total_seats_row"`
+	TotalSeatsColumn int32        `json:"total_seats_column"`
+	Status           FlightStatus `json:"status"`
 }
 
 type News struct {
-	NewsID      int64     `json:"news_id"`
-	Slug        string    `json:"slug"`
-	ImageUrl    string    `json:"image_url"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Author      string    `json:"author"`
-	Content     string    `json:"content"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          int64       `json:"id"`
+	Title       string      `json:"title"`
+	Description pgtype.Text `json:"description"`
+	Content     pgtype.Text `json:"content"`
+	Image       pgtype.Text `json:"image"`
+	AuthorID    pgtype.Int8 `json:"author_id"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
-type Passenger struct {
-	PassengerID    int64       `json:"passenger_id"`
-	BookingID      int64       `json:"booking_id"`
-	CitizenID      string      `json:"citizen_id"`
-	PassportNumber pgtype.Text `json:"passport_number"`
-	Gender         GenderEnum  `json:"gender"`
-	PhoneNumber    string      `json:"phone_number"`
-	FirstName      string      `json:"first_name"`
-	LastName       string      `json:"last_name"`
-	Nationality    string      `json:"nationality"`
-	DateOfBirth    pgtype.Date `json:"date_of_birth"`
-	SeatRow        int32       `json:"seat_row"`
-	SeatCol        string      `json:"seat_col"`
+type Seat struct {
+	SeatID      int64       `json:"seat_id"`
+	FlightID    pgtype.Int8 `json:"flight_id"`
+	SeatCode    string      `json:"seat_code"`
+	IsAvailable bool        `json:"is_available"`
+	Class       FlightClass `json:"class"`
 }
 
-type Payment struct {
-	PaymentID           int64            `json:"payment_id"`
-	TransactionDateTime pgtype.Timestamp `json:"transaction_date_time"`
-	Amount              pgtype.Numeric   `json:"amount"`
-	Currency            pgtype.Text      `json:"currency"`
-	PaymentMethod       pgtype.Text      `json:"payment_method"`
-	Status              pgtype.Text      `json:"status"`
-	BookingID           int64            `json:"booking_id"`
+type Ticket struct {
+	TicketID    int64        `json:"ticket_id"`
+	FlightClass FlightClass  `json:"flight_class"`
+	Price       int32        `json:"price"`
+	Status      TicketStatus `json:"status"`
+	BookingID   pgtype.Int8  `json:"booking_id"`
+	FlightID    pgtype.Int8  `json:"flight_id"`
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
+}
+
+type Ticketownersnapshot struct {
+	TicketID    int64       `json:"ticket_id"`
+	FirstName   pgtype.Text `json:"first_name"`
+	LastName    pgtype.Text `json:"last_name"`
+	PhoneNumber pgtype.Text `json:"phone_number"`
+	Gender      GenderType  `json:"gender"`
 }
 
 type User struct {
-	UserID               int64              `json:"user_id"`
-	FirstName            string             `json:"first_name"`
-	LastName             string             `json:"last_name"`
-	PhoneNumber          pgtype.Text        `json:"phone_number"`
-	Gender               pgtype.Text        `json:"gender"`
-	Address              pgtype.Text        `json:"address"`
-	DateOfBirth          pgtype.Timestamptz `json:"date_of_birth"`
-	PassportNumber       pgtype.Text        `json:"passport_number"`
-	IdentificationNumber pgtype.Text        `json:"identification_number"`
-	HashedPassword       string             `json:"hashed_password"`
-	Role                 string             `json:"role"`
-	Email                string             `json:"email"`
-	LoyaltyPoints        pgtype.Int8        `json:"loyalty_points"`
-	UpdatedAt            time.Time          `json:"updated_at"`
-	CreatedAt            time.Time          `json:"created_at"`
+	UserID         int64       `json:"user_id"`
+	Email          string      `json:"email"`
+	HashedPassword string      `json:"hashed_password"`
+	FirstName      pgtype.Text `json:"first_name"`
+	LastName       pgtype.Text `json:"last_name"`
+	Role           UserRole    `json:"role"`
+	IsActive       bool        `json:"is_active"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
 }
