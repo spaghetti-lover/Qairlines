@@ -186,6 +186,70 @@ func (q *Queries) GetFlightsByStatus(ctx context.Context, flightID int64) (Fligh
 	return status, err
 }
 
+const getSuggestedFlights = `-- name: GetSuggestedFlights :many
+SELECT
+    flight_id,
+    flight_number,
+    airline,
+    departure_city,
+    arrival_city,
+    departure_time,
+    arrival_time,
+    departure_airport,
+    arrival_airport,
+    aircraft_type,
+    base_price
+FROM Flights
+ORDER BY departure_time ASC
+LIMIT 10
+`
+
+type GetSuggestedFlightsRow struct {
+	FlightID         int64       `json:"flight_id"`
+	FlightNumber     string      `json:"flight_number"`
+	Airline          pgtype.Text `json:"airline"`
+	DepartureCity    pgtype.Text `json:"departure_city"`
+	ArrivalCity      pgtype.Text `json:"arrival_city"`
+	DepartureTime    time.Time   `json:"departure_time"`
+	ArrivalTime      time.Time   `json:"arrival_time"`
+	DepartureAirport pgtype.Text `json:"departure_airport"`
+	ArrivalAirport   pgtype.Text `json:"arrival_airport"`
+	AircraftType     pgtype.Text `json:"aircraft_type"`
+	BasePrice        int32       `json:"base_price"`
+}
+
+func (q *Queries) GetSuggestedFlights(ctx context.Context) ([]GetSuggestedFlightsRow, error) {
+	rows, err := q.db.Query(ctx, getSuggestedFlights)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSuggestedFlightsRow{}
+	for rows.Next() {
+		var i GetSuggestedFlightsRow
+		if err := rows.Scan(
+			&i.FlightID,
+			&i.FlightNumber,
+			&i.Airline,
+			&i.DepartureCity,
+			&i.ArrivalCity,
+			&i.DepartureTime,
+			&i.ArrivalTime,
+			&i.DepartureAirport,
+			&i.ArrivalAirport,
+			&i.AircraftType,
+			&i.BasePrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listFlights = `-- name: ListFlights :many
 SELECT flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
 ORDER BY flight_id

@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrFlightNotFound = errors.New("flight not found")
-	ErrNoFlightsFound = errors.New("no flights found for the given criteria")
+	ErrFlightNotFound     = errors.New("flight not found")
+	ErrNoFlightsFound     = errors.New("no flights found for the given criteria")
+	ErrNoSuggestedFlights = errors.New("no suggested flights available")
 )
 
 type IFlightRepository interface {
@@ -20,4 +21,5 @@ type IFlightRepository interface {
 	GetAllFlights(ctx context.Context) ([]entities.Flight, error)
 	DeleteFlightByID(ctx context.Context, flightID int64) error
 	SearchFlights(ctx context.Context, departureCity, arrivalCity string, flightDate time.Time) ([]entities.Flight, error)
+	GetSuggestedFlights(ctx context.Context) ([]entities.Flight, error)
 }

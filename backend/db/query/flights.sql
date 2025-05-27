@@ -69,3 +69,20 @@ SELECT
     base_price
 FROM Flights
 WHERE departure_city = $1 AND arrival_city = $2 AND DATE(departure_time) = $3;
+
+-- name: GetSuggestedFlights :many
+SELECT
+    flight_id,
+    flight_number,
+    airline,
+    departure_city,
+    arrival_city,
+    departure_time,
+    arrival_time,
+    departure_airport,
+    arrival_airport,
+    aircraft_type,
+    base_price
+FROM Flights
+ORDER BY departure_time ASC
+LIMIT 10;

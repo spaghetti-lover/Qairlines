@@ -162,3 +162,33 @@ func (r *FlightRepositoryPostgres) SearchFlights(ctx context.Context, departureC
 
 	return flights, nil
 }
+
+func (r *FlightRepositoryPostgres) GetSuggestedFlights(ctx context.Context) ([]entities.Flight, error) {
+	rows, err := r.store.GetSuggestedFlights(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get suggested flights: %w", err)
+	}
+
+	if len(rows) == 0 {
+		return nil, adapters.ErrNoSuggestedFlights
+	}
+
+	var flights []entities.Flight
+	for _, row := range rows {
+		flights = append(flights, entities.Flight{
+			FlightID:         row.FlightID,
+			FlightNumber:     row.FlightNumber,
+			Airline:          row.Airline.String,
+			DepartureCity:    row.DepartureCity.String,
+			ArrivalCity:      row.ArrivalCity.String,
+			DepartureTime:    row.DepartureTime,
+			ArrivalTime:      row.ArrivalTime,
+			DepartureAirport: row.DepartureAirport.String,
+			ArrivalAirport:   row.ArrivalAirport.String,
+			AircraftType:     row.AircraftType.String,
+			BasePrice:        row.BasePrice,
+		})
+	}
+
+	return flights, nil
+}

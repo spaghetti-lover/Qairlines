@@ -14,18 +14,20 @@ import (
 )
 
 type FlightHandler struct {
-	createFlightUseCase      flight.ICreateFlightUseCase
-	getFlightUseCase         flight.IGetFlightUseCase
-	updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase
-	getAllFlightsUseCase     flight.IGetAllFlightsUseCase
-	deleteFlightUseCase      flight.IDeleteFlightUseCase
-	searchFlightsUseCase     flight.ISearchFlightsUseCase
+	createFlightUseCase        flight.ICreateFlightUseCase
+	getFlightUseCase           flight.IGetFlightUseCase
+	updateFlightTimesUseCase   flight.IUpdateFlightTimesUseCase
+	getAllFlightsUseCase       flight.IGetAllFlightsUseCase
+	deleteFlightUseCase        flight.IDeleteFlightUseCase
+	searchFlightsUseCase       flight.ISearchFlightsUseCase
+	getSuggestedFlightsUseCase flight.IGetSuggestedFlightsUseCase
 }
 
-func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlightUseCase flight.IGetFlightUseCase, updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase, getAllFlightsUseCase flight.IGetAllFlightsUseCase, deleteFlightUseCase flight.IDeleteFlightUseCase, searchFlightsUseCase flight.ISearchFlightsUseCase) *FlightHandler {
+func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlightUseCase flight.IGetFlightUseCase, updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase, getAllFlightsUseCase flight.IGetAllFlightsUseCase, deleteFlightUseCase flight.IDeleteFlightUseCase, searchFlightsUseCase flight.ISearchFlightsUseCase, getSuggestedFlightsUseCase flight.IGetSuggestedFlightsUseCase) *FlightHandler {
 	return &FlightHandler{createFlightUseCase: createFlightUseCase, getFlightUseCase: getFlightUseCase, updateFlightTimesUseCase: updateFlightTimesUseCase,
 		getAllFlightsUseCase: getAllFlightsUseCase, deleteFlightUseCase: deleteFlightUseCase,
-		searchFlightsUseCase: searchFlightsUseCase,
+		searchFlightsUseCase:       searchFlightsUseCase,
+		getSuggestedFlightsUseCase: getSuggestedFlightsUseCase,
 	}
 }
 
@@ -238,6 +240,23 @@ func (h *FlightHandler) SearchFlights(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Flights retrieved successfully.",
+		"data":    flights,
+	})
+}
+
+func (h *FlightHandler) GetSuggestedFlights(w http.ResponseWriter, r *http.Request) {
+	// Gọi use case để lấy danh sách chuyến bay gợi ý
+	flights, err := h.getSuggestedFlightsUseCase.Execute(r.Context())
+	if err != nil {
+		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Suggested flights retrieved successfully.",
 		"data":    flights,
 	})
 }

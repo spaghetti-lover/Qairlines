@@ -51,6 +51,7 @@ type Querier interface {
 	GetNews(ctx context.Context, id int64) (News, error)
 	GetSeat(ctx context.Context, seatID int64) (Seat, error)
 	GetSeatByTicketID(ctx context.Context, ticketID int64) (GetSeatByTicketIDRow, error)
+	GetSuggestedFlights(ctx context.Context) ([]GetSuggestedFlightsRow, error)
 	GetTicketByFlightId(ctx context.Context, flightID int64) ([]Ticket, error)
 	GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error)
 	GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (Ticketownersnapshot, error)

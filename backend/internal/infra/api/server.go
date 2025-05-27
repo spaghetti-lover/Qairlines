@@ -70,6 +70,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	flightGetAllUseCase := flight.NewGetAllFlightsUseCase(flightRepo)
 	flightDeleteUseCase := flight.NewDeleteFlightUseCase(flightRepo)
 	flightSearchUseCase := flight.NewSearchFlightsUseCase(flightRepo)
+	flightSuggestedUseCase := flight.NewGetSuggestedFlightsUseCase(flightRepo)
 	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
@@ -80,7 +81,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
-	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase)
+	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase, flightSuggestedUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
@@ -127,6 +128,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/flight/all", authMiddleware(http.HandlerFunc(flightHandler.GetAllFlights))).Methods("GET")
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.DeleteFlight))).Methods("DELETE")
 	apiRouter.HandleFunc("/flight/search", flightHandler.SearchFlights).Methods("GET")
+	apiRouter.HandleFunc("/flight/suggest", flightHandler.GetSuggestedFlights).Methods("GET")
 
 	// Ticket API
 	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")
