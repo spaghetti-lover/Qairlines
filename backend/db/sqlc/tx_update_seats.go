@@ -17,7 +17,7 @@ func (store *SQLStore) UpdateSeats(ctx context.Context, bookingID int64, seats [
 	err := store.execTx(ctx, func(q *Queries) error {
 		for _, seat := range seats {
 			// Kiểm tra ghế có thuộc chuyến bay không
-			ticket, err := store.GetTicket(ctx, seat.TicketID)
+			ticket, err := store.GetTicketByID(ctx, seat.TicketID)
 			if err != nil || ticket.BookingID.Int64 != bookingID {
 				return fmt.Errorf("invalid ticket_id %d for booking_id %d", seat.TicketID, bookingID)
 			}

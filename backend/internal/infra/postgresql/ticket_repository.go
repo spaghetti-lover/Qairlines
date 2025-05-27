@@ -2,8 +2,10 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
+	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
@@ -54,4 +56,63 @@ func (r *TicketRepositoryPostgres) GetTicketsByFlightID(ctx context.Context, fli
 	}
 
 	return result, nil
+}
+
+func (r *TicketRepositoryPostgres) GetTicketByID(ctx context.Context, ticketID int64) (*entities.Ticket, error) {
+	// Sử dụng sqlc để lấy vé theo ticketID
+	ticket, err := r.store.GetTicketByID(ctx, ticketID)
+	if err == sql.ErrNoRows {
+		return nil, adapters.ErrTicketNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &entities.Ticket{
+		TicketID:    ticket.TicketID,
+		Status:      entities.TicketStatus(ticket.Status),
+		FlightClass: entities.FlightClass(ticket.FlightClass),
+		Price:       int(ticket.Price),
+		BookingID:   ticket.BookingID.Int64,
+		FlightID:    ticket.FlightID,
+		CreatedAt:   ticket.CreatedAt,
+		UpdatedAt:   ticket.UpdatedAt,
+		Seat: entities.Seat{
+			SeatCode: ticket.SeatCode.String,
+		},
+		Owner: entities.TicketOwner{
+			FirstName:   ticket.OwnerFirstName.String,
+			LastName:    ticket.OwnerLastName.String,
+			PhoneNumber: ticket.OwnerPhoneNumber.String,
+			Gender:      entities.GenderType(ticket.OwnerGender.GenderType),
+		},
+	}, nil
+}
+
+func (r *TicketRepositoryPostgres) CancelTicket(ctx context.Context, ticketID int64) (*entities.Ticket, error) {
+	row, err := r.store.CancelTicket(ctx, ticketID)
+	if err == sql.ErrNoRows {
+		return nil, adapters.ErrTicketNotFound
+	}
+	if err != nil {
+		return nil, adapters.ErrTicketCannotBeCancelled
+	}
+
+	return &entities.Ticket{
+		TicketID:    row.TicketID,
+		Status:      entities.TicketStatus(row.Status),
+		FlightClass: entities.FlightClass(row.FlightClass),
+		Price:       int(row.Price),
+		BookingID:   row.BookingID.Int64,
+		FlightID:    row.FlightID,
+		UpdatedAt:   row.UpdatedAt,
+		Seat: entities.Seat{
+			SeatCode: row.SeatCode,
+		},
+		Owner: entities.TicketOwner{
+			FirstName:   row.OwnerFirstName.String,
+			LastName:    row.OwnerLastName.String,
+			PhoneNumber: row.OwnerPhoneNumber.String,
+		},
+	}, nil
 }

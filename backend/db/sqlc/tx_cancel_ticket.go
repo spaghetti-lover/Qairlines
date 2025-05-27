@@ -67,7 +67,6 @@ func (store *SQLStore) CancelTicketTx(ctx context.Context, arg CancelTicketTxPar
 
 		// 6. Cập nhật kết quả
 		result.Ticket = updatedTicketDetails
-		result.UpdatedSeatID = ticket.SeatID
 		result.Success = true
 		result.TransactionTime = time.Now()
 

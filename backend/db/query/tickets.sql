@@ -9,9 +9,25 @@ INSERT INTO tickets (
   $1, $2, $3, $4, $5
 ) RETURNING *;
 
--- name: GetTicket :one
-SELECT * FROM tickets
-WHERE ticket_id = $1 LIMIT 1;
+-- name: GetTicketByID :one
+SELECT
+    t.ticket_id,
+    t.status,
+    t.flight_class,
+    t.price,
+    t.booking_id,
+    t.flight_id,
+    t.created_at,
+    t.updated_at,
+    s.seat_code,
+    o.first_name AS owner_first_name,
+    o.last_name AS owner_last_name,
+    o.gender AS owner_gender,
+    o.phone_number AS owner_phone_number
+FROM Tickets t
+LEFT JOIN Seats s ON t.seat_id = s.seat_id
+LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
+WHERE t.ticket_id = $1;
 
 -- name: ListTickets :many
 SELECT * FROM tickets
@@ -68,25 +84,12 @@ SET status = $2, updated_at = NOW()
 WHERE ticket_id = $1
 RETURNING *;
 
--- name: GetTicketByID :one
-SELECT
-    t.ticket_id,
-    t.seat_id,
-    t.status,
-    t.flight_class,
-    t.price,
-    t.booking_id,
-    t.flight_id,
-    t.created_at,
-    t.updated_at,
-    s.seat_code,
-    s.class AS seat_class,
-    tos.first_name,
-    tos.last_name,
-    tos.phone_number,
-    tos.gender
-FROM Tickets t
-JOIN Seats s ON t.seat_id = s.seat_id
-JOIN TicketOwnerSnapshot tos ON t.ticket_id = tos.ticket_id
-WHERE t.ticket_id = $1
-LIMIT 1;
+-- name: CancelTicket :one
+UPDATE Tickets
+SET status = 'cancelled', updated_at = NOW()
+WHERE Tickets.ticket_id = $1 AND status = 'booked'
+RETURNING ticket_id, status, flight_class, price, booking_id, flight_id, updated_at,
+          (SELECT seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code,
+          (SELECT first_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_first_name,
+          (SELECT last_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_last_name,
+          (SELECT phone_number FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_phone_number;

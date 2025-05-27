@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CancelTicket(ctx context.Context, ticketID int64) (CancelTicketRow, error)
 	CheckSeatAvailability(ctx context.Context, arg CheckSeatAvailabilityParams) (bool, error)
 	CountOccupiedSeats(ctx context.Context, flightID pgtype.Int8) (int64, error)
 	CreateAdmin(ctx context.Context, userID int64) (int64, error)
@@ -47,7 +48,6 @@ type Querier interface {
 	GetNews(ctx context.Context, id int64) (News, error)
 	GetSeat(ctx context.Context, seatID int64) (Seat, error)
 	GetSeatByTicketID(ctx context.Context, ticketID int64) (GetSeatByTicketIDRow, error)
-	GetTicket(ctx context.Context, ticketID int64) (Ticket, error)
 	GetTicketByFlightId(ctx context.Context, flightID int64) ([]Ticket, error)
 	GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error)
 	GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (Ticketownersnapshot, error)

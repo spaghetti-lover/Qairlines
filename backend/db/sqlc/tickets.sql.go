@@ -12,6 +12,50 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const cancelTicket = `-- name: CancelTicket :one
+UPDATE Tickets
+SET status = 'cancelled', updated_at = NOW()
+WHERE Tickets.ticket_id = $1 AND status = 'booked'
+RETURNING ticket_id, status, flight_class, price, booking_id, flight_id, updated_at,
+          (SELECT seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code,
+          (SELECT first_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_first_name,
+          (SELECT last_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_last_name,
+          (SELECT phone_number FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_phone_number
+`
+
+type CancelTicketRow struct {
+	TicketID         int64        `json:"ticket_id"`
+	Status           TicketStatus `json:"status"`
+	FlightClass      FlightClass  `json:"flight_class"`
+	Price            int32        `json:"price"`
+	BookingID        pgtype.Int8  `json:"booking_id"`
+	FlightID         int64        `json:"flight_id"`
+	UpdatedAt        time.Time    `json:"updated_at"`
+	SeatCode         string       `json:"seat_code"`
+	OwnerFirstName   pgtype.Text  `json:"owner_first_name"`
+	OwnerLastName    pgtype.Text  `json:"owner_last_name"`
+	OwnerPhoneNumber pgtype.Text  `json:"owner_phone_number"`
+}
+
+func (q *Queries) CancelTicket(ctx context.Context, ticketID int64) (CancelTicketRow, error) {
+	row := q.db.QueryRow(ctx, cancelTicket, ticketID)
+	var i CancelTicketRow
+	err := row.Scan(
+		&i.TicketID,
+		&i.Status,
+		&i.FlightClass,
+		&i.Price,
+		&i.BookingID,
+		&i.FlightID,
+		&i.UpdatedAt,
+		&i.SeatCode,
+		&i.OwnerFirstName,
+		&i.OwnerLastName,
+		&i.OwnerPhoneNumber,
+	)
+	return i, err
+}
+
 const createTicket = `-- name: CreateTicket :one
 INSERT INTO tickets (
   flight_class,
@@ -65,28 +109,6 @@ func (q *Queries) DeleteTicket(ctx context.Context, ticketID int64) error {
 	return err
 }
 
-const getTicket = `-- name: GetTicket :one
-SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
-WHERE ticket_id = $1 LIMIT 1
-`
-
-func (q *Queries) GetTicket(ctx context.Context, ticketID int64) (Ticket, error) {
-	row := q.db.QueryRow(ctx, getTicket, ticketID)
-	var i Ticket
-	err := row.Scan(
-		&i.TicketID,
-		&i.SeatID,
-		&i.FlightClass,
-		&i.Price,
-		&i.Status,
-		&i.BookingID,
-		&i.FlightID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const getTicketByFlightId = `-- name: GetTicketByFlightId :many
 SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
 WHERE flight_id = $1
@@ -126,7 +148,6 @@ func (q *Queries) GetTicketByFlightId(ctx context.Context, flightID int64) ([]Ti
 const getTicketByID = `-- name: GetTicketByID :one
 SELECT
     t.ticket_id,
-    t.seat_id,
     t.status,
     t.flight_class,
     t.price,
@@ -135,34 +156,30 @@ SELECT
     t.created_at,
     t.updated_at,
     s.seat_code,
-    s.class AS seat_class,
-    tos.first_name,
-    tos.last_name,
-    tos.phone_number,
-    tos.gender
+    o.first_name AS owner_first_name,
+    o.last_name AS owner_last_name,
+    o.gender AS owner_gender,
+    o.phone_number AS owner_phone_number
 FROM Tickets t
-JOIN Seats s ON t.seat_id = s.seat_id
-JOIN TicketOwnerSnapshot tos ON t.ticket_id = tos.ticket_id
+LEFT JOIN Seats s ON t.seat_id = s.seat_id
+LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
 WHERE t.ticket_id = $1
-LIMIT 1
 `
 
 type GetTicketByIDRow struct {
-	TicketID    int64        `json:"ticket_id"`
-	SeatID      int64        `json:"seat_id"`
-	Status      TicketStatus `json:"status"`
-	FlightClass FlightClass  `json:"flight_class"`
-	Price       int32        `json:"price"`
-	BookingID   pgtype.Int8  `json:"booking_id"`
-	FlightID    int64        `json:"flight_id"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
-	SeatCode    string       `json:"seat_code"`
-	SeatClass   FlightClass  `json:"seat_class"`
-	FirstName   pgtype.Text  `json:"first_name"`
-	LastName    pgtype.Text  `json:"last_name"`
-	PhoneNumber pgtype.Text  `json:"phone_number"`
-	Gender      GenderType   `json:"gender"`
+	TicketID         int64          `json:"ticket_id"`
+	Status           TicketStatus   `json:"status"`
+	FlightClass      FlightClass    `json:"flight_class"`
+	Price            int32          `json:"price"`
+	BookingID        pgtype.Int8    `json:"booking_id"`
+	FlightID         int64          `json:"flight_id"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+	SeatCode         pgtype.Text    `json:"seat_code"`
+	OwnerFirstName   pgtype.Text    `json:"owner_first_name"`
+	OwnerLastName    pgtype.Text    `json:"owner_last_name"`
+	OwnerGender      NullGenderType `json:"owner_gender"`
+	OwnerPhoneNumber pgtype.Text    `json:"owner_phone_number"`
 }
 
 func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error) {
@@ -170,7 +187,6 @@ func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketB
 	var i GetTicketByIDRow
 	err := row.Scan(
 		&i.TicketID,
-		&i.SeatID,
 		&i.Status,
 		&i.FlightClass,
 		&i.Price,
@@ -179,11 +195,10 @@ func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketB
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SeatCode,
-		&i.SeatClass,
-		&i.FirstName,
-		&i.LastName,
-		&i.PhoneNumber,
-		&i.Gender,
+		&i.OwnerFirstName,
+		&i.OwnerLastName,
+		&i.OwnerGender,
+		&i.OwnerPhoneNumber,
 	)
 	return i, err
 }

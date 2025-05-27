@@ -5,11 +5,11 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 )
 
-func ToGetTicketsByFlightIDResponse(tickets []entities.Ticket) []dto.GetTicketResponse {
-	var responses []dto.GetTicketResponse
+func ToGetTicketsByFlightIDResponse(tickets []entities.Ticket) []dto.GetTicketByFlightIDResponse {
+	var responses []dto.GetTicketByFlightIDResponse
 
 	for _, ticket := range tickets {
-		responses = append(responses, dto.GetTicketResponse{
+		responses = append(responses, dto.GetTicketByFlightIDResponse{
 			TicketID:    ticket.TicketID,
 			SeatID:      ticket.SeatID,
 			FlightClass: string(ticket.FlightClass),
@@ -35,4 +35,42 @@ func ToGetTicketsByFlightIDResponse(tickets []entities.Ticket) []dto.GetTicketRe
 	}
 
 	return responses
+}
+
+func ToGetTicketResponse(ticket entities.Ticket) dto.GetTicketResponse {
+	return dto.GetTicketResponse{
+		TicketID:    ticket.TicketID,
+		Status:      string(ticket.Status),
+		SeatCode:    ticket.Seat.SeatCode,
+		FlightClass: string(ticket.FlightClass),
+		Price:       ticket.Price,
+		OwnerData: dto.TicketOwnerResponse{
+			FirstName:   ticket.Owner.FirstName,
+			LastName:    ticket.Owner.LastName,
+			PhoneNumber: ticket.Owner.PhoneNumber,
+			Gender:      string(ticket.Owner.Gender),
+		},
+		BookingID: ticket.BookingID,
+		FlightID:  ticket.FlightID,
+		CreatedAt: ticket.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		UpdatedAt: ticket.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+	}
+}
+
+func ToCancelTicketResponse(ticket *entities.Ticket) *dto.CancelTicketResponse {
+	return &dto.CancelTicketResponse{
+		TicketID:    ticket.TicketID,
+		Status:      string(ticket.Status),
+		SeatCode:    ticket.Seat.SeatCode,
+		FlightClass: string(ticket.FlightClass),
+		Price:       ticket.Price,
+		OwnerData: dto.TicketOwnerResponse{
+			FirstName:   ticket.Owner.FirstName,
+			LastName:    ticket.Owner.LastName,
+			PhoneNumber: ticket.Owner.PhoneNumber,
+		},
+		BookingID: ticket.BookingID,
+		FlightID:  ticket.FlightID,
+		UpdatedAt: ticket.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+	}
 }

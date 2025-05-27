@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -12,11 +13,15 @@ import (
 
 type TicketHandler struct {
 	getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase
+	getTicketUseCase            ticket.IGetTicketUseCase
+	cancelTicketUseCase         ticket.ICancelTicketUseCase
 }
 
-func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase) *TicketHandler {
+func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase, getTicketUseCase ticket.IGetTicketUseCase, cancelTicketUseCase ticket.ICancelTicketUseCase) *TicketHandler {
 	return &TicketHandler{
 		getTicketsByFlightIDUseCase: getTicketsByFlightIDUseCase,
+		getTicketUseCase:            getTicketUseCase,
+		cancelTicketUseCase:         cancelTicketUseCase,
 	}
 }
 
@@ -59,4 +64,72 @@ func (h *TicketHandler) GetTicketsByFlightID(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
+	ticketIDStr := r.URL.Query().Get("id")
+	if ticketIDStr == "" {
+		http.Error(w, `{"message": "id is required"}`, http.StatusBadRequest)
+		return
+	}
+	ticketID, err := strconv.ParseInt(ticketIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, `{"message":"Invalid id"}`, http.StatusBadRequest)
+		return
+	}
+	ticket, err := h.getTicketUseCase.Execute(r.Context(), ticketID)
+	if err != nil {
+		if errors.Is(err, adapters.ErrTicketNotFound) {
+			http.Error(w, "Ticket not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "An unexpected error occurred", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Ticket retrieved successfully.",
+		"data":    ticket,
+	})
+}
+
+func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		http.Error(w, `{"message":"Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
+		return
+	}
+
+	ticketIDStr := r.URL.Query().Get("id")
+	if ticketIDStr == "" {
+		http.Error(w, `{"message":"id is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	ticketID, err := strconv.ParseInt(ticketIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, `{"message":"Invalid id"}`, http.StatusBadRequest)
+		return
+	}
+
+	ticket, err := h.cancelTicketUseCase.Execute(r.Context(), ticketID)
+	if err != nil {
+		if errors.Is(err, adapters.ErrTicketNotFound) {
+			http.Error(w, `{"message":"Ticket not found"}`, http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, adapters.ErrTicketCannotBeCancelled) {
+			http.Error(w, `{"message":"Ticket cannot be cancelled due to its current status."}`, http.StatusBadRequest)
+			return
+		}
+		http.Error(w, `{"message":"An unexpected error occurred"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Ticket cancelled successfully.",
+		"ticket":  ticket,
+	})
 }

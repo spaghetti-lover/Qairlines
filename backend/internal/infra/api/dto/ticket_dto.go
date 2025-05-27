@@ -1,6 +1,6 @@
 package dto
 
-type GetTicketResponse struct {
+type GetTicketByFlightIDResponse struct {
 	TicketID    int64               `json:"ticketId"`
 	SeatID      int64               `json:"seatId"`
 	FlightClass string              `json:"flightClass"`
@@ -12,6 +12,19 @@ type GetTicketResponse struct {
 	UpdatedAt   string              `json:"updatedAt"`
 	Seat        SeatResponse        `json:"seat"`
 	Owner       TicketOwnerResponse `json:"owner"`
+}
+
+type GetTicketResponse struct {
+	TicketID    int64               `json:"ticketId"`
+	Status      string              `json:"status"`
+	SeatCode    string              `json:"seatCode"`
+	FlightClass string              `json:"flightClass"`
+	Price       int                 `json:"price"`
+	OwnerData   TicketOwnerResponse `json:"ownerData"`
+	BookingID   int64               `json:"bookingId"`
+	FlightID    int64               `json:"flightId"`
+	CreatedAt   string              `json:"createdAt"`
+	UpdatedAt   string              `json:"updatedAt"`
 }
 
 type SeatResponse struct {
@@ -26,4 +39,16 @@ type TicketOwnerResponse struct {
 	LastName    string `json:"lastName"`
 	PhoneNumber string `json:"phoneNumber"`
 	Gender      string `json:"gender"`
+}
+
+type CancelTicketResponse struct {
+	TicketID    int64               `json:"ticketId"`
+	Status      string              `json:"status"`
+	SeatCode    string              `json:"seatCode"`
+	FlightClass string              `json:"flightClass"`
+	Price       int                 `json:"price"`
+	OwnerData   TicketOwnerResponse `json:"ownerData"`
+	BookingID   int64               `json:"bookingId"`
+	FlightID    int64               `json:"flightId"`
+	UpdatedAt   string              `json:"updatedAt"`
 }
