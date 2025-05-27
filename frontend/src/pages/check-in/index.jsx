@@ -80,7 +80,7 @@ export default function CheckInPage() {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Token không tồn tại.");
 
-        const response = await fetch(`${API_BASE_URL}/api/flight/?id=${flightId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/flight?id=${flightId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {

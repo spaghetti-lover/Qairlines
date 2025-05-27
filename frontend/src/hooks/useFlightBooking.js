@@ -43,7 +43,7 @@ export function useFlightBooking(bookingID) {
         if (booking.departureIdTickets && booking.departureIdTickets.length > 0) {
           Promise.all(
             booking.departureIdTickets.map((ticketID) =>
-              axios.get(`${API_BASE_URL}/api/ticket/?id=${ticketID}`, {
+              axios.get(`${API_BASE_URL}/api/ticket?id=${ticketID}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
@@ -68,7 +68,7 @@ export function useFlightBooking(bookingID) {
         if (booking.returnIdTickets && booking.returnIdTickets.length > 0) {
           Promise.all(
             booking.returnIdTickets.map((ticketID) =>
-              axios.get(`${API_BASE_URL}/api/ticket/?id=${ticketID}`, {
+              axios.get(`${API_BASE_URL}/api/ticket?id=${ticketID}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
@@ -91,7 +91,7 @@ export function useFlightBooking(bookingID) {
         // Fetch departure flight data
         if (booking.departureFlightId) {
           axios
-            .get(`${API_BASE_URL}/api/flight/?id=${booking.departureFlightId}`, {
+            .get(`${API_BASE_URL}/api/flight?id=${booking.departureFlightId}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -108,7 +108,7 @@ export function useFlightBooking(bookingID) {
         // Fetch return flight data
         if (booking.returnFlightId) {
           axios
-            .get(`${API_BASE_URL}/api/flight/?id=${booking.returnFlightId}`, {
+            .get(`${API_BASE_URL}/api/flight?id=${booking.returnFlightId}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -135,10 +135,10 @@ export function useFlightBooking(bookingID) {
         : ticket.flightClass === 'business'
         ? 'Thương gia'
         : 'N/A';
-    setSelectedTicket({ 
-      ...ticket, 
-      flightClass: translatedClass, 
-      gate: 6 
+    setSelectedTicket({
+      ...ticket,
+      flightClass: translatedClass,
+      gate: 6
     });
     setDialogOpen(true);
   };

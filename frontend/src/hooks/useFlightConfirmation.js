@@ -7,9 +7,9 @@ import { toast } from "@/hooks/use-toast";
 /** Khai báo constant để ngoài cùng, đảm bảo không thay đổi reference */
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-/** 
+/**
  * Hàm tiện ích tách ra ngoài để không bị re-create mỗi lần render.
- * Không phụ thuộc state/props => có thể định nghĩa ngoài hook 
+ * Không phụ thuộc state/props => có thể định nghĩa ngoài hook
  */
 function generateTicketOptions(basePrice, type) {
   const changeFee = type === "economy" ? 860000 : 360000;
@@ -70,7 +70,7 @@ export function useFlightConfirmation() {
   const fetchFlightData = useCallback(
     async (flightId, optionId, setFlightDataFn, setOptionFn) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/flight/?id=${flightId}`);
+        const response = await fetch(`${API_BASE_URL}/api/flight?id=${flightId}`);
         if (!response.ok) {
           throw new Error("Không thể lấy dữ liệu chuyến bay.");
         }
@@ -83,7 +83,7 @@ export function useFlightConfirmation() {
         const economyOptions = generateTicketOptions(data.basePrice, "economy");
         const businessOptions = generateTicketOptions(data.basePrice * 1.5, "business");
         const allOptions = [...economyOptions, ...businessOptions];
-        
+
         const option = allOptions.find((opt) => opt.id === optionId);
         if (!option) {
           throw new Error("Không tìm thấy thông tin hạng vé.");

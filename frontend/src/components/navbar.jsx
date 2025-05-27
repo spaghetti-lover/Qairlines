@@ -17,7 +17,7 @@ export default function Navbar() {
   const { isAuthenticated, logout } = useAuth();
   const [dropdown, setDropdown] = useState(false);
   const router = useRouter();
-  
+
   const showDropdown = () => {
     setDropdown(!dropdown);
   };
@@ -34,12 +34,12 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center ml-4">
             <Link href="/">
-              <Image 
-                src="/logo.png" 
-                alt="Logo" 
-                className="w-36" 
-                width={144} 
-                height={144} 
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                className="w-36"
+                width={144}
+                height={144}
               />
             </Link>
           </div>
@@ -154,7 +154,7 @@ export default function Navbar() {
                 </li>
                 <li>
                   <Link
-                    href="/tours"
+                    href="/flights"
                     className="px-6 h-10 flex items-center leading-normal no-underline font-bold text-lg border-b border-gray-200"
                   >
                     Chuyến bay

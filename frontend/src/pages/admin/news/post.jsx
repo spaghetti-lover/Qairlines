@@ -59,7 +59,7 @@ export default function NewsPostingPage() {
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -85,14 +85,14 @@ export default function NewsPostingPage() {
     formData.append("content", content)
     formData.append("authorId", author)
     if(!id){
-      const createNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/create`
+      const createNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news`
       try {
         const response = await fetch(createNewsApi, {
             method: "POST",
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
             body: formData
         })
         if (!response.ok) {
@@ -108,17 +108,17 @@ export default function NewsPostingPage() {
             description: "Đã có lỗi xảy ra khi kết nối với máy chủ, vui lòng tải lại trang hoặc đăng nhập lại",
             variant: "destructive"
           })
-        } 
+        }
     }
     else {
-      const updateNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/update?id=${id}`
+      const updateNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news?id=${id}`
       try {
         const response = await fetch(updateNewsApi, {
           method: "PUT",
           headers: {
               "admin": "true",
               "authorization": "Bearer " + localStorage.getItem("token")
-          }, 
+          },
           body: formData
       })
       if (!response.ok) {
@@ -134,7 +134,7 @@ export default function NewsPostingPage() {
           description: "Đã có lỗi xảy ra khi kết nối với máy chủ, vui lòng tải lại trang hoặc đăng nhập lại",
           variant: "destructive"
         })
-      } 
+      }
     }
 
     setTitle('');
@@ -153,7 +153,7 @@ export default function NewsPostingPage() {
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -184,14 +184,14 @@ export default function NewsPostingPage() {
     if (!response.ok) {
       throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
     }
-    const blob = await response.blob(); 
-    return new File([blob], fileName, { type: blob.type }); 
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: blob.type });
   }
 
   return (
     <div className="container mx-auto pt-10 pl-64">
       {id ? <h1 className="text-2xl font-semibold mb-4">Chỉnh sửa bài viết</h1> : <h1 className="text-2xl font-semibold mb-4">Tạo Bài Viết Mới</h1>}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -204,7 +204,7 @@ export default function NewsPostingPage() {
               required
             />
           </div>
-          
+
           <div>
             <Label htmlFor="description">Mô Tả</Label>
             <Textarea
@@ -215,7 +215,7 @@ export default function NewsPostingPage() {
               required
             />
           </div>
-          
+
           <div>
             <Label htmlFor="content">Nội Dung</Label>
             <Textarea
@@ -244,10 +244,10 @@ export default function NewsPostingPage() {
               )}
             </div>
           </div>
-          
+
           <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">Đăng Bài</Button>
         </form>
-        
+
         <Card className="w-full">
           <CardHeader>
             <CardTitle>Xem Trước</CardTitle>
