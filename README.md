@@ -4,7 +4,7 @@
 
 ## Qairline là gì?
 
-Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến giúp người dùng dễ dàng tìm kiếm, so sánh và đặt vé máy bay. Với giao diện thân thiện và các tính năng thông minh, trang web cung cấp trải nghiệm đặt vé nhanh chóng, tiện lợi và an toàn.
+Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến giúp người dùng dễ dàng tìm kiếm, so sánh và đặt vé máy bay. Với giao diện thân thiện và các tính năng thông minh, trang web cung cấp trải nghiệm đặt vé nhanh chóng, tiện lợi và an toàn
 
 [Truy cập website chính thức tại đây](https://www.qairline.website/)
 
@@ -22,6 +22,7 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 
 - NextJS
 - TailwindCss
+- Dùng của bạn này: https://github.com/oceantran27/QAirline (cảm ơn các bn nha :33)
 
 ### Backend
 
