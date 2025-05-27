@@ -33,6 +33,7 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 - PostgreSQL
 
 ## Cách chạy
+
 ### Backend
 
 - B1: Chạy PostgreSQL database
@@ -42,6 +43,7 @@ make postgres
 ```
 
 - B2: Truy cập vào database
+
 ```
 make createdb
 ```
@@ -65,6 +67,7 @@ make server
 ```
 
 ### Frontend
+
 ```
 npm install
 npm run dev
@@ -83,8 +86,6 @@ npm run dev
 ![image](https://github.com/user-attachments/assets/b6724cf8-ec14-4c7c-a73f-1dd2bbf9139c)
 ![image](https://github.com/user-attachments/assets/146b978b-1b0d-4f0b-9e37-400716ff9a85)
 ![image](https://github.com/user-attachments/assets/d0800f80-1b12-4c59-942e-b5dea6d2a9c0)
-
-                                            |
 
 ### Take note:
 
