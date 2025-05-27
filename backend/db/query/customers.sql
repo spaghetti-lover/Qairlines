@@ -16,6 +16,25 @@ INSERT INTO customers (
 SELECT * FROM customers
 WHERE user_id = $1 LIMIT 1;
 
+-- name: GetCustomerByID :one
+SELECT
+    u.user_id AS uid,
+    u.first_name,
+    u.last_name,
+    u.email,
+    c.phone_number,
+    c.date_of_birth,
+    c.gender,
+    c.identification_number,
+    c.passport_number,
+    c.address,
+    c.loyalty_points,
+    c.created_at,
+    c.updated_at
+FROM Users u
+JOIN Customers c ON u.user_id = c.user_id
+WHERE u.user_id = $1;
+
 -- name: GetCustomerByEmail :one
 SELECT c.* FROM customers c
 JOIN users u ON c.user_id = u.user_id

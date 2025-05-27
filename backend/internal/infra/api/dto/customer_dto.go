@@ -60,3 +60,26 @@ type CustomerResponse struct {
 	PassportNumber       string      `json:"passportNumber"`
 	IdentificationNumber string      `json:"identificationNumber"`
 }
+
+type CustomerDetailsResponse struct {
+	UID                  string       `json:"uid"`
+	Role                 string       `json:"role"`
+	PhoneNumber          string       `json:"phoneNumber"`
+	DateOfBirth          string       `json:"dateOfBirth"`
+	FirstName            string       `json:"firstName"`
+	LastName             string       `json:"lastName"`
+	Gender               string       `json:"gender"`
+	Email                string       `json:"email"`
+	IdentificationNumber *string      `json:"identificationNumber"`
+	PassportNumber       string       `json:"passportNumber"`
+	Address              string       `json:"address"`
+	LoyaltyPoints        int          `json:"loyaltyPoints"`
+	BookingHistory       []string     `json:"bookingHistory"`
+	CreatedAt            TimeWithNano `json:"createdAt"`
+	UpdatedAt            TimeWithNano `json:"updatedAt"`
+}
+
+type TimeWithNano struct {
+	Seconds     int64 `json:"seconds"`
+	Nanoseconds int64 `json:"nanoseconds"`
+}

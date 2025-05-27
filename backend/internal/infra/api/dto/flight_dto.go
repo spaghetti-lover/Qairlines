@@ -54,3 +54,29 @@ type GetFlightResponse struct {
 	BasePrice int32                 `json:"basePrice"`
 	Status    entities.FlightStatus `json:"status"`
 }
+
+type GetAllFlightsResponse struct {
+	FlightID      string      `json:"flightId"`
+	FlightNumber  string      `json:"flightNumber"`
+	AircraftType  string      `json:"aircraftType"`
+	DepartureCity string      `json:"departureCity"`
+	ArrivalCity   string      `json:"arrivalCity"`
+	DepartureTime TimeSeconds `json:"departureTime"`
+	ArrivalTime   TimeSeconds `json:"arrivalTime"`
+	BasePrice     int         `json:"basePrice"`
+	Status        string      `json:"status"`
+}
+
+type FlightSearchResponse struct {
+	FlightID         string `json:"flightId"`
+	FlightNumber     string `json:"flightNumber"`
+	Airline          string `json:"airline"`
+	DepartureCity    string `json:"departureCity"`
+	ArrivalCity      string `json:"arrivalCity"`
+	DepartureTime    string `json:"departureTime"`
+	ArrivalTime      string `json:"arrivalTime"`
+	DepartureAirport string `json:"departureAirport"`
+	ArrivalAirport   string `json:"arrivalAirport"`
+	AircraftType     string `json:"aircraftType"`
+	BasePrice        int    `json:"basePrice"`
+}

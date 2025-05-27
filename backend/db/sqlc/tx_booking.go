@@ -87,7 +87,7 @@ func (store *SQLStore) BookingTx(ctx context.Context, arg BookingTxParams) (Book
 			BookingID:         arg.BookingID,
 			UserEmail:         pgtype.Text{String: arg.UserEmail, Valid: true},
 			TripType:          TripType(arg.TripType),
-			DepartureFlightID: arg.DepartureFlightID,
+			DepartureFlightID: pgtype.Int8{Int64: arg.DepartureFlightID, Valid: true},
 			ReturnFlightID:    pgtype.Int8{Int64: arg.ReturnFlightID, Valid: arg.TripType == "round_trip"},
 			Status:            BookingStatus("pending"),
 		}
@@ -112,7 +112,7 @@ func (store *SQLStore) BookingTx(ctx context.Context, arg BookingTxParams) (Book
 			BookingID:         booking.BookingID,
 			UserEmail:         booking.UserEmail.String,
 			TripType:          string(booking.TripType),
-			DepartureFlightID: booking.DepartureFlightID,
+			DepartureFlightID: booking.DepartureFlightID.Int64,
 			ReturnFlightID:    booking.ReturnFlightID.Int64,
 			Status:            string(booking.Status),
 			CreatedAt:         pgtype.Timestamptz{Time: booking.CreatedAt, Valid: true},

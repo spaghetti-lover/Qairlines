@@ -27,7 +27,7 @@ INSERT INTO flights (
   status
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) RETURNING flight_id, flight_number, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status
+) RETURNING flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status
 `
 
 type CreateFlightParams struct {
@@ -62,6 +62,7 @@ func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Fli
 	err := row.Scan(
 		&i.FlightID,
 		&i.FlightNumber,
+		&i.Airline,
 		&i.AircraftType,
 		&i.DepartureCity,
 		&i.ArrivalCity,
@@ -77,18 +78,77 @@ func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Fli
 	return i, err
 }
 
-const deleteFlight = `-- name: DeleteFlight :exec
+const deleteFlight = `-- name: DeleteFlight :one
 DELETE FROM flights
 WHERE flight_id = $1
+RETURNING flight_id
 `
 
-func (q *Queries) DeleteFlight(ctx context.Context, flightID int64) error {
-	_, err := q.db.Exec(ctx, deleteFlight, flightID)
-	return err
+func (q *Queries) DeleteFlight(ctx context.Context, flightID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, deleteFlight, flightID)
+	var flight_id int64
+	err := row.Scan(&flight_id)
+	return flight_id, err
+}
+
+const getAllFlights = `-- name: GetAllFlights :many
+SELECT
+    flight_id,
+    flight_number,
+    aircraft_type,
+    departure_city,
+    arrival_city,
+    departure_time,
+    arrival_time,
+    base_price,
+    status
+FROM Flights
+`
+
+type GetAllFlightsRow struct {
+	FlightID      int64        `json:"flight_id"`
+	FlightNumber  string       `json:"flight_number"`
+	AircraftType  pgtype.Text  `json:"aircraft_type"`
+	DepartureCity pgtype.Text  `json:"departure_city"`
+	ArrivalCity   pgtype.Text  `json:"arrival_city"`
+	DepartureTime time.Time    `json:"departure_time"`
+	ArrivalTime   time.Time    `json:"arrival_time"`
+	BasePrice     int32        `json:"base_price"`
+	Status        FlightStatus `json:"status"`
+}
+
+func (q *Queries) GetAllFlights(ctx context.Context) ([]GetAllFlightsRow, error) {
+	rows, err := q.db.Query(ctx, getAllFlights)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAllFlightsRow{}
+	for rows.Next() {
+		var i GetAllFlightsRow
+		if err := rows.Scan(
+			&i.FlightID,
+			&i.FlightNumber,
+			&i.AircraftType,
+			&i.DepartureCity,
+			&i.ArrivalCity,
+			&i.DepartureTime,
+			&i.ArrivalTime,
+			&i.BasePrice,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getFlight = `-- name: GetFlight :one
-SELECT flight_id, flight_number, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
+SELECT flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
 WHERE flight_id = $1 LIMIT 1
 `
 
@@ -98,6 +158,7 @@ func (q *Queries) GetFlight(ctx context.Context, flightID int64) (Flight, error)
 	err := row.Scan(
 		&i.FlightID,
 		&i.FlightNumber,
+		&i.Airline,
 		&i.AircraftType,
 		&i.DepartureCity,
 		&i.ArrivalCity,
@@ -126,7 +187,7 @@ func (q *Queries) GetFlightsByStatus(ctx context.Context, flightID int64) (Fligh
 }
 
 const listFlights = `-- name: ListFlights :many
-SELECT flight_id, flight_number, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
+SELECT flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
 ORDER BY flight_id
 LIMIT $1
 OFFSET $2
@@ -149,6 +210,7 @@ func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Fli
 		if err := rows.Scan(
 			&i.FlightID,
 			&i.FlightNumber,
+			&i.Airline,
 			&i.AircraftType,
 			&i.DepartureCity,
 			&i.ArrivalCity,
@@ -160,6 +222,75 @@ func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Fli
 			&i.TotalSeatsRow,
 			&i.TotalSeatsColumn,
 			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchFlights = `-- name: SearchFlights :many
+SELECT
+    flight_id,
+    flight_number,
+    airline,
+    departure_city,
+    arrival_city,
+    departure_time,
+    arrival_time,
+    departure_airport,
+    arrival_airport,
+    aircraft_type,
+    base_price
+FROM Flights
+WHERE departure_city = $1 AND arrival_city = $2 AND DATE(departure_time) = $3
+`
+
+type SearchFlightsParams struct {
+	DepartureCity pgtype.Text `json:"departure_city"`
+	ArrivalCity   pgtype.Text `json:"arrival_city"`
+	DepartureTime time.Time   `json:"departure_time"`
+}
+
+type SearchFlightsRow struct {
+	FlightID         int64       `json:"flight_id"`
+	FlightNumber     string      `json:"flight_number"`
+	Airline          pgtype.Text `json:"airline"`
+	DepartureCity    pgtype.Text `json:"departure_city"`
+	ArrivalCity      pgtype.Text `json:"arrival_city"`
+	DepartureTime    time.Time   `json:"departure_time"`
+	ArrivalTime      time.Time   `json:"arrival_time"`
+	DepartureAirport pgtype.Text `json:"departure_airport"`
+	ArrivalAirport   pgtype.Text `json:"arrival_airport"`
+	AircraftType     pgtype.Text `json:"aircraft_type"`
+	BasePrice        int32       `json:"base_price"`
+}
+
+func (q *Queries) SearchFlights(ctx context.Context, arg SearchFlightsParams) ([]SearchFlightsRow, error) {
+	rows, err := q.db.Query(ctx, searchFlights, arg.DepartureCity, arg.ArrivalCity, arg.DepartureTime)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchFlightsRow{}
+	for rows.Next() {
+		var i SearchFlightsRow
+		if err := rows.Scan(
+			&i.FlightID,
+			&i.FlightNumber,
+			&i.Airline,
+			&i.DepartureCity,
+			&i.ArrivalCity,
+			&i.DepartureTime,
+			&i.ArrivalTime,
+			&i.DepartureAirport,
+			&i.ArrivalAirport,
+			&i.AircraftType,
+			&i.BasePrice,
 		); err != nil {
 			return nil, err
 		}

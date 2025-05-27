@@ -55,6 +55,7 @@ CREATE TABLE News (
 CREATE TABLE Flights (
   flight_id BIGSERIAL PRIMARY KEY,
   flight_number VARCHAR(20) UNIQUE NOT NULL,
+  airline VARCHAR(100),
   aircraft_type VARCHAR(100),
   departure_city VARCHAR(100),
   arrival_city VARCHAR(100),
@@ -73,8 +74,8 @@ CREATE TABLE Bookings (
   booking_id BIGSERIAL PRIMARY KEY,
   user_email VARCHAR(255) REFERENCES Users(email) ON DELETE SET NULL,
   trip_type trip_type NOT NULL,
-  departure_flight_id BIGINT NOT NULL REFERENCES Flights(flight_id),
-  return_flight_id BIGINT REFERENCES Flights(flight_id) CHECK (
+  departure_flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE,
+  return_flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE CHECK (
     trip_type = 'oneWay' AND return_flight_id IS NULL OR
     trip_type = 'roundTrip' AND return_flight_id IS NOT NULL
   ),

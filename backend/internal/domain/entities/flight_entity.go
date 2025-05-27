@@ -17,6 +17,7 @@ const (
 type Flight struct {
 	FlightID         int64        `json:"flight_id"`
 	FlightNumber     string       `json:"flight_number"`
+	Airline          string       `json:"airline"`
 	AircraftType     string       `json:"aircraft_type"`
 	DepartureCity    string       `json:"departure_city"`
 	ArrivalCity      string       `json:"arrival_city"`

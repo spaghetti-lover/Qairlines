@@ -188,6 +188,63 @@ func (q *Queries) GetCustomerByEmail(ctx context.Context, email string) (Custome
 	return i, err
 }
 
+const getCustomerByID = `-- name: GetCustomerByID :one
+SELECT
+    u.user_id AS uid,
+    u.first_name,
+    u.last_name,
+    u.email,
+    c.phone_number,
+    c.date_of_birth,
+    c.gender,
+    c.identification_number,
+    c.passport_number,
+    c.address,
+    c.loyalty_points,
+    c.created_at,
+    c.updated_at
+FROM Users u
+JOIN Customers c ON u.user_id = c.user_id
+WHERE u.user_id = $1
+`
+
+type GetCustomerByIDRow struct {
+	Uid                  int64       `json:"uid"`
+	FirstName            pgtype.Text `json:"first_name"`
+	LastName             pgtype.Text `json:"last_name"`
+	Email                string      `json:"email"`
+	PhoneNumber          pgtype.Text `json:"phone_number"`
+	DateOfBirth          pgtype.Date `json:"date_of_birth"`
+	Gender               GenderType  `json:"gender"`
+	IdentificationNumber pgtype.Text `json:"identification_number"`
+	PassportNumber       pgtype.Text `json:"passport_number"`
+	Address              pgtype.Text `json:"address"`
+	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
+	CreatedAt            time.Time   `json:"created_at"`
+	UpdatedAt            time.Time   `json:"updated_at"`
+}
+
+func (q *Queries) GetCustomerByID(ctx context.Context, userID int64) (GetCustomerByIDRow, error) {
+	row := q.db.QueryRow(ctx, getCustomerByID, userID)
+	var i GetCustomerByIDRow
+	err := row.Scan(
+		&i.Uid,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.DateOfBirth,
+		&i.Gender,
+		&i.IdentificationNumber,
+		&i.PassportNumber,
+		&i.Address,
+		&i.LoyaltyPoints,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listCustomers = `-- name: ListCustomers :many
 SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points, created_at, updated_at FROM customers
 ORDER BY user_id

@@ -61,3 +61,29 @@ func ToCustomerResponses(customers []entities.Customer) []dto.CustomerResponse {
 	}
 	return responses
 }
+
+func ToCustomerDetailsResponse(customer *entities.Customer, bookingHistory []string) *dto.CustomerDetailsResponse {
+	return &dto.CustomerDetailsResponse{
+		UID:                  strconv.FormatInt(customer.UserID, 10),
+		Role:                 "customer",
+		PhoneNumber:          customer.PhoneNumber,
+		DateOfBirth:          customer.DateOfBirth.Format("2006-01-02T15:04:05.000Z"),
+		FirstName:            customer.User.FirstName,
+		LastName:             customer.User.LastName,
+		Gender:               string(customer.Gender),
+		Email:                customer.User.Email,
+		IdentificationNumber: &customer.IdentificationNumber,
+		PassportNumber:       customer.PassportNumber,
+		Address:              customer.Address,
+		LoyaltyPoints:        int(customer.LoyaltyPoints),
+		BookingHistory:       bookingHistory,
+		CreatedAt: dto.TimeWithNano{
+			Seconds:     customer.CreatedAt.Unix(),
+			Nanoseconds: int64(customer.CreatedAt.Nanosecond()),
+		},
+		UpdatedAt: dto.TimeWithNano{
+			Seconds:     customer.UpdatedAt.Unix(),
+			Nanoseconds: int64(customer.UpdatedAt.Nanosecond()),
+		},
+	}
+}

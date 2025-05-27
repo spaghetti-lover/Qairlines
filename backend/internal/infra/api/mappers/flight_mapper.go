@@ -83,3 +83,43 @@ func ToUpdateFlightTimesResponse(flight *entities.Flight) *dto.UpdateFlightTimes
 		},
 	}
 }
+
+func ToFlightResponses(flights []entities.Flight) []dto.GetAllFlightsResponse {
+	var flightResponses []dto.GetAllFlightsResponse
+	for _, flight := range flights {
+		flightResponses = append(flightResponses, dto.GetAllFlightsResponse{
+			FlightID:      strconv.FormatInt(flight.FlightID, 10),
+			FlightNumber:  flight.FlightNumber,
+			AircraftType:  flight.AircraftType,
+			DepartureCity: flight.DepartureCity,
+			ArrivalCity:   flight.ArrivalCity,
+			DepartureTime: dto.TimeSeconds{Seconds: flight.DepartureTime.Unix()},
+			ArrivalTime:   dto.TimeSeconds{Seconds: flight.ArrivalTime.Unix()},
+			BasePrice:     int(flight.BasePrice),
+			Status:        string(flight.Status),
+		})
+	}
+	return flightResponses
+}
+
+func ToFlightSearchResponses(flights []entities.Flight) []dto.FlightSearchResponse {
+	var responses []dto.FlightSearchResponse
+
+	for _, flight := range flights {
+		responses = append(responses, dto.FlightSearchResponse{
+			FlightID:         strconv.FormatInt(flight.FlightID, 10),
+			FlightNumber:     flight.FlightNumber,
+			Airline:          flight.Airline,
+			DepartureCity:    flight.DepartureCity,
+			ArrivalCity:      flight.ArrivalCity,
+			DepartureTime:    flight.DepartureTime.Format("2006-01-02T15:04:05Z"),
+			ArrivalTime:      flight.ArrivalTime.Format("2006-01-02T15:04:05Z"),
+			DepartureAirport: flight.DepartureAirport,
+			ArrivalAirport:   flight.ArrivalAirport,
+			AircraftType:     flight.AircraftType,
+			BasePrice:        int(flight.BasePrice),
+		})
+	}
+
+	return responses
+}

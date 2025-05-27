@@ -323,7 +323,7 @@ type Booking struct {
 	BookingID         int64         `json:"booking_id"`
 	UserEmail         pgtype.Text   `json:"user_email"`
 	TripType          TripType      `json:"trip_type"`
-	DepartureFlightID int64         `json:"departure_flight_id"`
+	DepartureFlightID pgtype.Int8   `json:"departure_flight_id"`
 	ReturnFlightID    pgtype.Int8   `json:"return_flight_id"`
 	Status            BookingStatus `json:"status"`
 	CreatedAt         time.Time     `json:"created_at"`
@@ -346,6 +346,7 @@ type Customer struct {
 type Flight struct {
 	FlightID         int64        `json:"flight_id"`
 	FlightNumber     string       `json:"flight_number"`
+	Airline          pgtype.Text  `json:"airline"`
 	AircraftType     pgtype.Text  `json:"aircraft_type"`
 	DepartureCity    pgtype.Text  `json:"departure_city"`
 	ArrivalCity      pgtype.Text  `json:"arrival_city"`

@@ -29,6 +29,12 @@ ORDER BY booking_id
 LIMIT $1
 OFFSET $2;
 
+-- name: GetBookingHistoryByUID :many
+SELECT booking_id
+FROM Bookings
+JOIN Users u ON Bookings.user_email = u.email
+WHERE u.user_id = $1;
+
 
 -- name: DeleteBookings :exec
 DELETE FROM bookings

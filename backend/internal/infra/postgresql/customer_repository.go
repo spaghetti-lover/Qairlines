@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
@@ -164,4 +165,46 @@ func (r *CustomerRepositoryPostgres) DeleteCustomerByID(ctx context.Context, cus
 	}
 
 	return nil
+}
+
+func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid int64) (*entities.Customer, error) {
+	row, err := r.store.GetCustomerByID(ctx, uid)
+	if err == sql.ErrNoRows {
+		return nil, adapters.ErrCustomerNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get customer by UID: %w", err)
+	}
+
+	return &entities.Customer{
+		UserID: row.Uid,
+		User: entities.User{
+			FirstName: row.FirstName.String,
+			LastName:  row.LastName.String,
+			Email:     row.Email,
+		},
+		PhoneNumber:          row.PhoneNumber.String,
+		DateOfBirth:          row.DateOfBirth.Time,
+		Gender:               entities.CustomerGender(row.Gender),
+		IdentificationNumber: row.IdentificationNumber.String,
+		PassportNumber:       row.PassportNumber.String,
+		Address:              row.Address.String,
+		LoyaltyPoints:        row.LoyaltyPoints.Int32,
+		CreatedAt:            row.CreatedAt,
+		UpdatedAt:            row.UpdatedAt,
+	}, nil
+}
+
+func (r *CustomerRepositoryPostgres) GetBookingHistoryByUID(ctx context.Context, uid int64) ([]string, error) {
+	rows, err := r.store.GetBookingHistoryByUID(ctx, uid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get booking history by UID: %w", err)
+	}
+
+	var bookingHistory []string
+	for _, row := range rows {
+		bookingHistory = append(bookingHistory, strconv.FormatInt(row, 10))
+	}
+
+	return bookingHistory, nil
 }

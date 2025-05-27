@@ -36,7 +36,7 @@ type CreateBookingParams struct {
 	BookingID         int64         `json:"booking_id"`
 	UserEmail         pgtype.Text   `json:"user_email"`
 	TripType          TripType      `json:"trip_type"`
-	DepartureFlightID int64         `json:"departure_flight_id"`
+	DepartureFlightID pgtype.Int8   `json:"departure_flight_id"`
 	ReturnFlightID    pgtype.Int8   `json:"return_flight_id"`
 	Status            BookingStatus `json:"status"`
 }
@@ -94,6 +94,33 @@ func (q *Queries) GetBooking(ctx context.Context, bookingID int64) (Booking, err
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getBookingHistoryByUID = `-- name: GetBookingHistoryByUID :many
+SELECT booking_id
+FROM Bookings
+JOIN Users u ON Bookings.user_email = u.email
+WHERE u.user_id = $1
+`
+
+func (q *Queries) GetBookingHistoryByUID(ctx context.Context, userID int64) ([]int64, error) {
+	rows, err := q.db.Query(ctx, getBookingHistoryByUID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var booking_id int64
+		if err := rows.Scan(&booking_id); err != nil {
+			return nil, err
+		}
+		items = append(items, booking_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listBookings = `-- name: ListBookings :many

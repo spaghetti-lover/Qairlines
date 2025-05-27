@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -90,4 +91,74 @@ func (r *FlightRepositoryPostgres) UpdateFlightTimes(ctx context.Context, flight
 		DepartureTime: row.DepartureTime,
 		ArrivalTime:   row.ArrivalTime,
 	}, nil
+}
+
+func (r *FlightRepositoryPostgres) GetAllFlights(ctx context.Context) ([]entities.Flight, error) {
+	rows, err := r.store.GetAllFlights(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all flights: %w", err)
+	}
+
+	var flights []entities.Flight
+	for _, row := range rows {
+		flights = append(flights, entities.Flight{
+			FlightID:      row.FlightID,
+			FlightNumber:  row.FlightNumber,
+			AircraftType:  row.AircraftType.String,
+			DepartureCity: row.DepartureCity.String,
+			ArrivalCity:   row.ArrivalCity.String,
+			DepartureTime: row.DepartureTime,
+			ArrivalTime:   row.ArrivalTime,
+			BasePrice:     row.BasePrice,
+			Status:        entities.FlightStatus(row.Status),
+		})
+	}
+
+	return flights, nil
+}
+
+func (r *FlightRepositoryPostgres) DeleteFlightByID(ctx context.Context, flightID int64) error {
+	flighID, err := r.store.DeleteFlight(ctx, flightID)
+	if flighID == 0 {
+		return adapters.ErrFlightNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("failed to delete flight: %w", err)
+	}
+
+	return nil
+}
+
+func (r *FlightRepositoryPostgres) SearchFlights(ctx context.Context, departureCity, arrivalCity string, flightDate time.Time) ([]entities.Flight, error) {
+	rows, err := r.store.SearchFlights(ctx, db.SearchFlightsParams{
+		DepartureCity: pgtype.Text{String: departureCity, Valid: true},
+		ArrivalCity:   pgtype.Text{String: arrivalCity, Valid: true},
+		DepartureTime: flightDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to search flights: %w", err)
+	}
+
+	if len(rows) == 0 {
+		return nil, adapters.ErrNoFlightsFound
+	}
+
+	var flights []entities.Flight
+	for _, row := range rows {
+		flights = append(flights, entities.Flight{
+			FlightID:         row.FlightID,
+			FlightNumber:     row.FlightNumber,
+			Airline:          row.Airline.String,
+			DepartureCity:    row.DepartureCity.String,
+			ArrivalCity:      row.ArrivalCity.String,
+			DepartureTime:    row.DepartureTime,
+			ArrivalTime:      row.ArrivalTime,
+			DepartureAirport: row.DepartureAirport.String,
+			ArrivalAirport:   row.ArrivalAirport.String,
+			AircraftType:     row.AircraftType.String,
+			BasePrice:        row.BasePrice,
+		})
+	}
+
+	return flights, nil
 }

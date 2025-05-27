@@ -51,6 +51,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	customerUpdateUseCase := customer.NewCustomerUpdateUseCase(customerRepo)
 	customerGetAllUseCase := customer.NewGetAllCustomersUseCase(customerRepo)
 	customerDeleteUseCase := customer.NewDeleteCustomerUseCase(customerRepo)
+	customerGetUseCase := customer.NewGetCustomerDetailsUseCase(customerRepo, tokenMaker)
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
 	changePasswordUseCase := auth.NewChangePasswordUseCase(userRepo)
 	newsGetAllWithAuthorUseCase := news.NewNewsGetAllWithAuthorUseCase(newsRepo)
@@ -66,17 +67,20 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	flightCreateUseCase := flight.NewCreateFlightUseCase(flightRepo)
 	flightGetUseCase := flight.NewGetFlightUseCase(flightRepo)
 	flightUpdateUseCase := flight.NewUpdateFlightTimesUseCase(flightRepo)
+	flightGetAllUseCase := flight.NewGetAllFlightsUseCase(flightRepo)
+	flightDeleteUseCase := flight.NewDeleteFlightUseCase(flightRepo)
+	flightSearchUseCase := flight.NewSearchFlightsUseCase(flightRepo)
 	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
 	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
-	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase, customerGetAllUseCase, customerDeleteUseCase)
+	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase, customerGetAllUseCase, customerDeleteUseCase, customerGetUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
-	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase)
+	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
@@ -102,6 +106,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/customer/{id}", authMiddleware(http.HandlerFunc(customerHandler.UpdateCustomer))).Methods("PUT")
 	apiRouter.Handle("/customer/all", authMiddleware(http.HandlerFunc(customerHandler.GetAllCustomers))).Methods("GET")
 	apiRouter.Handle("/customer/delete", authMiddleware(http.HandlerFunc(customerHandler.DeleteCustomer))).Methods("DELETE")
+	apiRouter.Handle("/customer", authMiddleware(http.HandlerFunc(customerHandler.GetCustomerDetails))).Methods("GET")
 
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
@@ -119,6 +124,9 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.GetFlight))).Methods("GET")
 	apiRouter.Handle("/flight/update", authMiddleware(http.HandlerFunc(flightHandler.UpdateFlightTimes))).Methods("PUT")
+	apiRouter.Handle("/flight/all", authMiddleware(http.HandlerFunc(flightHandler.GetAllFlights))).Methods("GET")
+	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.DeleteFlight))).Methods("DELETE")
+	apiRouter.HandleFunc("/flight/search", flightHandler.SearchFlights).Methods("GET")
 
 	// Ticket API
 	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")

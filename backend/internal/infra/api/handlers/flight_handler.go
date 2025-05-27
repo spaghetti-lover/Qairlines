@@ -17,10 +17,16 @@ type FlightHandler struct {
 	createFlightUseCase      flight.ICreateFlightUseCase
 	getFlightUseCase         flight.IGetFlightUseCase
 	updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase
+	getAllFlightsUseCase     flight.IGetAllFlightsUseCase
+	deleteFlightUseCase      flight.IDeleteFlightUseCase
+	searchFlightsUseCase     flight.ISearchFlightsUseCase
 }
 
-func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlightUseCase flight.IGetFlightUseCase, updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase) *FlightHandler {
-	return &FlightHandler{createFlightUseCase: createFlightUseCase, getFlightUseCase: getFlightUseCase, updateFlightTimesUseCase: updateFlightTimesUseCase}
+func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlightUseCase flight.IGetFlightUseCase, updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase, getAllFlightsUseCase flight.IGetAllFlightsUseCase, deleteFlightUseCase flight.IDeleteFlightUseCase, searchFlightsUseCase flight.ISearchFlightsUseCase) *FlightHandler {
+	return &FlightHandler{createFlightUseCase: createFlightUseCase, getFlightUseCase: getFlightUseCase, updateFlightTimesUseCase: updateFlightTimesUseCase,
+		getAllFlightsUseCase: getAllFlightsUseCase, deleteFlightUseCase: deleteFlightUseCase,
+		searchFlightsUseCase: searchFlightsUseCase,
+	}
 }
 
 func (h *FlightHandler) CreateFlight(w http.ResponseWriter, r *http.Request) {
@@ -139,5 +145,99 @@ func (h *FlightHandler) UpdateFlightTimes(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Flight updated successfully.",
 		"flight":  response,
+	})
+}
+
+func (h *FlightHandler) GetAllFlights(w http.ResponseWriter, r *http.Request) {
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		return
+	}
+
+	// Gọi use case để lấy danh sách chuyến bay
+	flights, err := h.getAllFlightsUseCase.Execute(r.Context())
+	if err != nil {
+		http.Error(w, "An unexpected error occurred. Please try again later, "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Flights retrieved successfully.",
+		"data":    flights,
+	})
+}
+
+func (h *FlightHandler) DeleteFlight(w http.ResponseWriter, r *http.Request) {
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		return
+	}
+
+	// Lấy flightID từ query parameter
+	flightIDStr := r.URL.Query().Get("id")
+	if flightIDStr == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	flightID, err := strconv.ParseInt(flightIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	// Gọi use case để xóa chuyến bay
+	err = h.deleteFlightUseCase.Execute(r.Context(), flightID)
+	if err != nil {
+		if errors.Is(err, adapters.ErrFlightNotFound) {
+			http.Error(w, `{"message":"Flight not found."}`, http.StatusNotFound)
+			return
+		}
+		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Flight deleted successfully."}`))
+}
+
+func (h *FlightHandler) SearchFlights(w http.ResponseWriter, r *http.Request) {
+	// Lấy query parameters
+	departureCity := r.URL.Query().Get("departureCity")
+	arrivalCity := r.URL.Query().Get("arrivalCity")
+	flightDate := r.URL.Query().Get("flightDate")
+
+	// Kiểm tra các query parameters
+	if departureCity == "" || arrivalCity == "" || flightDate == "" {
+		http.Error(w, `{"message": "Invalid query parameters. Please check departureCity, arrivalCity, and flightDate."}`, http.StatusBadRequest)
+		return
+	}
+
+	// Gọi use case để tìm kiếm chuyến bay
+	flights, err := h.searchFlightsUseCase.Execute(r.Context(), departureCity, arrivalCity, flightDate)
+	if err != nil {
+		if errors.Is(err, adapters.ErrNoFlightsFound) {
+			http.Error(w, `{"message": "No flights found for the given criteria."}`, http.StatusNotFound)
+			return
+		}
+		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Flights retrieved successfully.",
+		"data":    flights,
 	})
 }

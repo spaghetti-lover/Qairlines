@@ -28,7 +28,7 @@ type Querier interface {
 	DeleteAdmin(ctx context.Context, userID int64) error
 	DeleteBookings(ctx context.Context, bookingID int64) error
 	DeleteCustomerByID(ctx context.Context, userID int64) (int64, error)
-	DeleteFlight(ctx context.Context, flightID int64) error
+	DeleteFlight(ctx context.Context, flightID int64) (int64, error)
 	DeleteNews(ctx context.Context, id int64) (int64, error)
 	DeleteTicket(ctx context.Context, ticketID int64) error
 	DeleteUser(ctx context.Context, userID int64) error
@@ -36,13 +36,16 @@ type Querier interface {
 	GetAdminByEmail(ctx context.Context, email string) (GetAdminByEmailRow, error)
 	GetAllAdmin(ctx context.Context) ([]int64, error)
 	GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error)
+	GetAllFlights(ctx context.Context) ([]GetAllFlightsRow, error)
 	GetAllNewsWithAuthor(ctx context.Context) ([]GetAllNewsWithAuthorRow, error)
 	GetAllSeats(ctx context.Context) ([]Seat, error)
 	GetAllTicketOwnerSnapshots(ctx context.Context) ([]Ticketownersnapshot, error)
 	GetAllUser(ctx context.Context) ([]User, error)
 	GetBooking(ctx context.Context, bookingID int64) (Booking, error)
+	GetBookingHistoryByUID(ctx context.Context, userID int64) ([]int64, error)
 	GetCustomer(ctx context.Context, userID int64) (Customer, error)
 	GetCustomerByEmail(ctx context.Context, email string) (Customer, error)
+	GetCustomerByID(ctx context.Context, userID int64) (GetCustomerByIDRow, error)
 	GetFlight(ctx context.Context, flightID int64) (Flight, error)
 	GetFlightsByStatus(ctx context.Context, flightID int64) (FlightStatus, error)
 	GetNews(ctx context.Context, id int64) (News, error)
@@ -67,6 +70,7 @@ type Querier interface {
 	MarkSeatUnavailable(ctx context.Context, arg MarkSeatUnavailableParams) error
 	RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error
 	RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error
+	SearchFlights(ctx context.Context, arg SearchFlightsParams) ([]SearchFlightsRow, error)
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
 	UpdateFlightTimes(ctx context.Context, arg UpdateFlightTimesParams) (UpdateFlightTimesRow, error)
 	UpdateNews(ctx context.Context, arg UpdateNewsParams) (News, error)

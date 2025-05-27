@@ -15,24 +15,28 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
+	"github.com/spaghetti-lover/qairlines/pkg/token"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type CustomerHandler struct {
-	customerCreateUseCase customer.ICreateCustomerUseCase
-	customerUpdateUseCase customer.ICustomerUpdateUseCase
-	userUpdateUseCase     user.IUserUpdateUseCase
-	getAllCustomerUseCase customer.IGetAllCustomersUseCase
-	deleteCustomerUseCase customer.IDeleteCustomerUseCase
+	customerCreateUseCase     customer.ICreateCustomerUseCase
+	customerUpdateUseCase     customer.ICustomerUpdateUseCase
+	userUpdateUseCase         user.IUserUpdateUseCase
+	getAllCustomerUseCase     customer.IGetAllCustomersUseCase
+	deleteCustomerUseCase     customer.IDeleteCustomerUseCase
+	getCustomerDetailsUseCase customer.IGetCustomerDetailsUseCase
 }
 
-func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, getAllCustomerUseCase customer.IGetAllCustomersUseCase, deleteCustomerUseCase customer.IDeleteCustomerUseCase) *CustomerHandler {
+func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, getAllCustomerUseCase customer.IGetAllCustomersUseCase, deleteCustomerUseCase customer.IDeleteCustomerUseCase, getCustomerDetailsUseCase customer.IGetCustomerDetailsUseCase) *CustomerHandler {
 	return &CustomerHandler{
-		customerCreateUseCase: customerCreateUseCase,
-		customerUpdateUseCase: customerUpdateUseCase,
-		userUpdateUseCase:     userUpdateUseCase,
-		getAllCustomerUseCase: getAllCustomerUseCase,
-		deleteCustomerUseCase: deleteCustomerUseCase,
+		customerCreateUseCase:     customerCreateUseCase,
+		customerUpdateUseCase:     customerUpdateUseCase,
+		userUpdateUseCase:         userUpdateUseCase,
+		getAllCustomerUseCase:     getAllCustomerUseCase,
+		deleteCustomerUseCase:     deleteCustomerUseCase,
+		getCustomerDetailsUseCase: getCustomerDetailsUseCase,
 	}
 }
 
@@ -184,4 +188,26 @@ func (h *CustomerHandler) DeleteCustomer(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message": "Customer deleted successfully."}`))
+}
+
+func (h *CustomerHandler) GetCustomerDetails(w http.ResponseWriter, r *http.Request) {
+	payload := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	if payload == nil {
+		http.Error(w, `{"message": "Unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	customerDetails, err := h.getCustomerDetailsUseCase.Execute(r.Context(), payload.UserId)
+	if err != nil {
+		if errors.Is(err, adapters.ErrCustomerNotFound) {
+			http.Error(w, "Customer not found.", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "An unexpected error occurred. Please try again later.", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"data": customerDetails,
+	})
 }
