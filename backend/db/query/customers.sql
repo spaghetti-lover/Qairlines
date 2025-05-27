@@ -59,6 +59,7 @@ LIMIT $1
 OFFSET $2;
 
 
--- name: DeleteCustomer :exec
-DELETE FROM customers
-WHERE user_id = $1;
+-- name: DeleteCustomerByID :one
+DELETE FROM Customers
+WHERE user_id = $1
+RETURNING user_id;

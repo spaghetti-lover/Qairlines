@@ -2,10 +2,12 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
+	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
@@ -147,4 +149,19 @@ func (r *CustomerRepositoryPostgres) GetAllCustomers(ctx context.Context) ([]ent
 	}
 
 	return customers, nil
+}
+
+func (r *CustomerRepositoryPostgres) DeleteCustomerByID(ctx context.Context, customerID int64) error {
+	customerID, err := r.store.DeleteCustomerByID(ctx, customerID)
+	if err == sql.ErrNoRows {
+		return adapters.ErrCustomerNotFound
+	}
+	if customerID == 0 {
+		return adapters.ErrCustomerNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("failed to delete customer: %w", err)
+	}
+
+	return nil
 }

@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
@@ -21,14 +23,16 @@ type CustomerHandler struct {
 	customerUpdateUseCase customer.ICustomerUpdateUseCase
 	userUpdateUseCase     user.IUserUpdateUseCase
 	getAllCustomerUseCase customer.IGetAllCustomersUseCase
+	deleteCustomerUseCase customer.IDeleteCustomerUseCase
 }
 
-func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, getAllCustomerUseCase customer.IGetAllCustomersUseCase) *CustomerHandler {
+func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, getAllCustomerUseCase customer.IGetAllCustomersUseCase, deleteCustomerUseCase customer.IDeleteCustomerUseCase) *CustomerHandler {
 	return &CustomerHandler{
 		customerCreateUseCase: customerCreateUseCase,
 		customerUpdateUseCase: customerUpdateUseCase,
 		userUpdateUseCase:     userUpdateUseCase,
 		getAllCustomerUseCase: getAllCustomerUseCase,
+		deleteCustomerUseCase: deleteCustomerUseCase,
 	}
 }
 
@@ -142,4 +146,42 @@ func (h *CustomerHandler) GetAllCustomers(w http.ResponseWriter, r *http.Request
 		"message": "Customers retrieved successfully.",
 		"data":    customers,
 	})
+}
+
+func (h *CustomerHandler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		return
+	}
+
+	// Lấy customerID từ query parameter
+	customerIDStr := r.URL.Query().Get("id")
+	if customerIDStr == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	customerID, err := strconv.ParseInt(customerIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	// Gọi use case để xóa khách hàng
+	err = h.deleteCustomerUseCase.Execute(r.Context(), customerID)
+	if err != nil {
+		if errors.Is(err, adapters.ErrCustomerNotFound) {
+			http.Error(w, `{"message":"Customer not found."}`, http.StatusNotFound)
+			return
+		}
+		http.Error(w, "An unexpected error occurred. Please try again later.", http.StatusInternalServerError)
+		return
+	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Customer deleted successfully."}`))
 }

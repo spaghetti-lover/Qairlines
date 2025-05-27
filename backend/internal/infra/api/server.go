@@ -50,6 +50,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	customerCreateUseCase := customer.NewCreateCustomerUseCase(customerRepo, userRepo)
 	customerUpdateUseCase := customer.NewCustomerUpdateUseCase(customerRepo)
 	customerGetAllUseCase := customer.NewGetAllCustomersUseCase(customerRepo)
+	customerDeleteUseCase := customer.NewDeleteCustomerUseCase(customerRepo)
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
 	changePasswordUseCase := auth.NewChangePasswordUseCase(userRepo)
 	newsGetAllWithAuthorUseCase := news.NewNewsGetAllWithAuthorUseCase(newsRepo)
@@ -71,7 +72,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
-	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase, customerGetAllUseCase)
+	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase, customerGetAllUseCase, customerDeleteUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
@@ -100,6 +101,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.HandleFunc("/customer", customerHandler.CreateCustomerTx).Methods("POST")
 	apiRouter.Handle("/customer/{id}", authMiddleware(http.HandlerFunc(customerHandler.UpdateCustomer))).Methods("PUT")
 	apiRouter.Handle("/customer/all", authMiddleware(http.HandlerFunc(customerHandler.GetAllCustomers))).Methods("GET")
+	apiRouter.Handle("/customer/delete", authMiddleware(http.HandlerFunc(customerHandler.DeleteCustomer))).Methods("DELETE")
 
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
