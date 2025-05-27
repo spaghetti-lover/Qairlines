@@ -170,3 +170,29 @@ func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Fli
 	}
 	return items, nil
 }
+
+const updateFlightTimes = `-- name: UpdateFlightTimes :one
+UPDATE Flights
+SET departure_time = $2, arrival_time = $3
+WHERE flight_id = $1
+RETURNING flight_id, departure_time, arrival_time
+`
+
+type UpdateFlightTimesParams struct {
+	FlightID      int64     `json:"flight_id"`
+	DepartureTime time.Time `json:"departure_time"`
+	ArrivalTime   time.Time `json:"arrival_time"`
+}
+
+type UpdateFlightTimesRow struct {
+	FlightID      int64     `json:"flight_id"`
+	DepartureTime time.Time `json:"departure_time"`
+	ArrivalTime   time.Time `json:"arrival_time"`
+}
+
+func (q *Queries) UpdateFlightTimes(ctx context.Context, arg UpdateFlightTimesParams) (UpdateFlightTimesRow, error) {
+	row := q.db.QueryRow(ctx, updateFlightTimes, arg.FlightID, arg.DepartureTime, arg.ArrivalTime)
+	var i UpdateFlightTimesRow
+	err := row.Scan(&i.FlightID, &i.DepartureTime, &i.ArrivalTime)
+	return i, err
+}

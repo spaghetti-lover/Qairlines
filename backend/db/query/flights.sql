@@ -33,3 +33,9 @@ WHERE flight_id = $1 LIMIT 1;
 -- name: DeleteFlight :exec
 DELETE FROM flights
 WHERE flight_id = $1;
+
+-- name: UpdateFlightTimes :one
+UPDATE Flights
+SET departure_time = $2, arrival_time = $3
+WHERE flight_id = $1
+RETURNING flight_id, departure_time, arrival_time;

@@ -63,6 +63,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	deleteAdminUseCase := admin.NewDeleteAdminUseCase(adminRepo)
 	flightCreateUseCase := flight.NewCreateFlightUseCase(flightRepo)
 	flightGetUseCase := flight.NewGetFlightUseCase(flightRepo)
+	flightUpdateUseCase := flight.NewUpdateFlightTimesUseCase(flightRepo)
 	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
@@ -73,7 +74,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
-	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase)
+	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
@@ -112,6 +113,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	// Flight API
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.GetFlight))).Methods("GET")
+	apiRouter.Handle("/flight/update", authMiddleware(http.HandlerFunc(flightHandler.UpdateFlightTimes))).Methods("PUT")
 
 	// Ticket API
 	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")

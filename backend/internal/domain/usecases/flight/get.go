@@ -9,8 +9,6 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 )
 
-var ErrFlightNotFound = errors.New("flight not found")
-
 type IGetFlightUseCase interface {
 	Execute(ctx context.Context, flightID int64) (*dto.GetFlightResponse, error)
 }
@@ -30,7 +28,7 @@ func (u *GetFlightUseCase) Execute(ctx context.Context, flightID int64) (*dto.Ge
 	flight, err := u.flightRepository.GetFlightByID(ctx, flightID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrFlightNotFound) {
-			return nil, ErrFlightNotFound
+			return nil, adapters.ErrFlightNotFound
 		}
 		return nil, err
 	}

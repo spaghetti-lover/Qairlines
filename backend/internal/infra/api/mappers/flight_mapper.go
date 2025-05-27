@@ -71,3 +71,15 @@ func MapFlightToGetFlightResponse(flight *entities.Flight) *dto.GetFlightRespons
 		Status:    entities.FlightStatus(flight.Status),
 	}
 }
+
+func ToUpdateFlightTimesResponse(flight *entities.Flight) *dto.UpdateFlightTimesResponse {
+	return &dto.UpdateFlightTimesResponse{
+		FlightID: flight.FlightID,
+		DepartureTime: dto.TimeSeconds{
+			Seconds: flight.DepartureTime.Unix(),
+		},
+		ArrivalTime: dto.TimeSeconds{
+			Seconds: flight.ArrivalTime.Unix(),
+		},
+	}
+}

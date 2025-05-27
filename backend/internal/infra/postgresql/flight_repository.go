@@ -2,11 +2,13 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
+	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
-	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 )
 
 type FlightRepositoryPostgres struct {
@@ -53,7 +55,7 @@ func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight enti
 func (r *FlightRepositoryPostgres) GetFlightByID(ctx context.Context, flightID int64) (*entities.Flight, error) {
 	dbFlight, err := r.store.GetFlight(ctx, flightID)
 	if err != nil {
-		return nil, flight.ErrFlightNotFound
+		return nil, adapters.ErrFlightNotFound
 	}
 	return &entities.Flight{
 		FlightID:         dbFlight.FlightID,
@@ -67,5 +69,25 @@ func (r *FlightRepositoryPostgres) GetFlightByID(ctx context.Context, flightID i
 		ArrivalTime:      dbFlight.ArrivalTime,
 		BasePrice:        dbFlight.BasePrice,
 		Status:           entities.FlightStatus(dbFlight.Status),
+	}, nil
+}
+
+func (r *FlightRepositoryPostgres) UpdateFlightTimes(ctx context.Context, flightID int64, departureTime, arrivalTime time.Time) (*entities.Flight, error) {
+	row, err := r.store.UpdateFlightTimes(ctx, db.UpdateFlightTimesParams{
+		FlightID:      flightID,
+		DepartureTime: departureTime,
+		ArrivalTime:   arrivalTime,
+	})
+	if err == sql.ErrNoRows {
+		return nil, adapters.ErrFlightNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &entities.Flight{
+		FlightID:      row.FlightID,
+		DepartureTime: row.DepartureTime,
+		ArrivalTime:   row.ArrivalTime,
 	}, nil
 }
