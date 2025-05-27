@@ -19,14 +19,6 @@ SELECT * FROM "seats";
 SELECT * FROM "seats"
 WHERE flight_id = $1;
 
--- name: UpdateSeat :exec
-UPDATE "seats"
-SET seat_code = $2,
-    is_available = $3,
-    class = $4,
-    updated_at = NOW()
-WHERE seat_id = $1;
-
 -- name: CountOccupiedSeats :one
 SELECT COUNT(*) FROM "seats"
 WHERE flight_id = $1 AND is_available = false;

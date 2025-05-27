@@ -8,6 +8,7 @@ import (
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 )
 
@@ -15,13 +16,15 @@ type TicketHandler struct {
 	getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase
 	getTicketUseCase            ticket.IGetTicketUseCase
 	cancelTicketUseCase         ticket.ICancelTicketUseCase
+	updateSeatsUseCase          ticket.IUpdateSeatsUseCase
 }
 
-func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase, getTicketUseCase ticket.IGetTicketUseCase, cancelTicketUseCase ticket.ICancelTicketUseCase) *TicketHandler {
+func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUseCase, getTicketUseCase ticket.IGetTicketUseCase, cancelTicketUseCase ticket.ICancelTicketUseCase, updateSeatsUseCase ticket.IUpdateSeatsUseCase) *TicketHandler {
 	return &TicketHandler{
 		getTicketsByFlightIDUseCase: getTicketsByFlightIDUseCase,
 		getTicketUseCase:            getTicketUseCase,
 		cancelTicketUseCase:         cancelTicketUseCase,
+		updateSeatsUseCase:          updateSeatsUseCase,
 	}
 }
 
@@ -131,5 +134,34 @@ func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Ticket cancelled successfully.",
 		"ticket":  ticket,
+	})
+}
+
+func (h *TicketHandler) UpdateSeats(w http.ResponseWriter, r *http.Request) {
+	var updates []dto.UpdateSeatRequest
+	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+		http.Error(w, "Invalid seat data. Please check the input fields.", http.StatusBadRequest)
+		return
+	}
+
+	responses, err := h.updateSeatsUseCase.Execute(r.Context(), updates)
+	if err != nil {
+		if errors.Is(err, adapters.ErrTicketNotFound) {
+			http.Error(w, `{"message":"One or more tickets not found."}`, http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, adapters.ErrInvalidSeat) {
+			http.Error(w, `{"message":"Invalid seat data. Please check the input fields."}`, http.StatusBadRequest)
+			return
+		}
+		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Seats updated successfully.",
+		"data":    mappers.ToUpdateSeatResponses(responses),
 	})
 }

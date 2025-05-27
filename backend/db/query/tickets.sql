@@ -93,3 +93,12 @@ RETURNING ticket_id, status, flight_class, price, booking_id, flight_id, updated
           (SELECT first_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_first_name,
           (SELECT last_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_last_name,
           (SELECT phone_number FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_phone_number;
+
+-- name: UpdateSeat :one
+UPDATE Tickets
+SET seat_id = (
+    SELECT seat_id FROM Seats WHERE Seats.seat_code = $2 AND is_available = TRUE
+), updated_at = NOW()
+WHERE ticket_id = $1
+RETURNING ticket_id, seat_id, updated_at,
+          (SELECT Seats.seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code;

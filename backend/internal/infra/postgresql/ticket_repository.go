@@ -116,3 +116,23 @@ func (r *TicketRepositoryPostgres) CancelTicket(ctx context.Context, ticketID in
 		},
 	}, nil
 }
+
+func (r *TicketRepositoryPostgres) UpdateSeat(ctx context.Context, ticketID int64, seatCode string) (*entities.Ticket, error) {
+	row, err := r.store.UpdateSeat(ctx, db.UpdateSeatParams{
+		TicketID: ticketID,
+		SeatCode: seatCode,
+	})
+	if err == sql.ErrNoRows {
+		return nil, adapters.ErrTicketNotFound
+	}
+	if err != nil {
+		return nil, adapters.ErrInvalidSeat
+	}
+
+	return &entities.Ticket{
+		TicketID: ticketID,
+		Seat: entities.Seat{
+			SeatCode: row.SeatCode,
+		},
+	}, nil
+}

@@ -197,32 +197,6 @@ func (q *Queries) MarkSeatUnavailable(ctx context.Context, arg MarkSeatUnavailab
 	return err
 }
 
-const updateSeat = `-- name: UpdateSeat :exec
-UPDATE "seats"
-SET seat_code = $2,
-    is_available = $3,
-    class = $4,
-    updated_at = NOW()
-WHERE seat_id = $1
-`
-
-type UpdateSeatParams struct {
-	SeatID      int64       `json:"seat_id"`
-	SeatCode    string      `json:"seat_code"`
-	IsAvailable bool        `json:"is_available"`
-	Class       FlightClass `json:"class"`
-}
-
-func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) error {
-	_, err := q.db.Exec(ctx, updateSeat,
-		arg.SeatID,
-		arg.SeatCode,
-		arg.IsAvailable,
-		arg.Class,
-	)
-	return err
-}
-
 const updateSeatAvailability = `-- name: UpdateSeatAvailability :exec
 UPDATE Seats
 SET is_available = $2

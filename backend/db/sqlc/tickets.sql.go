@@ -325,6 +325,40 @@ func (q *Queries) ListTickets(ctx context.Context, arg ListTicketsParams) ([]Tic
 	return items, nil
 }
 
+const updateSeat = `-- name: UpdateSeat :one
+UPDATE Tickets
+SET seat_id = (
+    SELECT seat_id FROM Seats WHERE Seats.seat_code = $2 AND is_available = TRUE
+), updated_at = NOW()
+WHERE ticket_id = $1
+RETURNING ticket_id, seat_id, updated_at,
+          (SELECT Seats.seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code
+`
+
+type UpdateSeatParams struct {
+	TicketID int64  `json:"ticket_id"`
+	SeatCode string `json:"seat_code"`
+}
+
+type UpdateSeatRow struct {
+	TicketID  int64     `json:"ticket_id"`
+	SeatID    int64     `json:"seat_id"`
+	UpdatedAt time.Time `json:"updated_at"`
+	SeatCode  string    `json:"seat_code"`
+}
+
+func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (UpdateSeatRow, error) {
+	row := q.db.QueryRow(ctx, updateSeat, arg.TicketID, arg.SeatCode)
+	var i UpdateSeatRow
+	err := row.Scan(
+		&i.TicketID,
+		&i.SeatID,
+		&i.UpdatedAt,
+		&i.SeatCode,
+	)
+	return i, err
+}
+
 const updateTicket = `-- name: UpdateTicket :exec
 UPDATE tickets
 SET

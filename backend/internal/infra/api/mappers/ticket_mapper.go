@@ -74,3 +74,17 @@ func ToCancelTicketResponse(ticket *entities.Ticket) *dto.CancelTicketResponse {
 		UpdatedAt: ticket.UpdatedAt.Format("2006-01-02T15:04:05Z"),
 	}
 }
+
+func ToUpdateSeatResponses(tickets []entities.Ticket) []dto.UpdateSeatResponse {
+	var responses []dto.UpdateSeatResponse
+
+	for _, ticket := range tickets {
+		responses = append(responses, dto.UpdateSeatResponse{
+			TicketID: ticket.TicketID,
+			SeatCode: ticket.Seat.SeatCode,
+			Status:   "Updated",
+		})
+	}
+
+	return responses
+}

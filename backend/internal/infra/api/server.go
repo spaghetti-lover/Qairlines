@@ -66,6 +66,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
+	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase)
@@ -73,7 +74,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase)
-	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase)
+	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
@@ -116,6 +117,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")
 	apiRouter.Handle("/ticket/cancel", authMiddleware(http.HandlerFunc(ticketHandler.CancelTicket))).Methods("PUT")
 	apiRouter.Handle("/ticket", authMiddleware(http.HandlerFunc(ticketHandler.GetTicket))).Methods("GET")
+	apiRouter.Handle("/ticket/update-seats", authMiddleware(http.HandlerFunc(ticketHandler.UpdateSeats))).Methods("PUT")
 	// Statistic API
 	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

@@ -52,3 +52,14 @@ type CancelTicketResponse struct {
 	FlightID    int64               `json:"flightId"`
 	UpdatedAt   string              `json:"updatedAt"`
 }
+
+type UpdateSeatRequest struct {
+	TicketID string  `json:"ticketId"`
+	SeatCode string `json:"seatCode"`
+}
+
+type UpdateSeatResponse struct {
+	TicketID int64  `json:"ticketId"`
+	SeatCode string `json:"seatCode"`
+	Status   string `json:"status"`
+}
