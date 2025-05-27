@@ -26,7 +26,7 @@ func NewSearchFlightsUseCase(flightRepository adapters.IFlightRepository) ISearc
 
 func (u *SearchFlightsUseCase) Execute(ctx context.Context, departureCity, arrivalCity string, flightDate string) ([]dto.FlightSearchResponse, error) {
 	// Parse flightDate to time.Time
-	date, err := time.Parse("2006-01-02", flightDate)
+	date, err := time.Parse("2006-01-02T15:04:05Z", flightDate)
 	if err != nil {
 		return nil, errors.New("invalid query parameters. Please check departureCity, arrivalCity, and flightDate")
 	}

@@ -231,7 +231,7 @@ func (h *FlightHandler) SearchFlights(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"message": "No flights found for the given criteria."}`, http.StatusNotFound)
 			return
 		}
-		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(`{"message": "An unexpected error occurred. Please try again later.%v"}`, err.Error()), http.StatusInternalServerError)
 		return
 	}
 
