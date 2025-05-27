@@ -1,8 +1,17 @@
 package entities
 
+type GenderType string
+
+const (
+	GenderMale   GenderType = "male"
+	GenderFemale GenderType = "female"
+	GenderOther  GenderType = "other"
+)
+
 type TicketOwner struct {
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	PhoneNumber string `json:"phone_number"`
-	Gender      string `json:"gender"`
+	TicketID    int64      `json:"ticket_id"`    // ID của vé
+	FirstName   string     `json:"first_name"`   // Tên
+	LastName    string     `json:"last_name"`    // Họ
+	PhoneNumber string     `json:"phone_number"` // Số điện thoại
+	Gender      GenderType `json:"gender"`       // Giới tính
 }

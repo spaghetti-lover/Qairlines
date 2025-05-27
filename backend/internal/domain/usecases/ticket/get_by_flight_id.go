@@ -2,13 +2,10 @@ package ticket
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
-
-var ErrFlightNotFound = errors.New("flight not found")
 
 type IGetTicketsByFlightIDUseCase interface {
 	Execute(ctx context.Context, flightID int64) ([]entities.Ticket, error)
@@ -30,7 +27,7 @@ func (u *GetTicketsByFlightIDUseCase) Execute(ctx context.Context, flightID int6
 		return nil, err
 	}
 	if len(tickets) == 0 {
-		return nil, ErrFlightNotFound
+		return nil, adapters.ErrFlightNotFound
 	}
-	return tickets, nil
+	return tickets, err
 }

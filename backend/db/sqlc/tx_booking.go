@@ -98,7 +98,7 @@ func (store *SQLStore) BookingTx(ctx context.Context, arg BookingTxParams) (Book
 		// Create Ticket
 		ticketParams := CreateTicketParams{
 			BookingID:   pgtype.Int8{Int64: booking.BookingID, Valid: true},
-			FlightID:    pgtype.Int8{Int64: arg.DepartureFlightID, Valid: true},
+			FlightID:    arg.DepartureFlightID,
 			FlightClass: FlightClass("Economy"), // This should be determined based on the booking or flight
 			Price:       100000,                 // This should be determined based on the flight and class
 			Status:      TicketStatus("pending"),

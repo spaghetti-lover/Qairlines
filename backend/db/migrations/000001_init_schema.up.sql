@@ -95,12 +95,12 @@ CREATE TABLE Seats (
 -- Create Tickets table
 CREATE TABLE Tickets (
   ticket_id BIGSERIAL PRIMARY KEY,
-  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE,
+  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE NOT NULL,
   flight_class flight_class NOT NULL DEFAULT 'Economy',
   price INT NOT NULL CHECK (price >= 0),
   status ticket_status NOT NULL DEFAULT 'booked',
   booking_id BIGINT REFERENCES Bookings(booking_id) ON DELETE CASCADE,
-  flight_id BIGINT REFERENCES Flights(flight_id),
+  flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE NOT NULL,
   created_at timestamptz NOT NULL DEFAULT (now()),
   updated_at timestamptz NOT NULL DEFAULT (now())
 );

@@ -42,22 +42,24 @@ WHERE ticket_id = $1;
 -- name: GetTicketsByFlightID :many
 SELECT
     t.ticket_id,
-    t.status,
+    t.seat_id,
     t.flight_class,
     t.price,
+    t.status,
     t.booking_id,
     t.flight_id,
     t.created_at,
     t.updated_at,
-    tos.first_name,
-    tos.last_name,
-    tos.phone_number,
-    tos.gender,
     s.seat_code,
-    s.class AS seat_class
+    s.is_available,
+    s.class AS seat_class,
+    o.first_name AS owner_first_name,
+    o.last_name AS owner_last_name,
+    o.phone_number AS owner_phone_number,
+    o.gender AS owner_gender
 FROM Tickets t
-LEFT JOIN TicketOwnerSnapshot tos ON t.ticket_id = tos.ticket_id
-LEFT JOIN Seats s ON t.flight_id = s.flight_id
+LEFT JOIN Seats s ON t.seat_id = s.seat_id
+LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
 WHERE t.flight_id = $1;
 
 -- name: UpdateTicketStatus :one
