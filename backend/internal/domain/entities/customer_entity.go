@@ -21,6 +21,7 @@ type Customer struct {
 	LoyaltyPoints        int32          `json:"loyalty_points"`
 	CreatedAt            time.Time      `json:"created_at"`
 	UpdatedAt            time.Time      `json:"updated_at"`
+	User                 User           `json:"user"`
 }
 
 type CreateCustomerParams struct {

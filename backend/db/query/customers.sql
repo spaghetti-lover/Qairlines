@@ -22,8 +22,21 @@ JOIN users u ON c.user_id = u.user_id
 WHERE u.email = $1 LIMIT 1;
 
 
--- name: GetAllCustomer :many
-SELECT * FROM customers;
+-- name: GetAllCustomers :many
+SELECT
+    u.user_id AS uid,
+    u.first_name,
+    u.last_name,
+    u.email,
+    c.date_of_birth,
+    c.gender,
+    c.loyalty_points,
+    c.created_at,
+    c.address,
+    c.passport_number,
+    c.identification_number
+FROM Users u
+JOIN Customers c ON u.user_id = c.user_id;
 
 -- name: UpdateCustomer :exec
 UPDATE customers

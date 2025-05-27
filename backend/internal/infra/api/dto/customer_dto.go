@@ -46,3 +46,17 @@ type CustomerUpdateResponse struct {
 	Passport             string              `json:"passport"`
 	IdentificationNumber string              `json:"identificationNumber"`
 }
+
+type CustomerResponse struct {
+	UID                  string      `json:"uid"`
+	FirstName            string      `json:"firstName"`
+	LastName             string      `json:"lastName"`
+	Email                string      `json:"email"`
+	DateOfBirth          TimeSeconds `json:"dateOfBirth"`
+	Gender               string      `json:"gender"`
+	LoyaltyPoints        int32       `json:"loyaltyPoints"`
+	CreatedAt            TimeSeconds `json:"createdAt"`
+	Address              string      `json:"address"`
+	PassportNumber       string      `json:"passportNumber"`
+	IdentificationNumber string      `json:"identificationNumber"`
+}

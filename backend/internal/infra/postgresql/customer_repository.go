@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
@@ -114,4 +115,36 @@ func (r *CustomerRepositoryPostgres) UpdateCustomer(ctx context.Context, custome
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
 		}, nil
+}
+
+func (r *CustomerRepositoryPostgres) GetAllCustomers(ctx context.Context) ([]entities.Customer, error) {
+	rows, err := r.store.GetAllCustomers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all customers: %w", err)
+	}
+
+	var customers []entities.Customer
+	for _, row := range rows {
+		user, err := r.store.GetUser(ctx, row.Uid)
+		if err != nil {
+			return nil, err
+		}
+		customers = append(customers, entities.Customer{
+			UserID: row.Uid,
+			User: entities.User{
+				FirstName: user.FirstName.String,
+				LastName:  user.LastName.String,
+				Email:     user.Email,
+			},
+			DateOfBirth:          row.DateOfBirth.Time,
+			Gender:               entities.CustomerGender(row.Gender),
+			LoyaltyPoints:        row.LoyaltyPoints.Int32,
+			CreatedAt:            row.CreatedAt,
+			Address:              row.Address.String,
+			PassportNumber:       row.PassportNumber.String,
+			IdentificationNumber: row.IdentificationNumber.String,
+		})
+	}
+
+	return customers, nil
 }

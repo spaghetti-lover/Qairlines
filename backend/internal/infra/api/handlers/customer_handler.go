@@ -20,13 +20,15 @@ type CustomerHandler struct {
 	customerCreateUseCase customer.ICreateCustomerUseCase
 	customerUpdateUseCase customer.ICustomerUpdateUseCase
 	userUpdateUseCase     user.IUserUpdateUseCase
+	getAllCustomerUseCase customer.IGetAllCustomersUseCase
 }
 
-func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase) *CustomerHandler {
+func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, getAllCustomerUseCase customer.IGetAllCustomersUseCase) *CustomerHandler {
 	return &CustomerHandler{
 		customerCreateUseCase: customerCreateUseCase,
 		customerUpdateUseCase: customerUpdateUseCase,
 		userUpdateUseCase:     userUpdateUseCase,
+		getAllCustomerUseCase: getAllCustomerUseCase,
 	}
 }
 
@@ -116,4 +118,28 @@ func (h *CustomerHandler) UpdateCustomer(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *CustomerHandler) GetAllCustomers(w http.ResponseWriter, r *http.Request) {
+	// Kiểm tra quyền admin
+	isAdmin := r.Header.Get("admin")
+	if isAdmin != "true" {
+		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		return
+	}
+
+	// Gọi use case để lấy danh sách khách hàng
+	customers, err := h.getAllCustomerUseCase.Execute(r.Context())
+	if err != nil {
+		http.Error(w, "An unexpected error occurred. Please try again later.", http.StatusInternalServerError)
+		return
+	}
+
+	// Trả về response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Customers retrieved successfully.",
+		"data":    customers,
+	})
 }

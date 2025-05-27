@@ -1,6 +1,8 @@
 package mappers
 
 import (
+	"strconv"
+
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 )
@@ -37,4 +39,25 @@ func CustomerUpdateResponse(customer entities.Customer, user entities.User) map[
 			IdentificationNumber: customer.IdentificationNumber,
 		},
 	}
+}
+
+func ToCustomerResponses(customers []entities.Customer) []dto.CustomerResponse {
+	var responses []dto.CustomerResponse
+
+	for _, customer := range customers {
+		responses = append(responses, dto.CustomerResponse{
+			UID:                  strconv.FormatInt(customer.UserID, 10),
+			FirstName:            customer.User.FirstName,
+			LastName:             customer.User.LastName,
+			Email:                customer.User.Email,
+			DateOfBirth:          dto.TimeSeconds{Seconds: customer.DateOfBirth.Unix()},
+			Gender:               string(customer.Gender),
+			LoyaltyPoints:        customer.LoyaltyPoints,
+			CreatedAt:            dto.TimeSeconds{Seconds: customer.CreatedAt.Unix()},
+			Address:              customer.Address,
+			PassportNumber:       customer.PassportNumber,
+			IdentificationNumber: customer.IdentificationNumber,
+		})
+	}
+	return responses
 }

@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -74,30 +75,58 @@ func (q *Queries) DeleteCustomer(ctx context.Context, userID int64) error {
 	return err
 }
 
-const getAllCustomer = `-- name: GetAllCustomer :many
-SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points, created_at, updated_at FROM customers
+const getAllCustomers = `-- name: GetAllCustomers :many
+SELECT
+    u.user_id AS uid,
+    u.first_name,
+    u.last_name,
+    u.email,
+    c.date_of_birth,
+    c.gender,
+    c.loyalty_points,
+    c.created_at,
+    c.address,
+    c.passport_number,
+    c.identification_number
+FROM Users u
+JOIN Customers c ON u.user_id = c.user_id
 `
 
-func (q *Queries) GetAllCustomer(ctx context.Context) ([]Customer, error) {
-	rows, err := q.db.Query(ctx, getAllCustomer)
+type GetAllCustomersRow struct {
+	Uid                  int64       `json:"uid"`
+	FirstName            pgtype.Text `json:"first_name"`
+	LastName             pgtype.Text `json:"last_name"`
+	Email                string      `json:"email"`
+	DateOfBirth          pgtype.Date `json:"date_of_birth"`
+	Gender               GenderType  `json:"gender"`
+	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
+	CreatedAt            time.Time   `json:"created_at"`
+	Address              pgtype.Text `json:"address"`
+	PassportNumber       pgtype.Text `json:"passport_number"`
+	IdentificationNumber pgtype.Text `json:"identification_number"`
+}
+
+func (q *Queries) GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error) {
+	rows, err := q.db.Query(ctx, getAllCustomers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Customer{}
+	items := []GetAllCustomersRow{}
 	for rows.Next() {
-		var i Customer
+		var i GetAllCustomersRow
 		if err := rows.Scan(
-			&i.UserID,
-			&i.PhoneNumber,
-			&i.Gender,
+			&i.Uid,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
 			&i.DateOfBirth,
-			&i.PassportNumber,
-			&i.IdentificationNumber,
-			&i.Address,
+			&i.Gender,
 			&i.LoyaltyPoints,
 			&i.CreatedAt,
-			&i.UpdatedAt,
+			&i.Address,
+			&i.PassportNumber,
+			&i.IdentificationNumber,
 		); err != nil {
 			return nil, err
 		}

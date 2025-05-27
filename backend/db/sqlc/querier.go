@@ -35,7 +35,7 @@ type Querier interface {
 	GetAdmin(ctx context.Context, userID int64) (int64, error)
 	GetAdminByEmail(ctx context.Context, email string) (GetAdminByEmailRow, error)
 	GetAllAdmin(ctx context.Context) ([]int64, error)
-	GetAllCustomer(ctx context.Context) ([]Customer, error)
+	GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error)
 	GetAllNewsWithAuthor(ctx context.Context) ([]GetAllNewsWithAuthorRow, error)
 	GetAllSeats(ctx context.Context) ([]Seat, error)
 	GetAllTicketOwnerSnapshots(ctx context.Context) ([]Ticketownersnapshot, error)
