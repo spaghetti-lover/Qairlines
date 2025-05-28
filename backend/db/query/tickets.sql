@@ -102,3 +102,23 @@ SET seat_id = (
 WHERE ticket_id = $1
 RETURNING ticket_id, seat_id, updated_at,
           (SELECT Seats.seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code;
+
+-- name: GetTicketsByBookingIDAndType :many
+SELECT
+    ticket_id,
+    seat_id,
+    flight_class,
+    price,
+    status,
+    booking_id,
+    flight_id,
+    created_at,
+    updated_at
+FROM
+    Tickets
+WHERE
+    Tickets.booking_id = $1
+    AND (
+        ($2 = 'departure' AND flight_id = (SELECT departure_flight_id FROM Bookings WHERE Bookings.booking_id = $1))
+        OR ($2 = 'return' AND flight_id = (SELECT return_flight_id FROM Bookings WHERE Bookings.booking_id = $1))
+    );

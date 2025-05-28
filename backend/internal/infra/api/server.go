@@ -78,6 +78,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
 	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
 	bookingCreateUseCase := booking.NewCreateBookingUseCase(bookingRepo, flightRepo)
+	bookingGetUseCase := booking.NewGetBookingUseCase(bookingRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase, customerGetAllUseCase, customerDeleteUseCase, customerGetUseCase)
@@ -86,7 +87,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase, flightSuggestedUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
-	bookingHandler := handlers.NewBookingHandler(bookingCreateUseCase, tokenMaker, userRepo)
+	bookingHandler := handlers.NewBookingHandler(bookingCreateUseCase, tokenMaker, userRepo, bookingGetUseCase)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
@@ -157,6 +158,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 			utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
 		}
 	}).Methods("GET")
+	apiRouter.Handle("/booking", authMiddleware(http.HandlerFunc(bookingHandler.GetBooking))).Methods("GET")
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{

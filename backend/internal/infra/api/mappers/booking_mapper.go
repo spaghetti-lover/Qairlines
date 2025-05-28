@@ -98,3 +98,25 @@ func mapNullableInt64ToString(value *int64) string {
 	}
 	return strconv.FormatInt(*value, 10)
 }
+
+func ToGetBookingResponse(booking entities.Booking, departureTickets []entities.Ticket, returnTickets []entities.Ticket) dto.GetBookingResponse {
+	return dto.GetBookingResponse{
+		BookingID:         strconv.FormatInt(booking.BookingID, 10),
+		Email:             booking.UserEmail,
+		TripType:          string(booking.TripType),
+		DepartureFlightID: strconv.FormatInt(booking.DepartureFlightID, 10),
+		ReturnFlightID:    mapNullableInt64ToString(booking.ReturnFlightID),
+		DepartureTickets:  mapTicketIDsToResponse(departureTickets),
+		ReturnTickets:     mapTicketIDsToResponse(returnTickets),
+		CreatedAt:         booking.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:         booking.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func mapTicketIDsToResponse(tickets []entities.Ticket) []string {
+	var ticketIDs []string
+	for _, ticket := range tickets {
+		ticketIDs = append(ticketIDs, strconv.FormatInt(ticket.TicketID, 10))
+	}
+	return ticketIDs
+}

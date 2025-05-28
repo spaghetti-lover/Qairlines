@@ -55,6 +55,7 @@ type Querier interface {
 	GetTicketByFlightId(ctx context.Context, flightID int64) ([]Ticket, error)
 	GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error)
 	GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (Ticketownersnapshot, error)
+	GetTicketsByBookingIDAndType(ctx context.Context, arg GetTicketsByBookingIDAndTypeParams) ([]Ticket, error)
 	GetTicketsByFlightID(ctx context.Context, flightID int64) ([]GetTicketsByFlightIDRow, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)

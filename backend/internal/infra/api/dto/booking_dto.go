@@ -46,3 +46,15 @@ type TicketDataResponse struct {
 	FlightClass string    `json:"flightClass"`
 	OwnerData   OwnerData `json:"ownerData"`
 }
+
+type GetBookingResponse struct {
+	BookingID         string   `json:"bookingId"`
+	Email             string   `json:"email"`
+	TripType          string   `json:"tripType"`
+	DepartureFlightID string   `json:"departureFlightId"`
+	ReturnFlightID    string   `json:"returnFlightId"`
+	DepartureTickets  []string `json:"departureIdTickets"`
+	ReturnTickets     []string `json:"returnIdTickets"`
+	CreatedAt         string   `json:"createdAt"`
+	UpdatedAt         string   `json:"updatedAt"`
+}

@@ -203,6 +203,62 @@ func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketB
 	return i, err
 }
 
+const getTicketsByBookingIDAndType = `-- name: GetTicketsByBookingIDAndType :many
+SELECT
+    ticket_id,
+    seat_id,
+    flight_class,
+    price,
+    status,
+    booking_id,
+    flight_id,
+    created_at,
+    updated_at
+FROM
+    Tickets
+WHERE
+    Tickets.booking_id = $1
+    AND (
+        ($2 = 'departure' AND flight_id = (SELECT departure_flight_id FROM Bookings WHERE Bookings.booking_id = $1))
+        OR ($2 = 'return' AND flight_id = (SELECT return_flight_id FROM Bookings WHERE Bookings.booking_id = $1))
+    )
+`
+
+type GetTicketsByBookingIDAndTypeParams struct {
+	BookingID pgtype.Int8 `json:"booking_id"`
+	Column2   interface{} `json:"column_2"`
+}
+
+func (q *Queries) GetTicketsByBookingIDAndType(ctx context.Context, arg GetTicketsByBookingIDAndTypeParams) ([]Ticket, error) {
+	rows, err := q.db.Query(ctx, getTicketsByBookingIDAndType, arg.BookingID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Ticket{}
+	for rows.Next() {
+		var i Ticket
+		if err := rows.Scan(
+			&i.TicketID,
+			&i.SeatID,
+			&i.FlightClass,
+			&i.Price,
+			&i.Status,
+			&i.BookingID,
+			&i.FlightID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTicketsByFlightID = `-- name: GetTicketsByFlightID :many
 SELECT
     t.ticket_id,

@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/booking"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
 
@@ -16,13 +18,15 @@ type BookingHandler struct {
 	createBookingUseCase booking.ICreateBookingUseCase
 	tokenMaker           token.Maker
 	userRepository       adapters.IUserRepository
+	getBookingUseCase    booking.IGetBookingUseCase
 }
 
-func NewBookingHandler(createBookingUseCase booking.ICreateBookingUseCase, tokenMaker token.Maker, userRepository adapters.IUserRepository) *BookingHandler {
+func NewBookingHandler(createBookingUseCase booking.ICreateBookingUseCase, tokenMaker token.Maker, userRepository adapters.IUserRepository, getBookingUseCase booking.IGetBookingUseCase) *BookingHandler {
 	return &BookingHandler{
 		createBookingUseCase: createBookingUseCase,
 		tokenMaker:           tokenMaker,
 		userRepository:       userRepository,
+		getBookingUseCase:    getBookingUseCase,
 	}
 }
 
@@ -82,5 +86,36 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Booking created successfully.",
 		"data":    bookingResponse,
+	})
+}
+
+func (h *BookingHandler) GetBooking(w http.ResponseWriter, r *http.Request) {
+	bookingIDStr := r.URL.Query().Get("id")
+	if bookingIDStr == "" {
+		http.Error(w, `{"message": "Booking ID is required."}`, http.StatusBadRequest)
+		return
+	}
+	bookingID, err := strconv.ParseInt(bookingIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, `{"message": "Invalid booking ID."}`, http.StatusBadRequest)
+		return
+	}
+	booking, departureTickets, returnTickets, err := h.getBookingUseCase.Execute(r.Context(), bookingID)
+	if err != nil {
+		if errors.Is(err, adapters.ErrBookingNotFound) {
+			http.Error(w, `{"message": "Booking not found."}`, http.StatusNotFound)
+			return
+		}
+		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		return
+	}
+
+	response := mappers.ToGetBookingResponse(booking, departureTickets, returnTickets)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Booking details retrieved successfully.",
+		"data":    response,
 	})
 }
