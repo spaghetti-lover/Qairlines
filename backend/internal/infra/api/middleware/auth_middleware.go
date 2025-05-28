@@ -34,11 +34,10 @@ func AuthMiddleware(tokenMaker token.Maker) func(http.Handler) http.Handler {
 
 			// Get access token
 			accessToken := fields[1]
-
 			// Verify token
 			payload, err := tokenMaker.VerifyToken(accessToken, token.TokenTypeAccessToken)
 			if err != nil {
-				http.Error(w, `{"message": "Authentication failed. Invalid token."}`, http.StatusUnauthorized)
+				http.Error(w, `{"message": "Authentication failed. Invalid token2."}`, http.StatusUnauthorized)
 				return
 			}
 

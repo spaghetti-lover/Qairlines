@@ -73,7 +73,7 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	// Lấy token payload từ context
 	authPayload, ok := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
 	if !ok || authPayload == nil {
-		http.Error(w, `{"message": "Authentication failed. Invalid token."}`, http.StatusUnauthorized)
+		http.Error(w, `{"message": "Authentication failed. Invalid token1."}`, http.StatusUnauthorized)
 		return
 	}
 

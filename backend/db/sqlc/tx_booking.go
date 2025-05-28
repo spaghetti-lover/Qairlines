@@ -101,7 +101,6 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 					return fmt.Errorf("failed to create return ticket: %w", err)
 				}
 
-				// Lưu thông tin chủ sở hữu vé vào TicketOwnerSnapshot
 				_, err = q.db.Exec(ctx, `
                     INSERT INTO TicketOwnerSnapshot (
                         ticket_id, first_name, last_name, phone_number, gender, date_of_birth,

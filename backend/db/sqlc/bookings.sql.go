@@ -12,28 +12,18 @@ import (
 )
 
 const createBooking = `-- name: CreateBooking :one
-  -- user_email VARCHAR(255) REFERENCES Users(email) ON DELETE SET NULL,
-  -- trip_type trip_type NOT NULL,
-  -- departure_flight_id VARCHAR(20) REFERENCES Flights(flight_id),
-  -- return_flight_id VARCHAR(20) REFERENCES Flights(flight_id),
-  -- status booking_status NOT NULL DEFAULT 'pending',
-  -- created_at timestamptz NOT NULL DEFAULT (now()),
-  -- updated_at timestamptz NOT NULL DEFAULT (now())
-
 INSERT INTO bookings (
-  booking_id,
   user_email,
   trip_type,
   departure_flight_id,
   return_flight_id,
   status
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5
 ) RETURNING booking_id, user_email, trip_type, departure_flight_id, return_flight_id, status, created_at, updated_at
 `
 
 type CreateBookingParams struct {
-	BookingID         int64         `json:"booking_id"`
 	UserEmail         pgtype.Text   `json:"user_email"`
 	TripType          TripType      `json:"trip_type"`
 	DepartureFlightID pgtype.Int8   `json:"departure_flight_id"`
@@ -41,10 +31,8 @@ type CreateBookingParams struct {
 	Status            BookingStatus `json:"status"`
 }
 
-// booking_id VARCHAR(30) PRIMARY KEY,
 func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error) {
 	row := q.db.QueryRow(ctx, createBooking,
-		arg.BookingID,
 		arg.UserEmail,
 		arg.TripType,
 		arg.DepartureFlightID,

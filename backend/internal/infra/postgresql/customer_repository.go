@@ -168,10 +168,12 @@ func (r *CustomerRepositoryPostgres) DeleteCustomerByID(ctx context.Context, cus
 }
 
 func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid int64) (*entities.Customer, error) {
+	print(uid)
 	row, err := r.store.GetCustomerByID(ctx, uid)
 	if err == sql.ErrNoRows {
 		return nil, adapters.ErrCustomerNotFound
 	}
+	fmt.Println("row:", row)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get customer by UID: %w", err)
 	}

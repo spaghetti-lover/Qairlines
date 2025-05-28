@@ -202,7 +202,7 @@ func (h *CustomerHandler) GetCustomerDetails(w http.ResponseWriter, r *http.Requ
 			http.Error(w, "Customer not found.", http.StatusNotFound)
 			return
 		}
-		http.Error(w, "An unexpected error occurred. Please try again later.", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("An unexpected error occurred. %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

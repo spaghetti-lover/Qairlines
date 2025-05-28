@@ -15,7 +15,6 @@ type Querier interface {
 	CheckSeatAvailability(ctx context.Context, arg CheckSeatAvailabilityParams) (bool, error)
 	CountOccupiedSeats(ctx context.Context, flightID pgtype.Int8) (int64, error)
 	CreateAdmin(ctx context.Context, userID int64) (int64, error)
-	// booking_id VARCHAR(30) PRIMARY KEY,
 	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	CreateFlight(ctx context.Context, arg CreateFlightParams) (Flight, error)

@@ -196,7 +196,7 @@ export function useFlightConfirmation() {
     }));
 
     const bookingData = {
-      bookerId: personalInfo?.uid,
+      // bookerId: personalInfo?.uid,
       departureCity: departureFlightData?.departureCity,
       arrivalCity: departureFlightData?.arrivalCity,
       departureFlightId: departureFlightData?.flightId,
@@ -207,7 +207,7 @@ export function useFlightConfirmation() {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/booking/new`, {
+      const response = await fetch(`${API_BASE_URL}/api/booking`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -229,6 +229,7 @@ export function useFlightConfirmation() {
         variant: "success",
       });
     } catch (error) {
+      console.log(JSON.stringify(bookingData))
       toast({
         title: "Lỗi đặt vé",
         description: error.message,

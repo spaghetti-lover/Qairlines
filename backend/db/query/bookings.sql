@@ -1,22 +1,12 @@
-  -- booking_id VARCHAR(30) PRIMARY KEY,
-  -- user_email VARCHAR(255) REFERENCES Users(email) ON DELETE SET NULL,
-  -- trip_type trip_type NOT NULL,
-  -- departure_flight_id VARCHAR(20) REFERENCES Flights(flight_id),
-  -- return_flight_id VARCHAR(20) REFERENCES Flights(flight_id),
-  -- status booking_status NOT NULL DEFAULT 'pending',
-  -- created_at timestamptz NOT NULL DEFAULT (now()),
-  -- updated_at timestamptz NOT NULL DEFAULT (now())
-
 -- name: CreateBooking :one
 INSERT INTO bookings (
-  booking_id,
   user_email,
   trip_type,
   departure_flight_id,
   return_flight_id,
   status
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetBooking :one

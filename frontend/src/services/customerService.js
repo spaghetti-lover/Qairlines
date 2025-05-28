@@ -9,7 +9,7 @@ export const fetchCustomerInfo = async () => {
       throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
     }
 
-    const response = await axios.get(`${API_BASE_URL}/api/user`, {
+    const response = await axios.get(`${API_BASE_URL}/api/customer`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
