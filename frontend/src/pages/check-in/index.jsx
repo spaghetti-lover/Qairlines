@@ -129,7 +129,7 @@ export default function CheckInPage() {
         if (!token) throw new Error("Token không tồn tại.");
 
         const ticketPromises = ticketIds.map(async (ticketId) => {
-          const response = await fetch(`${API_BASE_URL}/api/ticket/?id=${ticketId}`, {
+          const response = await fetch(`${API_BASE_URL}/api/ticket?id=${ticketId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!response.ok) {
@@ -137,12 +137,12 @@ export default function CheckInPage() {
           }
 
           const result = await response.json();
-          const ownerData = result.data.ownerData;
+          const ownerData = result.data.owner;
 
           return {
             id: ticketId,
             title: ownerData.gender === "Female" ? "Bà" : "Ông",
-            name: `${ownerData.lastName} ${ownerData.firstName}`,
+            name: `${ownerData.first_name} ${ownerData.last_name}`,
             type: result.data.flightClass || "Economy",
             flightId: result.data.flightId,
             // Lúc sau bạn có thể thêm thuộc tính "seat" nếu cần
@@ -169,7 +169,7 @@ export default function CheckInPage() {
       if (!token) throw new Error("Token không tồn tại.");
 
       // Fetch booking
-      const response = await fetch(`${API_BASE_URL}/api/booking/?id=${bookingID}`, {
+      const response = await fetch(`${API_BASE_URL}/api/booking?id=${bookingID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) {

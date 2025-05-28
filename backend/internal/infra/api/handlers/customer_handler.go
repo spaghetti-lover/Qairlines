@@ -132,14 +132,14 @@ func (h *CustomerHandler) GetAllCustomers(w http.ResponseWriter, r *http.Request
 	// Kiểm tra quyền admin
 	isAdmin := r.Header.Get("admin")
 	if isAdmin != "true" {
-		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		http.Error(w, `{"message":"Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
 		return
 	}
 
 	// Gọi use case để lấy danh sách khách hàng
 	customers, err := h.getAllCustomerUseCase.Execute(r.Context())
 	if err != nil {
-		http.Error(w, "An unexpected error occurred. Please try again later.", http.StatusInternalServerError)
+		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
 		return
 	}
 

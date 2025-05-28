@@ -37,7 +37,7 @@ export function FlightSection({
         passengers={passengers}
         paymentMethod={paymentMethod}
       />
-      
+
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <Button
@@ -56,9 +56,9 @@ export function FlightSection({
               <FlightInfoCard
                 key={index}
                 type={type}
-                passengerName={`${detail.firstName} ${detail.lastName}`}
+                passengerName={`${detail.first_name} ${detail.last_name}`}
                 seatNumber={detail.seatCode || 'Chưa xác định'}
-                onView={detail.onView} 
+                onView={detail.onView}
                 onDownload={detail.onDownload} // Sử dụng hàm đã truyền
                 ticketRef={ticketRef}  // Truyền hàm onDownload vào FlightInfoCard
               />

@@ -30,7 +30,7 @@ export function useFlightBooking(bookingID) {
 
     // Fetch booking data
     axios
-      .get(`${API_BASE_URL}/api/booking/?id=${bookingID}`, {
+      .get(`${API_BASE_URL}/api/booking?id=${bookingID}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

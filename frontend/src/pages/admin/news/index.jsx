@@ -46,17 +46,19 @@ export default function PostManagementPage() {
       }
 
       const res = await response.json()
-      setPosts(res.data.map(a => {return {
+      console.log(res[0].createdAt)
+      setPosts(res.map(a => {return {
+
         "id": a.newsId,
         "title": a.title,
         "author": a.authorId,
         "description": a.description,
-        "createdAt": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0]
+        "createdAt": a.createAt.seconds ? new Date(a.createdAt).toISOString().replace("T", " ").slice(0, -5) : a.createAt.split('T')[0]
       }}))
     } catch (error) {
       toast({
         title: "Lỗi",
-        description: "Đã có lỗi xảy ra khi kết nối với máy chủ, vui lòng tải lại trang hoặc đăng nhập lại",
+        description: "Đã có lỗi xảy ra khi kết nối với máy chủ, vui lòng tải lại trang hoặc đăng nhập lại" + error.message,
         variant: "destructive"
       })
     }

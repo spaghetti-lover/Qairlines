@@ -162,10 +162,11 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
+		Debug:            true,
 	}).Handler(router)
 
 	server := &Server{

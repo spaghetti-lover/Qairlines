@@ -88,8 +88,8 @@ export default function FlightBookingPage() {
         passengers={departureTicketData.length}
         paymentMethod="Thẻ tín dụng"
         passengerDetails={departureTicketData.map((ticket) => ({
-          firstName: ticket.ownerData.firstName,
-          lastName: ticket.ownerData.lastName,
+          firstName: ticket.owner.firstName,
+          lastName: ticket.owner.lastName,
           seatCode: ticket.seatCode,
           flightClass: ticket.flightClass,
           onView: () => handleViewTicket(ticket),
@@ -110,8 +110,8 @@ export default function FlightBookingPage() {
           passengers={returnTicketData.length}
           paymentMethod="Thẻ tín dụng"
           passengerDetails={returnTicketData.map((ticket) => ({
-            firstName: ticket.ownerData.firstName,
-            lastName: ticket.ownerData.lastName,
+            firstName: ticket.owner.firstName,
+            lastName: ticket.owner.lastName,
             seatCode: ticket.seatCode,
             flightClass: ticket.flightClass,
             onView: () => handleViewTicket(ticket),
@@ -126,7 +126,7 @@ export default function FlightBookingPage() {
           {selectedTicket && selectedTicket.status === 'Active' ? (
             <div ref={ticketRef}>
               <ModernFlightTicket
-                passengerName={`${selectedTicket.ownerData.firstName} ${selectedTicket.ownerData.lastName}`}
+                passengerName={`${selectedTicket.owner.first_name} ${selectedTicket.owner.last_name}`}
                 flightNumber={departureFlightData.flightNumber}
                 flightDate={new Date(departureFlightData.departureTime.seconds * 1000).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 departureTime={new Date(departureFlightData.departureTime.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

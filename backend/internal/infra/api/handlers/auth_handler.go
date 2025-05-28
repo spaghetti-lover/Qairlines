@@ -63,12 +63,6 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // ChangePassword handles password change requests
 func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
-	if isAdmin != "true" {
-		http.Error(w, `{"message": "Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
-		return
-	}
 
 	// Lấy token payload từ context
 	authPayload, ok := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)

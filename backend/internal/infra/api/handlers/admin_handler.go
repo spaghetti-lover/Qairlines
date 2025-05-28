@@ -46,13 +46,6 @@ func (h *AdminHandler) CreateAdminTx(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Kiểm tra header "authorization"
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, `{"message": "Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
-		return
-	}
-
 	// Decode request body
 	var createAdminRequest dto.CreateAdminRequest
 	if err := json.NewDecoder(r.Body).Decode(&createAdminRequest); err != nil {

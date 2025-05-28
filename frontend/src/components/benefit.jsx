@@ -55,14 +55,14 @@ export default function Benefit() {
 
       const res = await response.json()
 
-      setFeaturedArticles(res.data.map(a => {return {
+      setFeaturedArticles(res.map(a => {return {
         "slug": a.newsId,
         "image": a.image,
         "title": a.title,
         "description": a.description,
         "author": a.authorId,
         "content": a.content,
-        "date": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0],
+        "date": a.createAt.seconds ? new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5) : a.createAt.split('T')[0],
         "buttonText": "Đọc thêm",
         "authorTitle": "Nhà báo",
         "authorImage": "/AvatarUser/no_avatar.jpg",

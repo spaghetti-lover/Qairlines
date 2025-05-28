@@ -221,11 +221,10 @@ export function useFlightConfirmation() {
         throw new Error(errorData.message || "Lỗi khi tạo booking.");
       }
       const result = await response.json();
-      setBookingId(result.bookingId);
-
+      setBookingId(result.data.bookingId);
       toast({
         title: "Đặt vé thành công",
-        description: `Mã đặt vé của bạn là: ${result.bookingId}`,
+        description: `Mã đặt vé của bạn là: ${result.data.bookingId}`,
         variant: "success",
       });
     } catch (error) {

@@ -173,7 +173,6 @@ func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid i
 	if err == sql.ErrNoRows {
 		return nil, adapters.ErrCustomerNotFound
 	}
-	fmt.Println("row:", row)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get customer by UID: %w", err)
 	}

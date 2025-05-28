@@ -10,7 +10,7 @@ import { toast } from '@/hooks/use-toast'
 
 export default function FlightManagement() {
   const router = useRouter()
-    
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
@@ -33,13 +33,13 @@ export default function FlightManagement() {
   const getAllFlights = async () => {
     const getAllFlightsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flight/all`
 
-    try { 
+    try {
         const response = await fetch(getAllFlightsApi, {
             method: "GET",
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -47,10 +47,10 @@ export default function FlightManagement() {
 
         const res = await response.json()
         setFlights(res.data.map(a => {return {
-            "id": a.flightId,
-            "flightNumber": a.flightNumber,
-            "arrival": `${a.arrivalCity} ${new Date(a.arrivalTime.seconds*1000).toISOString().replace("T", " ").slice(0, -5)}`, 
-            "departure": `${a.departureCity} ${new Date(a.departureTime.seconds*1000).toISOString().replace("T", " ").slice(0, -5)}`,
+            "id": a.flight_id,
+            "flightNumber": a.flight_number,
+            "arrival": `${a.arrival_city} ${new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5)}`,
+            "departure": `${a.departure_city} ${new Date(a.departure_time).toISOString().replace("T", " ").slice(0, -5)}`,
             "ticketList": a.ticketList,
           }}))
     } catch (error) {
@@ -70,13 +70,13 @@ export default function FlightManagement() {
       setIsDialogOpen(true)
     }
     else {
-      try { 
+      try {
         const response = await fetch(getTicketsApi, {
             method: "GET",
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -109,13 +109,13 @@ export default function FlightManagement() {
   const handleCancelTicket = async (ticketId) => {
     const cancelTicketApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/ticket/cancel?id=${ticketId}`
 
-    try { 
+    try {
         const response = await fetch(cancelTicketApi, {
             method: "PUT",
             headers: {
                 "admin": "true",
                 "authorization": "Bearer " + localStorage.getItem("token")
-            }, 
+            },
         })
         if (!response.ok) {
             throw new Error("Send request failed")
@@ -139,7 +139,7 @@ export default function FlightManagement() {
   return (
     <div className="container mx-auto pt-10 pl-64">
       <h1 className="text-2xl font-semibold mb-10">Quản Lý Đặt Vé</h1>
-      
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -170,7 +170,7 @@ export default function FlightManagement() {
           <DialogHeader>
             <DialogTitle>Danh sách vé - Chuyến bay {selectedFlight?.flightNumber}</DialogTitle>
             <DialogDescription>
-              Cất cánh: {selectedFlight && selectedFlight.departure} - 
+              Cất cánh: {selectedFlight && selectedFlight.departure} -
               Hạ cánh: {selectedFlight && selectedFlight.arrival}
             </DialogDescription>
           </DialogHeader>
@@ -199,8 +199,8 @@ export default function FlightManagement() {
                   <TableCell>{ticket.flightClass}</TableCell>
                   <TableCell>{ticket.price.toLocaleString('vi-VN')} VND</TableCell>
                   <TableCell>
-                    <p>{`${ticket.ownerData.firstName} ${ticket.ownerData.lastName}`}</p>
-                    <p>{ticket.ownerData.phoneNumber}</p>
+                    <p>{`${ticket.owner.firstName} ${ticket.owner.lastName}`}</p>
+                    <p>{ticket.owner.phoneNumber}</p>
                   </TableCell>
                   <TableCell>
                     <Button className="bg-red-500 hover:bg-red-600" onClick={() => handleCancelTicket(ticket.ticketId)}>Xóa</Button>

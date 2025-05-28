@@ -47,7 +47,6 @@ const NewsPage = () => {
       }
 
       const res = await response.json()
-      console.log("API Response:", res);
       setFeaturedArticles(res.map(a => {return {
         "slug": a.newsId,
         "image": a.image,
@@ -55,7 +54,7 @@ const NewsPage = () => {
         "description": a.description,
         "author": a.authorId,
         "content": a.content,
-        "date": a.createdAt.seconds ? new Date(a.createdAt.seconds*1000).toISOString().split('T')[0] : a.createdAt.split("T")[0],
+        "date": a.createdAt.seconds ? new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5) : a.createdAt.split("T")[0],
         "buttonText": "Đọc thêm",
         "authorTitle": "Nhà báo",
         "authorImage": "/AvatarUser/no_avatar.jpg",

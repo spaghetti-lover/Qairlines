@@ -36,7 +36,7 @@ export default function AccountPage() {
         personalInfo.bookingHistory.map(async (bookingId) => {
           try {
             const response = await fetch(
-              `${API_BASE_URL}/api/booking/?id=${bookingId}`,
+              `${API_BASE_URL}/api/booking?id=${bookingId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,

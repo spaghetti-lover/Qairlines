@@ -51,20 +51,18 @@ const NewsDetail = () => {
       }
 
       const res = await response.json()
-
-      setFeaturedArticles(res.data.map(a => {return {
-        "slug": a.newsId,
-        "image": a.image,
-        "title": a.title,
-        "description": a.description,
-        "author": a.authorId,
-        "content": a.content,
-        "date": a.createAt.seconds ? new Date(a.createAt.seconds*1000).toISOString().split('T')[0] : a.createAt.split('T')[0],
-        "buttonText": "Đọc thêm",
-        "authorTitle": "Nhà báo",
-        "authorImage": "/AvatarUser/no_avatar.jpg",
-      }}))
-
+      setFeaturedArticles(res.map(a => ({
+        slug: a.newsId.toString(),
+        image: a.image,
+        title: a.title,
+        description: a.description || "",
+        author: a.author || "Unknown Author",
+        content: a.content || "",
+        date: a.createAt ? new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5) : "",
+        buttonText: "Đọc thêm",
+        authorTitle: "Nhà báo",
+        authorImage: "/AvatarUser/no_avatar.jpg",
+      })));
     } catch (error) {
       toast({
         title: "Lỗi",
