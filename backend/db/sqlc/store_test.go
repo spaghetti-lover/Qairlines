@@ -16,7 +16,7 @@ package db
 // 		BookerEmail:      utils.RandomEmail(),
 // 		NumberOfAdults:   1,
 // 		NumberOfChildren: 0,
-// 		FlightClass:      "Economy",
+// 		FlightClass:      "economy",
 // 		Cancelled:        pgtype.Bool{Bool: false, Valid: true},
 // 		FlightID:         flight.FlightID,
 // 	}
@@ -130,13 +130,13 @@ package db
 // 	require.NoError(t, err)
 // 	require.Len(t, seats, 3)
 
-// 	classExists := map[string]bool{"Economy": false, "Business": false, "First": false}
+// 	classExists := map[string]bool{"economy": false, "business": false, "First": false}
 // 	for _, seat := range seats {
 // 		classExists[string(seat.FlightClass)] = true
 // 		require.Equal(t, flight.FlightID, seat.FlightID)
 // 	}
-// 	require.True(t, classExists["Economy"])
-// 	require.True(t, classExists["Business"])
+// 	require.True(t, classExists["economy"])
+// 	require.True(t, classExists["business"])
 // 	require.True(t, classExists["First"])
 // 	return flight
 

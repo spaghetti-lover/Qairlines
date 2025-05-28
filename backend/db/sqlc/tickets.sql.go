@@ -229,7 +229,7 @@ WHERE t.flight_id = $1
 
 type GetTicketsByFlightIDRow struct {
 	TicketID         int64           `json:"ticket_id"`
-	SeatID           int64           `json:"seat_id"`
+	SeatID           pgtype.Int8     `json:"seat_id"`
 	FlightClass      FlightClass     `json:"flight_class"`
 	Price            int32           `json:"price"`
 	Status           TicketStatus    `json:"status"`
@@ -341,10 +341,10 @@ type UpdateSeatParams struct {
 }
 
 type UpdateSeatRow struct {
-	TicketID  int64     `json:"ticket_id"`
-	SeatID    int64     `json:"seat_id"`
-	UpdatedAt time.Time `json:"updated_at"`
-	SeatCode  string    `json:"seat_code"`
+	TicketID  int64       `json:"ticket_id"`
+	SeatID    pgtype.Int8 `json:"seat_id"`
+	UpdatedAt time.Time   `json:"updated_at"`
+	SeatCode  string      `json:"seat_code"`
 }
 
 func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (UpdateSeatRow, error) {

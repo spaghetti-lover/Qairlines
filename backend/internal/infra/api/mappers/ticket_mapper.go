@@ -11,7 +11,7 @@ func ToGetTicketsByFlightIDResponse(tickets []entities.Ticket) []dto.GetTicketBy
 	for _, ticket := range tickets {
 		responses = append(responses, dto.GetTicketByFlightIDResponse{
 			TicketID:    ticket.TicketID,
-			SeatID:      ticket.SeatID,
+			SeatID:      ticket.Seat.SeatID,
 			FlightClass: string(ticket.FlightClass),
 			Price:       ticket.Price,
 			Status:      string(ticket.Status),

@@ -58,9 +58,9 @@ func (ns NullBookingStatus) Value() (driver.Value, error) {
 type FlightClass string
 
 const (
-	FlightClassEconomy    FlightClass = "Economy"
-	FlightClassBusiness   FlightClass = "Business"
-	FlightClassFirstClass FlightClass = "First Class"
+	FlightClassEconomy    FlightClass = "economy"
+	FlightClassBusiness   FlightClass = "business"
+	FlightClassFirstClass FlightClass = "firstClass"
 )
 
 func (e *FlightClass) Scan(src interface{}) error {
@@ -148,9 +148,9 @@ func (ns NullFlightStatus) Value() (driver.Value, error) {
 type GenderType string
 
 const (
-	GenderTypeMale   GenderType = "male"
-	GenderTypeFemale GenderType = "female"
-	GenderTypeOther  GenderType = "other"
+	GenderTypeMale   GenderType = "Male"
+	GenderTypeFemale GenderType = "Female"
+	GenderTypeOther  GenderType = "Other"
 )
 
 func (e *GenderType) Scan(src interface{}) error {
@@ -381,7 +381,7 @@ type Seat struct {
 
 type Ticket struct {
 	TicketID    int64        `json:"ticket_id"`
-	SeatID      int64        `json:"seat_id"`
+	SeatID      pgtype.Int8  `json:"seat_id"`
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
@@ -392,11 +392,15 @@ type Ticket struct {
 }
 
 type Ticketownersnapshot struct {
-	TicketID    int64       `json:"ticket_id"`
-	FirstName   pgtype.Text `json:"first_name"`
-	LastName    pgtype.Text `json:"last_name"`
-	PhoneNumber pgtype.Text `json:"phone_number"`
-	Gender      GenderType  `json:"gender"`
+	TicketID             int64       `json:"ticket_id"`
+	FirstName            pgtype.Text `json:"first_name"`
+	LastName             pgtype.Text `json:"last_name"`
+	PhoneNumber          pgtype.Text `json:"phone_number"`
+	Gender               GenderType  `json:"gender"`
+	DateOfBirth          pgtype.Date `json:"date_of_birth"`
+	PassportNumber       pgtype.Text `json:"passport_number"`
+	IdentificationNumber pgtype.Text `json:"identification_number"`
+	Address              pgtype.Text `json:"address"`
 }
 
 type User struct {

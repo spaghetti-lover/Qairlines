@@ -1,11 +1,11 @@
 -- Define ENUM types
 CREATE TYPE user_role AS ENUM ('customer', 'admin');
-CREATE TYPE gender_type AS ENUM ('male', 'female', 'other');
+CREATE TYPE gender_type AS ENUM ('Male', 'Female', 'Other');
 CREATE TYPE trip_type AS ENUM ('oneWay', 'roundTrip');
 CREATE TYPE booking_status AS ENUM ('confirmed', 'cancelled', 'pending');
 CREATE TYPE ticket_status AS ENUM ('booked', 'cancelled', 'used');
 CREATE TYPE flight_status AS ENUM ('On Time', 'Delayed', 'Cancelled', 'Boarding', 'Takeoff', 'Landing', 'Landed');
-CREATE TYPE flight_class AS ENUM ('Economy', 'Business', 'First Class');
+CREATE TYPE flight_class AS ENUM ('economy', 'business', 'firstClass');
 
 -- Create Users table
 CREATE TABLE Users (
@@ -24,7 +24,7 @@ CREATE TABLE Users (
 CREATE TABLE Customers (
   user_id BIGINT PRIMARY KEY REFERENCES Users(user_id) ON DELETE CASCADE,
   phone_number VARCHAR(20),
-  gender gender_type NOT NULL DEFAULT 'other',
+  gender gender_type NOT NULL DEFAULT 'Other',
   date_of_birth DATE,
   passport_number VARCHAR(50),
   identification_number VARCHAR(50),
@@ -89,15 +89,15 @@ CREATE TABLE Seats (
   flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE,
   seat_code VARCHAR(3) NOT NULL,
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
-  class flight_class NOT NULL DEFAULT 'Economy',
+  class flight_class NOT NULL DEFAULT 'economy',
   UNIQUE (flight_id, seat_code)
 );
 
 -- Create Tickets table
 CREATE TABLE Tickets (
   ticket_id BIGSERIAL PRIMARY KEY,
-  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE NOT NULL,
-  flight_class flight_class NOT NULL DEFAULT 'Economy',
+  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE,
+  flight_class flight_class NOT NULL DEFAULT 'economy',
   price INT NOT NULL CHECK (price >= 0),
   status ticket_status NOT NULL DEFAULT 'booked',
   booking_id BIGINT REFERENCES Bookings(booking_id) ON DELETE CASCADE,
@@ -112,7 +112,11 @@ CREATE TABLE TicketOwnerSnapshot (
   first_name VARCHAR(100),
   last_name VARCHAR(100),
   phone_number VARCHAR(20),
-  gender gender_type NOT NULL DEFAULT 'other'
+  gender gender_type NOT NULL DEFAULT 'Other',
+  date_of_birth DATE,
+  passport_number VARCHAR(50),
+  identification_number VARCHAR(50),
+  address TEXT
 );
 
 
@@ -146,8 +150,8 @@ VALUES
 
 INSERT INTO Customers (user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points)
 VALUES
-(1, '1234567890', 'male', '1990-01-01', 'A12345678', 'ID123456', '123 Main St, Cityville', 100),
-(3, '0987654321', 'female', '1995-05-15', 'B98765432', 'ID987654', '456 Elm St, Townsville', 200);
+(1, '1234567890', 'Male', '1990-01-01', 'A12345678', 'ID123456', '123 Main St, Cityville', 100),
+(3, '0987654321', 'Female', '1995-05-15', 'B98765432', 'ID987654', '456 Elm St, Townsville', 200);
 
 INSERT INTO Admins (user_id)
 VALUES
@@ -172,7 +176,11 @@ VALUES
 ('VN543', 'Vietnam Airlines', 'Airbus A330', 'Hue', 'Ho Chi Minh City', 'Phu Bai Airport', 'Tan Son Nhat', '2025-06-12 14:00:00', '2025-06-12 16:00:00', 950000, 44, 6, 'On Time'),
 ('VN765', 'Vietnam Airlines', 'Boeing 777', 'Ho Chi Minh City', 'Hue', 'Tan Son Nhat', 'Phu Bai Airport', '2025-06-13 17:00:00', '2025-06-13 19:00:00', 1000000, 44, 6, 'On Time'),
 ('VN987', 'Vietnam Airlines', 'Airbus A350', 'Hai Phong', 'Hanoi', 'Cat Bi Airport', 'Noi Bai', '2025-06-14 08:00:00', '2025-06-14 08:45:00', 500000, 44, 6, 'On Time'),
-('VN210', 'Vietnam Airlines', 'Airbus A320', 'Hanoi', 'Hai Phong', 'Noi Bai', 'Cat Bi Airport', '2025-06-15 10:00:00', '2025-06-15 10:45:00', 500000, 44, 6, 'On Time');
+('VN210', 'Vietnam Airlines', 'Airbus A320', 'Hanoi', 'Hai Phong', 'Noi Bai', 'Cat Bi Airport', '2025-06-15 10:00:00', '2025-06-15 10:45:00', 500000, 44, 6, 'On Time'),
+('VN211', 'Vietnam Airlines', 'Airbus A320', 'Ho Chi Minh City', 'Hanoi', 'Tan Son Nhat', 'Noi Bai', '2025-06-06 17:00:00', '2025-06-07 19:00:00', 1200000, 44, 6, 'On Time'),
+('VN212', 'Vietnam Airlines', 'Boeing 787', 'SGN', 'HAN', 'Tan Son Nhat', 'Noi Bai', '2025-06-07 17:00:00', '2025-06-08 19:30:00', 1500000, 44, 6, 'On Time'),
+('VN213', 'Vietnam Airlines', 'Boeing 787', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-07 17:00:00', '2025-06-08 19:30:00', 1500000, 44, 6, 'On Time'),
+('VN214', 'Vietnam Airlines', 'Airbus A320', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-06 17:00:00', '2025-06-07 19:00:00', 1200000, 44, 6, 'On Time');
 
 INSERT INTO Bookings (user_email, trip_type, departure_flight_id, return_flight_id, status)
 VALUES
@@ -190,85 +198,85 @@ VALUES
 
 INSERT INTO Seats (flight_id, seat_code, is_available, class)
 VALUES
-(1, '1A', TRUE, 'Economy'),
-(1, '1B', FALSE, 'Economy'),
-(1, '1C', TRUE, 'Economy'),
-(1, '1D', TRUE, 'Economy'),
-(1, '1E', TRUE, 'Economy'),
-(1, '1F', TRUE, 'Economy'),
-(2, '2A', TRUE, 'Business'),
-(2, '2B', TRUE, 'Business'),
-(2, '2C', FALSE, 'Business'),
-(2, '2D', TRUE, 'Business'),
-(2, '2E', TRUE, 'Business'),
-(2, '2F', TRUE, 'Business'),
-(3, '3A', TRUE, 'Economy'),
-(3, '3B', TRUE, 'Economy'),
-(3, '3C', TRUE, 'Economy'),
-(3, '3D', FALSE, 'Economy'),
-(3, '3E', TRUE, 'Economy'),
-(3, '3F', TRUE, 'Economy'),
-(4, '4A', TRUE, 'Economy'),
-(4, '4B', TRUE, 'Economy'),
-(4, '4C', TRUE, 'Economy'),
-(4, '4D', TRUE, 'Economy'),
-(4, '4E', FALSE, 'Economy'),
-(4, '4F', TRUE, 'Economy'),
-(5, '5A', TRUE, 'Business'),
-(5, '5B', TRUE, 'Business'),
-(5, '5C', TRUE, 'Business'),
-(5, '5D', TRUE, 'Business'),
-(5, '5E', TRUE, 'Business'),
-(5, '5F', FALSE, 'Business'),
-(6, '6A', TRUE, 'Economy'),
-(6, '6B', TRUE, 'Economy'),
-(6, '6C', TRUE, 'Economy'),
-(6, '6D', TRUE, 'Economy'),
-(6, '6E', TRUE, 'Economy'),
-(6, '6F', TRUE, 'Economy'),
-(7, '7A', TRUE, 'Economy'),
-(7, '7B', TRUE, 'Economy'),
-(7, '7C', TRUE, 'Economy'),
-(7, '7D', TRUE, 'Economy'),
-(7, '7E', TRUE, 'Economy'),
-(7, '7F', TRUE, 'Economy'),
-(8, '8A', TRUE, 'Economy'),
-(8, '8B', TRUE, 'Economy'),
-(8, '8C', TRUE, 'Economy'),
-(8, '8D', TRUE, 'Economy'),
-(8, '8E', TRUE, 'Economy'),
-(8, '8F', TRUE, 'Economy');
+(1, '1A', TRUE, 'economy'),
+(1, '1B', FALSE, 'economy'),
+(1, '1C', TRUE, 'economy'),
+(1, '1D', TRUE, 'economy'),
+(1, '1E', TRUE, 'economy'),
+(1, '1F', TRUE, 'economy'),
+(2, '2A', TRUE, 'business'),
+(2, '2B', TRUE, 'business'),
+(2, '2C', FALSE, 'business'),
+(2, '2D', TRUE, 'business'),
+(2, '2E', TRUE, 'business'),
+(2, '2F', TRUE, 'business'),
+(3, '3A', TRUE, 'economy'),
+(3, '3B', TRUE, 'economy'),
+(3, '3C', TRUE, 'economy'),
+(3, '3D', FALSE, 'economy'),
+(3, '3E', TRUE, 'economy'),
+(3, '3F', TRUE, 'economy'),
+(4, '4A', TRUE, 'economy'),
+(4, '4B', TRUE, 'economy'),
+(4, '4C', TRUE, 'economy'),
+(4, '4D', TRUE, 'economy'),
+(4, '4E', FALSE, 'economy'),
+(4, '4F', TRUE, 'economy'),
+(5, '5A', TRUE, 'business'),
+(5, '5B', TRUE, 'business'),
+(5, '5C', TRUE, 'business'),
+(5, '5D', TRUE, 'business'),
+(5, '5E', TRUE, 'business'),
+(5, '5F', FALSE, 'business'),
+(6, '6A', TRUE, 'economy'),
+(6, '6B', TRUE, 'economy'),
+(6, '6C', TRUE, 'economy'),
+(6, '6D', TRUE, 'economy'),
+(6, '6E', TRUE, 'economy'),
+(6, '6F', TRUE, 'economy'),
+(7, '7A', TRUE, 'economy'),
+(7, '7B', TRUE, 'economy'),
+(7, '7C', TRUE, 'economy'),
+(7, '7D', TRUE, 'economy'),
+(7, '7E', TRUE, 'economy'),
+(7, '7F', TRUE, 'economy'),
+(8, '8A', TRUE, 'economy'),
+(8, '8B', TRUE, 'economy'),
+(8, '8C', TRUE, 'economy'),
+(8, '8D', TRUE, 'economy'),
+(8, '8E', TRUE, 'economy'),
+(8, '8F', TRUE, 'economy');
 
 INSERT INTO Tickets (seat_id, flight_class, price, status, booking_id, flight_id)
 VALUES
-(1, 'Economy', 1000000, 'booked', 1, 1),
-(2, 'Economy', 1000000, 'cancelled', 1, 1),
-(3, 'Business', 2000000, 'booked', 2, 2),
-(4, 'Economy', 1200000, 'booked', 3, 3),
-(5, 'Economy', 1200000, 'cancelled', 3, 3),
-(6, 'Economy', 700000, 'booked', 4, 4),
-(7, 'Business', 900000, 'booked', 4, 5),
-(8, 'Economy', 850000, 'booked', 5, 6),
-(9, 'Economy', 600000, 'booked', 5, 7),
-(10, 'Economy', 1100000, 'booked', 6, 8),
-(11, 'Economy', 1200000, 'booked', 7, 9),
-(12, 'Economy', 1300000, 'booked', 7, 10),
-(13, 'Economy', 1250000, 'booked', 8, 11),
-(14, 'Economy', 950000, 'booked', 9, 12),
-(15, 'Economy', 1000000, 'booked', 9, 13),
-(16, 'Economy', 500000, 'booked', 10, 14),
-(17, 'Economy', 500000, 'booked', 10, 15);
+(1, 'economy', 1000000, 'booked', 1, 1),
+(2, 'economy', 1000000, 'cancelled', 1, 1),
+(3, 'business', 2000000, 'booked', 2, 2),
+(4, 'economy', 1200000, 'booked', 3, 3),
+(5, 'economy', 1200000, 'cancelled', 3, 3),
+(6, 'economy', 700000, 'booked', 4, 4),
+(7, 'business', 900000, 'booked', 4, 5),
+(8, 'economy', 850000, 'booked', 5, 6),
+(9, 'economy', 600000, 'booked', 5, 7),
+(10, 'economy', 1100000, 'booked', 6, 8),
+(11, 'economy', 1200000, 'booked', 7, 9),
+(12, 'economy', 1300000, 'booked', 7, 10),
+(13, 'economy', 1250000, 'booked', 8, 11),
+(14, 'economy', 950000, 'booked', 9, 12),
+(15, 'economy', 1000000, 'booked', 9, 13),
+(16, 'economy', 500000, 'booked', 10, 14),
+(17, 'economy', 500000, 'booked', 10, 15);
 
 INSERT INTO TicketOwnerSnapshot (ticket_id, first_name, last_name, phone_number, gender)
 VALUES
-(1, 'John', 'Doe', '1234567890', 'male'),
-(3, 'Alice', 'Wonderland', '0987654321', 'female'),
-(4, 'Jane', 'Smith', NULL, 'female'),
-(6, 'Phung', 'Duc Anh', NULL, 'male'),
-(8, 'John', 'Doe', NULL, 'male'),
-(10, 'Alice', 'Wonderland', NULL, 'female'),
-(13, 'Phung', 'Duc Anh', NULL, 'male'),
-(16, 'Alice', 'Wonderland', NULL, 'female');
+(1, 'John', 'Doe', '1234567890', 'Male'),
+(3, 'Alice', 'Wonderland', '0987654321', 'Female'),
+(4, 'Jane', 'Smith', NULL, 'Female'),
+(6, 'Phung', 'Duc Anh', NULL, 'Male'),
+(8, 'John', 'Doe', NULL, 'Male'),
+(10, 'Alice', 'Wonderland', NULL, 'Female'),
+(13, 'Phung', 'Duc Anh', NULL, 'Male'),
+(16, 'Alice', 'Wonderland', NULL, 'Female');
 
 INSERT INTO News (title, description, content, image, author_id)
 VALUES

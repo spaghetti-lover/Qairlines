@@ -4,7 +4,7 @@ type GetTicketByFlightIDResponse struct {
 	TicketID    int64               `json:"ticketId"`
 	SeatID      int64               `json:"seatId"`
 	FlightClass string              `json:"flightClass"`
-	Price       int                 `json:"price"`
+	Price       int32               `json:"price"`
 	Status      string              `json:"status"`
 	BookingID   int64               `json:"bookingId"`
 	FlightID    int64               `json:"flightId"`
@@ -19,7 +19,7 @@ type GetTicketResponse struct {
 	Status      string              `json:"status"`
 	SeatCode    string              `json:"seatCode"`
 	FlightClass string              `json:"flightClass"`
-	Price       int                 `json:"price"`
+	Price       int32               `json:"price"`
 	OwnerData   TicketOwnerResponse `json:"ownerData"`
 	BookingID   int64               `json:"bookingId"`
 	FlightID    int64               `json:"flightId"`
@@ -46,7 +46,7 @@ type CancelTicketResponse struct {
 	Status      string              `json:"status"`
 	SeatCode    string              `json:"seatCode"`
 	FlightClass string              `json:"flightClass"`
-	Price       int                 `json:"price"`
+	Price       int32               `json:"price"`
 	OwnerData   TicketOwnerResponse `json:"ownerData"`
 	BookingID   int64               `json:"bookingId"`
 	FlightID    int64               `json:"flightId"`

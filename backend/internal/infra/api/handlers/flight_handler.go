@@ -248,7 +248,7 @@ func (h *FlightHandler) GetSuggestedFlights(w http.ResponseWriter, r *http.Reque
 	// Gọi use case để lấy danh sách chuyến bay gợi ý
 	flights, err := h.getSuggestedFlightsUseCase.Execute(r.Context())
 	if err != nil {
-		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf(`{"message": "An unexpected error occurred. %v"}`, err.Error()), http.StatusInternalServerError)
 		return
 	}
 

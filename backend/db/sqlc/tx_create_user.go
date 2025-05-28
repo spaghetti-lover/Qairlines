@@ -26,7 +26,7 @@ func (store *SQLStore) CreateCustomerTx(ctx context.Context, arg CreateUserParam
 		_, err = q.CreateCustomer(ctx, CreateCustomerParams{
 			UserID:               user.UserID,
 			PhoneNumber:          pgtype.Text{String: "", Valid: false},
-			Gender:               "other",
+			Gender:               "Other",
 			DateOfBirth:          pgtype.Date{Time: time.Time{}, Valid: false},
 			PassportNumber:       pgtype.Text{String: "", Valid: false},
 			IdentificationNumber: pgtype.Text{String: "", Valid: false},

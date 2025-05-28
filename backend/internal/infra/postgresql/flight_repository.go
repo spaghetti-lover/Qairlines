@@ -166,7 +166,7 @@ func (r *FlightRepositoryPostgres) SearchFlights(ctx context.Context, departureC
 func (r *FlightRepositoryPostgres) GetSuggestedFlights(ctx context.Context) ([]entities.Flight, error) {
 	rows, err := r.store.GetSuggestedFlights(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get suggested flights: %w", err)
+		return nil, err
 	}
 
 	if len(rows) == 0 {

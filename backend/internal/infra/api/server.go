@@ -12,6 +12,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/admin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/booking"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
@@ -44,6 +45,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	adminRepo := postgresql.NewAdminRepositoryPostgres(store, tokenMaker)
 	flightRepo := postgresql.NewFlightRepositoryPostgres(store)
 	ticketRepo := postgresql.NewTicketRepositoryPostgres(store)
+	bookingRepo := postgresql.NewBookingRepositoryPostgres(store)
 
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	userUpdateUseCase := user.NewUserUpdateUseCase(userRepo)
@@ -75,6 +77,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
 	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
+	bookingCreateUseCase := booking.NewCreateBookingUseCase(bookingRepo, flightRepo)
 
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, userUpdateUseCase, customerGetAllUseCase, customerDeleteUseCase, customerGetUseCase)
@@ -83,6 +86,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, getAllAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase, flightSuggestedUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
+	bookingHandler := handlers.NewBookingHandler(bookingCreateUseCase, tokenMaker, userRepo)
 	// Middleware
 	authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
@@ -123,7 +127,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Flight API
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
-	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.GetFlight))).Methods("GET")
+	apiRouter.HandleFunc("/flight", flightHandler.GetFlight).Methods("GET")
 	apiRouter.Handle("/flight/update", authMiddleware(http.HandlerFunc(flightHandler.UpdateFlightTimes))).Methods("PUT")
 	apiRouter.Handle("/flight/all", authMiddleware(http.HandlerFunc(flightHandler.GetAllFlights))).Methods("GET")
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.DeleteFlight))).Methods("DELETE")
@@ -135,6 +139,9 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/ticket/cancel", authMiddleware(http.HandlerFunc(ticketHandler.CancelTicket))).Methods("PUT")
 	apiRouter.Handle("/ticket", authMiddleware(http.HandlerFunc(ticketHandler.GetTicket))).Methods("GET")
 	apiRouter.Handle("/ticket/update-seats", authMiddleware(http.HandlerFunc(ticketHandler.UpdateSeats))).Methods("PUT")
+
+	// Booking API
+	apiRouter.Handle("/booking", authMiddleware(http.HandlerFunc(bookingHandler.CreateBooking))).Methods("POST")
 	// Statistic API
 	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

@@ -9,7 +9,7 @@ import (
 // Store defines all functions to execute db queries and transactions
 type Store interface {
 	Querier
-	BookingTx(ctx context.Context, arg BookingTxParams) (BookingTxResult, error)
+	CreateBookingTx(ctx context.Context, arg CreateBookingTxParams) (CreateBookingTxResult, error)
 	UpdateSeats(ctx context.Context, bookingID int64, seats []SeatUpdateParams) error
 	CreateCustomerTx(ctx context.Context, arg CreateUserParams) (User, error)
 	UpdateCustomerTx(ctx context.Context, arg UpdateCustomerTxParams) error

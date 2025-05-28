@@ -5,9 +5,9 @@ import "time"
 type CustomerGender string
 
 const (
-	CustomerGenderMale   CustomerGender = "male"
-	CustomerGenderFemale CustomerGender = "female"
-	CustomerGenderOther  CustomerGender = "other"
+	CustomerGenderMale   CustomerGender = "Male"
+	CustomerGenderFemale CustomerGender = "Female"
+	CustomerGenderOther  CustomerGender = "Other"
 )
 
 type Customer struct {

@@ -7,8 +7,10 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
-var ErrBookingNotFound = errors.New("booking not found")
+var (
+	ErrInvalidBooking = errors.New("invalid booking data")
+)
 
 type IBookingRepository interface {
-	GetBookingByID(ctx context.Context, bookingID int64) (*entities.Booking, error)
+	CreateBookingTx(ctx context.Context, booking entities.CreateBookingParams) (entities.Booking, []entities.Ticket, []entities.Ticket, error)
 }
