@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
@@ -83,14 +82,9 @@ func (h *CustomerHandler) CreateCustomerTx(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *CustomerHandler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
-	if idParam == "" {
-		utils.WriteError(w, http.StatusBadRequest, "customer ID is required", nil)
-		return
-	}
-	id, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "invalid customer ID", err)
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		utils.WriteError(w, http.StatusBadRequest, "id is required", nil)
 		return
 	}
 	var customerUpdateRequest dto.CustomerUpdateRequest
@@ -99,8 +93,13 @@ func (h *CustomerHandler) UpdateCustomer(w http.ResponseWriter, r *http.Request)
 		http.Error(w, `{"message": "Invalid customer data. Please check the input fields."}`, http.StatusBadRequest)
 		return
 	}
+	userID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		http.Error(w, `{"message": "Invalid user ID."}`, http.StatusBadRequest)
+		return
+	}
 	customer := entities.Customer{
-		UserID:               id,
+		UserID:               userID,
 		PhoneNumber:          customerUpdateRequest.PhoneNumber,
 		Gender:               entities.CustomerGender(customerUpdateRequest.Gender),
 		Address:              customerUpdateRequest.Address,
@@ -110,15 +109,15 @@ func (h *CustomerHandler) UpdateCustomer(w http.ResponseWriter, r *http.Request)
 	}
 
 	user := entities.User{
-		UserID:    id,
+		UserID:    userID,
 		FirstName: customerUpdateRequest.FirstName,
 		LastName:  customerUpdateRequest.LastName,
 	}
 
-	updatedCustomer, updatedUser, err := h.customerUpdateUseCase.Execute(r.Context(), id, customer, user)
+	updatedCustomer, updatedUser, err := h.customerUpdateUseCase.Execute(r.Context(), userID, customer, user)
 
 	if err != nil {
-		http.Error(w, `{"message": "Customer not found."}`, http.StatusInternalServerError)
+		http.Error(w, `{"message": "Update customer failed"}`+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

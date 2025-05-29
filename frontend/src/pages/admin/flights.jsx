@@ -44,14 +44,15 @@ export default function ScheduledFlights() {
             throw new Error("Send request failed")
         }
         const res = await response.json()
-        setFlights(res.data.map(a => {return {
+        console.log(res.data.flights[0].arrival_time)
+        setFlights(res.data.flights.map(a => {return {
             "flightId": a.flight_id,
             "id": a.flight_number,
             "aircraft": a.aircraft_type,
             "src": a.departure_city,
             "dest": a.arrival_city,
-            "adt": new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5),
-            "ddt": new Date(a.departure_time).toISOString().replace("T", " ").slice(0, -5),
+            "adt": new Date(a.arrival_time.seconds * 1000).toISOString().replace("T", " ").slice(0, -5),
+            "ddt": new Date(a.departure_time.seconds * 1000).toISOString().replace("T", " ").slice(0, -5),
             "cec": a.base_price*1.5,
             "cbc": a.base_price*2,
             "noe": 198,

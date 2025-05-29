@@ -80,3 +80,27 @@ type FlightSearchResponse struct {
 	AircraftType     string `json:"aircraftType"`
 	BasePrice        int    `json:"basePrice"`
 }
+type GetFlightsWithTicketsResponse struct {
+	Flights []FlightWithTickets `json:"flights"`
+}
+
+type FlightWithTickets struct {
+	FlightID      string           `json:"flight_id"`
+	FlightNumber  string           `json:"flight_number"`
+	AircraftType  string           `json:"aircraft_type"`
+	DepartureCity string           `json:"departure_city"`
+	ArrivalCity   string           `json:"arrival_city"`
+	DepartureTime TimeSeconds      `json:"departure_time"`
+	ArrivalTime   TimeSeconds      `json:"arrival_time"`
+	BasePrice     int              `json:"base_price"`
+	Status        string           `json:"status"`
+	TicketList    []TicketResponse `json:"ticket_list"`
+}
+
+type TicketResponse struct {
+	TicketID    int64  `json:"ticket_id"`
+	SeatCode    string `json:"seat_code"`
+	Price       int32  `json:"price"`
+	FlightClass string `json:"flight_class"`
+	Status      string `json:"status"`
+}

@@ -159,18 +159,18 @@ func (h *FlightHandler) GetAllFlights(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Gọi use case để lấy danh sách chuyến bay
-	flights, err := h.getAllFlightsUseCase.Execute(r.Context())
+	flights, tickets, err := h.getAllFlightsUseCase.Execute(r.Context())
 	if err != nil {
 		http.Error(w, "An unexpected error occurred. Please try again later, "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	response := mappers.MapFlightsAndTicketsToResponse(flights, tickets)
 	// Trả về response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Flights retrieved successfully.",
-		"data":    flights,
+		"data":    response,
 	})
 }
 

@@ -69,7 +69,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	flightCreateUseCase := flight.NewCreateFlightUseCase(flightRepo)
 	flightGetUseCase := flight.NewGetFlightUseCase(flightRepo)
 	flightUpdateUseCase := flight.NewUpdateFlightTimesUseCase(flightRepo)
-	flightGetAllUseCase := flight.NewGetAllFlightsUseCase(flightRepo)
+	flightGetAllUseCase := flight.NewGetAllFlightsUseCase(flightRepo, ticketRepo)
 	flightDeleteUseCase := flight.NewDeleteFlightUseCase(flightRepo)
 	flightSearchUseCase := flight.NewSearchFlightsUseCase(flightRepo)
 	flightSuggestedUseCase := flight.NewGetSuggestedFlightsUseCase(flightRepo)
@@ -116,7 +116,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Auth API
 	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
-	apiRouter.Handle("/change-password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
+	apiRouter.Handle("/customer/change-password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
 	apiRouter.Handle("/auth/{id}/password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
 
 	// Admin API
@@ -166,7 +166,6 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-		Debug:            true,
 	}).Handler(router)
 
 	server := &Server{

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background-color: #d32f2f;
+        color: #ffffff;
+        text-align: center;
+        padding: 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 20px;
+        color: #333333;
+      }
+      .content p {
+        margin: 0 0 10px;
+        line-height: 1.6;
+      }
+      .footer {
+        background-color: #f4f4f4;
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        color: #666666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Xác nhận ghế máy bay</h1>
+      </div>
+      <div class="content">
+        <p>Kính gửi {{customerName}},</p>
+        <p>
+          Chúng tôi xin thông báo rằng ghế của bạn đã được cập nhật thành công
+          cho chuyến bay.
+        </p>
+        <p>Mã chuyến bay của bạn là: {{bookingID}}.</p>
+        <p>Vui lòng kiểm tra lại thông tin trong ứng dụng.</p>
+        <p>Trân trọng,</p>
+        <p>Đội ngũ QAirlines</p>
+      </div>
+      <div class="footer">
+        <p>&copy; 2025 QAirlines. Mọi quyền được bảo lưu.</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -11,6 +11,7 @@ import LoadingSkeleton from "@/components/checkin/loading-skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_MAIL_URL = process.env.NEXT_PUBLIC_API_MAIL_URL;
 
 const steps = [
   { title: "Chi tiết chuyến bay", description: "Xem lại thông tin chuyến bay" },
@@ -121,6 +122,7 @@ export default function CheckInPage() {
     },
     [calculateDuration, setDepartureFlight, setReturnFlight, setError]
   );
+
 
   const fetchTickets = useCallback(
     async (ticketIds) => {
@@ -316,6 +318,30 @@ export default function CheckInPage() {
         description: "Ghế đã được cập nhật thành công!",
         variant: "default",
       });
+      fetch(`${API_MAIL_URL}/send-mail`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          To: email,
+          Subject: "Xác nhận ghế máy bay",
+          Body: `
+          Xin chào,
+
+          Chúng tôi xin thông báo rằng ghế của bạn đã được cập nhật thành công cho chuyến bay.
+
+          Mã chuyến bay: ${bookingID}
+
+          Vui lòng kiểm tra lại thông tin trong ứng dụng để đảm bảo mọi thứ chính xác.
+
+          Chúc bạn có một chuyến bay an toàn và thoải mái!
+
+          Trân trọng,
+          Đội ngũ Qairlines
+          `,
+        }),
+      })
       return true;
     } catch (error) {
       console.error("Error updating seats:", error);

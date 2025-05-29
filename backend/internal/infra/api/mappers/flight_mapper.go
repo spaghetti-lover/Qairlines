@@ -123,3 +123,53 @@ func ToFlightSearchResponses(flights []entities.Flight) []dto.FlightSearchRespon
 
 	return responses
 }
+
+func MapFlightsAndTicketsToResponse(flights []entities.Flight, tickets []entities.Ticket) dto.GetFlightsWithTicketsResponse {
+	var flightResponses []dto.FlightWithTickets
+
+	// Map flights and attach ticket list to each flight
+	for _, flight := range flights {
+		flightTickets := filterTicketsByFlightID(tickets, flight.FlightID)
+		flightResponses = append(flightResponses, dto.FlightWithTickets{
+			FlightID:      strconv.FormatInt(flight.FlightID, 10),
+			FlightNumber:  flight.FlightNumber,
+			AircraftType:  flight.AircraftType,
+			DepartureCity: flight.DepartureCity,
+			ArrivalCity:   flight.ArrivalCity,
+			DepartureTime: dto.TimeSeconds{Seconds: flight.DepartureTime.Unix()},
+			ArrivalTime:   dto.TimeSeconds{Seconds: flight.ArrivalTime.Unix()},
+			BasePrice:     int(flight.BasePrice),
+			Status:        string(flight.Status),
+			TicketList:    MapTicketsToTicketResponse(flightTickets),
+		})
+	}
+
+	return dto.GetFlightsWithTicketsResponse{
+		Flights: flightResponses,
+	}
+}
+
+// Helper function to filter tickets by flight ID
+func filterTicketsByFlightID(tickets []entities.Ticket, flightID int64) []entities.Ticket {
+	var filteredTickets []entities.Ticket
+	for _, ticket := range tickets {
+		if ticket.FlightID == flightID {
+			filteredTickets = append(filteredTickets, ticket)
+		}
+	}
+	return filteredTickets
+}
+
+func MapTicketsToTicketResponse(tickets []entities.Ticket) []dto.TicketResponse {
+	var ticketResponses []dto.TicketResponse
+	for _, ticket := range tickets {
+		ticketResponses = append(ticketResponses, dto.TicketResponse{
+			TicketID:    ticket.TicketID,
+			SeatCode:    ticket.Seat.SeatCode,
+			Price:       ticket.Price,
+			FlightClass: string(ticket.FlightClass),
+			Status:      string(ticket.Status),
+		})
+	}
+	return ticketResponses
+}

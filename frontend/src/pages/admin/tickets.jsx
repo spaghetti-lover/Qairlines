@@ -46,12 +46,12 @@ export default function FlightManagement() {
         }
 
         const res = await response.json()
-        setFlights(res.data.map(a => {return {
+        setFlights(res.data.flights.map(a => {return {
             "id": a.flight_id,
             "flightNumber": a.flight_number,
-            "arrival": `${a.arrival_city} ${new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5)}`,
-            "departure": `${a.departure_city} ${new Date(a.departure_time).toISOString().replace("T", " ").slice(0, -5)}`,
-            "ticketList": a.ticketList,
+            "arrival": `${a.arrival_city} ${new Date(a.arrival_time.seconds * 1000).toISOString().replace("T", " ").slice(0, -5)}`,
+            "departure": `${a.departure_city} ${new Date(a.departure_time.seconds * 1000).toISOString().replace("T", " ").slice(0, -5)}`,
+            "ticketList": a.ticket_list,
           }}))
     } catch (error) {
       toast({
@@ -83,11 +83,11 @@ export default function FlightManagement() {
         }
 
         const res = await response.json()
-        setTickets(res.data.map(a => {return {
+        setTickets(res.map(a => {return {
           "status": a.status,
           "seatCode": a.seatCode,
           "updatedAt": a.updatedAt,
-          "ownerData": a.ownerData,
+          "ownerData": a.owner,
           "bookingId": a.bookingId,
           "flightClass": a.flightClass,
           "ticketId": a.ticketId,
@@ -135,7 +135,7 @@ export default function FlightManagement() {
       })
     }
   }
-
+  console.log(flights)
   return (
     <div className="container mx-auto pt-10 pl-64">
       <h1 className="text-2xl font-semibold mb-10">Quản Lý Đặt Vé</h1>
@@ -151,17 +151,30 @@ export default function FlightManagement() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {flights.map((flight) => (
-            <TableRow key={flight.id}>
-              <TableCell>{flight.flightNumber}</TableCell>
-              <TableCell>{flight.departure}</TableCell>
-              <TableCell>{flight.arrival}</TableCell>
-              <TableCell>{flight.ticketList.length}</TableCell>
-              <TableCell>
-                <Button className="bg-green-600 hover:bg-green-500" onClick={() => handleFlightClick(flight)}>Xem vé</Button>
+          {flights && flights.length > 0 ? (
+            flights.map((flight) => (
+              <TableRow key={flight.id}>
+                <TableCell>{flight.flightNumber}</TableCell>
+                <TableCell>{flight.departure}</TableCell>
+                <TableCell>{flight.arrival}</TableCell>
+                <TableCell>{flight.ticketList?.length || 0}</TableCell>
+                <TableCell>
+                  <Button
+                    className="bg-green-600 hover:bg-green-500"
+                    onClick={() => handleFlightClick(flight)}
+                  >
+                    Xem vé
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center">
+                Đang tải dữ liệu...
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
 
@@ -199,11 +212,16 @@ export default function FlightManagement() {
                   <TableCell>{ticket.flightClass}</TableCell>
                   <TableCell>{ticket.price.toLocaleString('vi-VN')} VND</TableCell>
                   <TableCell>
-                    <p>{`${ticket.owner.firstName} ${ticket.owner.lastName}`}</p>
-                    <p>{ticket.owner.phoneNumber}</p>
+                    <p>{`${ticket.ownerData.firstName} ${ticket.ownerData.lastName}`}</p>
+                    <p>{ticket.ownerData.phoneNumber}</p>
                   </TableCell>
                   <TableCell>
-                    <Button className="bg-red-500 hover:bg-red-600" onClick={() => handleCancelTicket(ticket.ticketId)}>Xóa</Button>
+                    <Button
+                      className="bg-red-500 hover:bg-red-600"
+                      onClick={() => handleCancelTicket(ticket.ticketId)}
+                    >
+                      Xóa
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

@@ -46,14 +46,13 @@ export default function PostManagementPage() {
       }
 
       const res = await response.json()
-      console.log(res[0].createdAt)
       setPosts(res.map(a => {return {
 
         "id": a.newsId,
         "title": a.title,
         "author": a.authorId,
         "description": a.description,
-        "createdAt": a.createAt.seconds ? new Date(a.createdAt).toISOString().replace("T", " ").slice(0, -5) : a.createAt.split('T')[0]
+        "createdAt": new Date(a.createdAt).toISOString().replace("T", " ").slice(0, -5)
       }}))
     } catch (error) {
       toast({

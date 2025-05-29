@@ -168,7 +168,6 @@ func (r *CustomerRepositoryPostgres) DeleteCustomerByID(ctx context.Context, cus
 }
 
 func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid int64) (*entities.Customer, error) {
-	print(uid)
 	row, err := r.store.GetCustomerByID(ctx, uid)
 	if err == sql.ErrNoRows {
 		return nil, adapters.ErrCustomerNotFound

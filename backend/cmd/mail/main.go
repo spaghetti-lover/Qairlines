@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/rs/cors"
 	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
@@ -59,10 +60,15 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/send-mail", mailHandler)
-
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(mux)
 	server := &http.Server{
 		Addr:    config.MailServer,
-		Handler: mux,
+		Handler: corsHandler,
 	}
 
 	// Start HTTP server in a goroutine
