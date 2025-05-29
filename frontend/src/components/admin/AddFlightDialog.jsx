@@ -19,7 +19,7 @@ import { Plus } from 'lucide-react'
 export function AddFlightDialog() {
   const [isOpen, setIsOpen] = useState(false)
   const [flightData, setFlightData] = useState({
-    flightId: '',
+    // flightId: '',
     flightNumber: '',
     aircraftType: '',
     departureCity: '',
@@ -38,7 +38,12 @@ export function AddFlightDialog() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     const createFlightApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flight`
-
+    const formattedFlightData = {
+      ...flightData,
+      departureTime: new Date(flightData.departureTime).toISOString(),
+      arrivalTime: new Date(flightData.arrivalTime).toISOString(),
+      basePrice: parseInt(flightData.basePrice, 10),
+    };
     try {
         const response = await fetch(createFlightApi, {
             method: "POST",
@@ -47,7 +52,7 @@ export function AddFlightDialog() {
               "admin": "true",
               "authorization": "Bearer " + localStorage.getItem("token")
             },
-            body: JSON.stringify(flightData)
+            body: JSON.stringify(formattedFlightData)
         })
         if (!response.ok) {
             throw new Error("failed")
@@ -63,7 +68,7 @@ export function AddFlightDialog() {
     setIsOpen(false)
     // Reset form after submission
     setFlightData({
-      flightId: '',
+      // flightId: '',
       flightNumber: '',
       aircraftType: '',
       departureCity: '',
@@ -94,7 +99,7 @@ export function AddFlightDialog() {
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4">
-            <div className="grid grid-cols-4 items-center gap-4">
+            {/* <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="flightId" className="text-right">
                 ID chuyến bay
               </Label>
@@ -106,7 +111,7 @@ export function AddFlightDialog() {
                 className="col-span-3"
                 required
               />
-            </div>
+            </div> */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="flightNumber" className="text-right">
                 Số hiệu chuyến
