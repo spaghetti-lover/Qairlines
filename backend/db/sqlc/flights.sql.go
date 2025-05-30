@@ -14,7 +14,6 @@ import (
 
 const createFlight = `-- name: CreateFlight :one
 INSERT INTO flights (
-  flight_id,
   flight_number,
   aircraft_type,
   departure_city,
@@ -26,12 +25,11 @@ INSERT INTO flights (
   base_price,
   status
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) RETURNING flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status
 `
 
 type CreateFlightParams struct {
-	FlightID         int64        `json:"flight_id"`
 	FlightNumber     string       `json:"flight_number"`
 	AircraftType     pgtype.Text  `json:"aircraft_type"`
 	DepartureCity    pgtype.Text  `json:"departure_city"`
@@ -46,7 +44,6 @@ type CreateFlightParams struct {
 
 func (q *Queries) CreateFlight(ctx context.Context, arg CreateFlightParams) (Flight, error) {
 	row := q.db.QueryRow(ctx, createFlight,
-		arg.FlightID,
 		arg.FlightNumber,
 		arg.AircraftType,
 		arg.DepartureCity,

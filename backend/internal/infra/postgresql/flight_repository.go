@@ -22,7 +22,6 @@ func NewFlightRepositoryPostgres(store *db.Store) *FlightRepositoryPostgres {
 
 func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight entities.Flight) (entities.Flight, error) {
 	dbFlight, err := r.store.CreateFlight(ctx, db.CreateFlightParams{
-		FlightID:         flight.FlightID,
 		FlightNumber:     flight.FlightNumber,
 		AircraftType:     pgtype.Text{String: flight.AircraftType, Valid: true},
 		DepartureCity:    pgtype.Text{String: flight.DepartureCity, Valid: true},
@@ -39,7 +38,6 @@ func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight enti
 	}
 
 	return entities.Flight{
-		FlightID:         dbFlight.FlightID,
 		FlightNumber:     dbFlight.FlightNumber,
 		AircraftType:     dbFlight.AircraftType.String,
 		DepartureCity:    dbFlight.DepartureCity.String,

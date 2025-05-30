@@ -7,7 +7,6 @@ import (
 )
 
 type CreateFlightRequest struct {
-	FlightID         int64                 `json:"flightId"`
 	FlightNumber     string                `json:"flightNumber"`
 	AircraftType     string                `json:"aircraftType"`
 	DepartureCity    string                `json:"departureCity"`
@@ -25,7 +24,6 @@ type CreateFlightRequest struct {
 type CreateFlightResponse struct {
 	Message string `json:"message"`
 	Flight  struct {
-		FlightID         string `json:"flightId"`
 		FlightNumber     string `json:"flightNumber"`
 		AircraftType     string `json:"aircraftType"`
 		DepartureCity    string `json:"departureCity"`

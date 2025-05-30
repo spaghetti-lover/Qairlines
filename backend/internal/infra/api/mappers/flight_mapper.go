@@ -9,7 +9,6 @@ import (
 
 func CreateFlightRequestToEntity(req dto.CreateFlightRequest) entities.Flight {
 	return entities.Flight{
-		FlightID:         req.FlightID,
 		FlightNumber:     req.FlightNumber,
 		AircraftType:     req.AircraftType,
 		DepartureCity:    req.DepartureCity,
@@ -27,7 +26,6 @@ func CreateFlightEntityToResponse(flight entities.Flight) dto.CreateFlightRespon
 	return dto.CreateFlightResponse{
 		Message: "Flight created successfully.",
 		Flight: struct {
-			FlightID         string `json:"flightId"`
 			FlightNumber     string `json:"flightNumber"`
 			AircraftType     string `json:"aircraftType"`
 			DepartureCity    string `json:"departureCity"`
@@ -39,7 +37,6 @@ func CreateFlightEntityToResponse(flight entities.Flight) dto.CreateFlightRespon
 			BasePrice        int32  `json:"basePrice"`
 			Status           string `json:"status"`
 		}{
-			FlightID:         strconv.FormatInt(flight.FlightID, 10),
 			FlightNumber:     flight.FlightNumber,
 			AircraftType:     flight.AircraftType,
 			DepartureCity:    flight.DepartureCity,
