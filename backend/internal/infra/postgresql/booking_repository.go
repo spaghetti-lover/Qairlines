@@ -35,13 +35,45 @@ func (r *BookingRepositoryPostgres) CreateBookingTx(ctx context.Context, booking
 	} else if booking.TripType == entities.RoundTrip && returnFlight == 0 {
 		return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
 	}
+	departureTicketData := make([]db.TicketData, len(booking.DepartureTicketDataList))
+	for i, ticketData := range booking.DepartureTicketDataList {
+		departureTicketData[i] = db.TicketData{
+			Price:       int64(ticketData.Price),
+			FlightClass: string(ticketData.FlightClass),
+			OwnerData: db.OwnerData{
+				IdentityCardNumber: ticketData.Owner.IdentificationNumber,
+				FirstName:          ticketData.Owner.FirstName,
+				LastName:           ticketData.Owner.LastName,
+				PhoneNumber:        ticketData.Owner.PhoneNumber,
+				DateOfBirth:        ticketData.Owner.DateOfBirth.String(),
+				Gender:             string(ticketData.Owner.Gender),
+				Address:            ticketData.Owner.Address,
+			},
+		}
+	}
+	returnTicketDataList := make([]db.TicketData, len(booking.ReturnTicketDataList))
+	for i, ticketData := range booking.ReturnTicketDataList {
+		returnTicketDataList[i] = db.TicketData{
+			Price:       int64(ticketData.Price),
+			FlightClass: string(ticketData.FlightClass),
+			OwnerData: db.OwnerData{
+				IdentityCardNumber: ticketData.Owner.IdentificationNumber,
+				FirstName:          ticketData.Owner.FirstName,
+				LastName:           ticketData.Owner.LastName,
+				PhoneNumber:        ticketData.Owner.PhoneNumber,
+				DateOfBirth:        ticketData.Owner.DateOfBirth.String(),
+				Gender:             string(ticketData.Owner.Gender),
+				Address:            ticketData.Owner.Address,
+			},
+		}
+	}
 	txParams := db.CreateBookingTxParams{
 		UserEmail:           booking.Email,
 		TripType:            string(booking.TripType),
 		DepartureFlightID:   departureID,
 		ReturnFlightID:      &returnFlight,
-		DepartureTicketData: booking.DepartureTicketDataList,
-		ReturnTicketData:    booking.ReturnTicketDataList,
+		DepartureTicketData: departureTicketData,
+		ReturnTicketData:    returnTicketDataList,
 	}
 
 	// Gọi CreateBookingTx từ tầng SQLStore

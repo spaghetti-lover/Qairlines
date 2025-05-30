@@ -191,9 +191,8 @@ func (ns NullGenderType) Value() (driver.Value, error) {
 type TicketStatus string
 
 const (
-	TicketStatusBooked    TicketStatus = "booked"
-	TicketStatusCancelled TicketStatus = "cancelled"
-	TicketStatusUsed      TicketStatus = "used"
+	TicketStatusActive    TicketStatus = "Active"
+	TicketStatusCancelled TicketStatus = "Cancelled"
 )
 
 func (e *TicketStatus) Scan(src interface{}) error {

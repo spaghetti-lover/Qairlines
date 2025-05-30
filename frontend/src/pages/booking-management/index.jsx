@@ -58,7 +58,6 @@ export default function FlightBookingPage() {
       </div>
     );
   }
-
   const isLoading = !bookingData || !departureFlightData || (bookingData.returnFlightId && !returnFlightData);
 
   if (isLoading) {
@@ -72,7 +71,6 @@ export default function FlightBookingPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto py-8 max-w-2xl">
       <h1 className="text-3xl font-bold text-primary mb-6">Chi tiết chuyến bay</h1>
@@ -88,17 +86,17 @@ export default function FlightBookingPage() {
         passengers={departureTicketData.length}
         paymentMethod="Thẻ tín dụng"
         passengerDetails={departureTicketData.map((ticket) => ({
-          firstName: ticket.owner.firstName,
-          lastName: ticket.owner.lastName,
-          seatCode: ticket.seatCode,
-          flightClass: ticket.flightClass,
+          firstName: ticket.owner.first_name,
+          lastName: ticket.owner.last_name,
+          seatCode: ticket.seat.seat_code,
+          flightClass: ticket.flight_class,
           onView: () => handleViewTicket(ticket),
           onDownload: () => handleDownload(ticketRef.current),
         }))}
         ticketRef={ticketRef}
       />
       {returnFlightData && (
-        <FlightSection
+        <FlightSection onView={() => {console.log("Hello")}} // Placeholder for onView if needed
           type="return"
           flightNumber={returnFlightData.flightNumber}
           departureTime={new Date(returnFlightData.departureTime.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -110,10 +108,10 @@ export default function FlightBookingPage() {
           passengers={returnTicketData.length}
           paymentMethod="Thẻ tín dụng"
           passengerDetails={returnTicketData.map((ticket) => ({
-            firstName: ticket.owner.firstName,
-            lastName: ticket.owner.lastName,
-            seatCode: ticket.seatCode,
-            flightClass: ticket.flightClass,
+            firstName: ticket.owner.first_name,
+            lastName: ticket.owner.last_name,
+            seatCode: ticket.seat.seat_code,
+            flightClass: ticket.flight_class,
             onView: () => handleViewTicket(ticket),
             onDownload: () => handleDownload(ticketRef.current),
           }))}
@@ -135,7 +133,7 @@ export default function FlightBookingPage() {
                 flightClass={selectedTicket.flightClass}
                 boardingTime={new Date(departureFlightData.departureTime.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 gate={6}
-                seat={selectedTicket.seatCode || 'N/A'}
+                seat={selectedTicket.seat.seat_code || 'N/A'}
               />
               <div className="mt-4 flex justify-end gap-2">
                 <Button

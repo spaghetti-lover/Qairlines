@@ -3,7 +3,7 @@ CREATE TYPE user_role AS ENUM ('customer', 'admin');
 CREATE TYPE gender_type AS ENUM ('Male', 'Female', 'Other');
 CREATE TYPE trip_type AS ENUM ('oneWay', 'roundTrip');
 CREATE TYPE booking_status AS ENUM ('confirmed', 'cancelled', 'pending');
-CREATE TYPE ticket_status AS ENUM ('booked', 'cancelled', 'used');
+CREATE TYPE ticket_status AS ENUM ('Active', 'Cancelled');
 CREATE TYPE flight_status AS ENUM ('On Time', 'Delayed', 'Cancelled', 'Boarding', 'Takeoff', 'Landing', 'Landed');
 CREATE TYPE flight_class AS ENUM ('economy', 'business', 'firstClass');
 
@@ -99,7 +99,7 @@ CREATE TABLE Tickets (
   seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE,
   flight_class flight_class NOT NULL DEFAULT 'economy',
   price INT NOT NULL CHECK (price >= 0),
-  status ticket_status NOT NULL DEFAULT 'booked',
+  status ticket_status NOT NULL DEFAULT 'Active',
   booking_id BIGINT REFERENCES Bookings(booking_id) ON DELETE CASCADE,
   flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE NOT NULL,
   created_at timestamptz NOT NULL DEFAULT (now()),
@@ -249,23 +249,23 @@ VALUES
 
 INSERT INTO Tickets (seat_id, flight_class, price, status, booking_id, flight_id)
 VALUES
-(1, 'economy', 1000000, 'booked', 1, 1),
-(2, 'economy', 1000000, 'cancelled', 1, 1),
-(3, 'business', 2000000, 'booked', 2, 2),
-(4, 'economy', 1200000, 'booked', 3, 3),
-(5, 'economy', 1200000, 'cancelled', 3, 3),
-(6, 'economy', 700000, 'booked', 4, 4),
-(7, 'business', 900000, 'booked', 4, 5),
-(8, 'economy', 850000, 'booked', 5, 6),
-(9, 'economy', 600000, 'booked', 5, 7),
-(10, 'economy', 1100000, 'booked', 6, 8),
-(11, 'economy', 1200000, 'booked', 7, 9),
-(12, 'economy', 1300000, 'booked', 7, 10),
-(13, 'economy', 1250000, 'booked', 8, 11),
-(14, 'economy', 950000, 'booked', 9, 12),
-(15, 'economy', 1000000, 'booked', 9, 13),
-(16, 'economy', 500000, 'booked', 10, 14),
-(17, 'economy', 500000, 'booked', 10, 15);
+(1, 'economy', 1000000, 'Active', 1, 1),
+(2, 'economy', 1000000, 'Cancelled', 1, 1),
+(3, 'business', 2000000, 'Active', 2, 2),
+(4, 'economy', 1200000, 'Active', 3, 3),
+(5, 'economy', 1200000, 'Cancelled', 3, 3),
+(6, 'economy', 700000, 'Active', 4, 4),
+(7, 'business', 900000, 'Active', 4, 5),
+(8, 'economy', 850000, 'Active', 5, 6),
+(9, 'economy', 600000, 'Active', 5, 7),
+(10, 'economy', 1100000, 'Active', 6, 8),
+(11, 'economy', 1200000, 'Active', 7, 9),
+(12, 'economy', 1300000, 'Active', 7, 10),
+(13, 'economy', 1250000, 'Active', 8, 11),
+(14, 'economy', 950000, 'Active', 9, 12),
+(15, 'economy', 1000000, 'Active', 9, 13),
+(16, 'economy', 500000, 'Active', 10, 14),
+(17, 'economy', 500000, 'Active', 10, 15);
 
 INSERT INTO TicketOwnerSnapshot (ticket_id, first_name, last_name, phone_number, gender)
 VALUES

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -10,11 +11,29 @@ import (
 
 type CreateBookingTxParams struct {
 	UserEmail           string
-	TripType            string
+	DepartureCity       string
+	ArrivalCity         string
 	DepartureFlightID   int64
 	ReturnFlightID      *int64
-	DepartureTicketData []entities.Ticket
-	ReturnTicketData    []entities.Ticket
+	TripType            string
+	DepartureTicketData []TicketData
+	ReturnTicketData    []TicketData
+}
+
+type TicketData struct {
+	Price       int64
+	FlightClass string
+	OwnerData   OwnerData
+}
+
+type OwnerData struct {
+	IdentityCardNumber string
+	FirstName          string
+	LastName           string
+	PhoneNumber        string
+	DateOfBirth        string
+	Gender             string
+	Address            string
 }
 
 type CreateBookingTxResult struct {
@@ -51,83 +70,21 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 
 		// Tạo vé cho chuyến bay đi
 		for _, ticket := range arg.DepartureTicketData {
-			createdTicket, err := q.CreateTicket(ctx, CreateTicketParams{
-				FlightClass: FlightClass(ticket.FlightClass),
-				Price:       ticket.Price,
-				Status:      TicketStatusBooked,
-				BookingID:   pgtype.Int8{Int64: booking.BookingID, Valid: true},
-				FlightID:    booking.DepartureFlightID.Int64,
-			})
+			createdTicket, err := createTicketForBooking(ctx, q, booking.BookingID, arg.DepartureFlightID, ticket)
 			if err != nil {
-				return fmt.Errorf("failed to create departure ticket: %w", err)
+				return err
 			}
-			// Lưu thông tin chủ sở hữu vé vào TicketOwnerSnapshot
-			_, err = q.CreateTicketOwnerSnapshot(ctx, CreateTicketOwnerSnapshotParams{
-				TicketID:             createdTicket.TicketID,
-				FirstName:            pgtype.Text{String: ticket.Owner.FirstName, Valid: true},
-				LastName:             pgtype.Text{String: ticket.Owner.LastName, Valid: true},
-				PhoneNumber:          pgtype.Text{String: ticket.Owner.PhoneNumber, Valid: true},
-				Gender:               GenderType(ticket.Owner.Gender),
-				DateOfBirth:          pgtype.Date{Time: ticket.Owner.DateOfBirth, Valid: true},
-				PassportNumber:       pgtype.Text{String: ticket.Owner.PassportNumber, Valid: true},
-				IdentificationNumber: pgtype.Text{String: ticket.Owner.IdentificationNumber, Valid: true},
-				Address:              pgtype.Text{String: ticket.Owner.Address, Valid: true},
-			})
-			if err != nil {
-				return fmt.Errorf("failed to insert ticket owner data: %w", err)
-			}
-
-			result.DepartureTickets = append(result.DepartureTickets, entities.Ticket{
-				TicketID:    createdTicket.TicketID,
-				BookingID:   createdTicket.BookingID.Int64,
-				FlightID:    createdTicket.FlightID,
-				Price:       createdTicket.Price,
-				FlightClass: entities.FlightClass(createdTicket.FlightClass),
-				Owner:       ticket.Owner,
-			})
+			result.DepartureTickets = append(result.DepartureTickets, createdTicket)
 		}
 
 		// Tạo vé cho chuyến bay về (nếu có)
-		if arg.TripType == string(entities.RoundTrip) && arg.ReturnFlightID != nil {
+		if arg.TripType == "roundTrip" && arg.ReturnFlightID != nil {
 			for _, ticket := range arg.ReturnTicketData {
-				createdTicket, err := q.CreateTicket(ctx, CreateTicketParams{
-					FlightClass: FlightClass(ticket.FlightClass),
-					Price:       ticket.Price,
-					Status:      TicketStatusBooked,
-					BookingID:   pgtype.Int8{Int64: booking.BookingID, Valid: true},
-					FlightID:    *arg.ReturnFlightID,
-				})
+				createdTicket, err := createTicketForBooking(ctx, q, booking.BookingID, *arg.ReturnFlightID, ticket)
 				if err != nil {
-					return fmt.Errorf("failed to create return ticket: %w", err)
+					return err
 				}
-
-				_, err = q.db.Exec(ctx, `
-                    INSERT INTO TicketOwnerSnapshot (
-                        ticket_id, first_name, last_name, phone_number, gender, date_of_birth,
-                        passport_number, identification_number, address
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                `, createdTicket.TicketID,
-					ticket.Owner.FirstName,
-					ticket.Owner.LastName,
-					ticket.Owner.PhoneNumber,
-					string(ticket.Owner.Gender),
-					ticket.Owner.DateOfBirth,
-					ticket.Owner.PassportNumber,
-					ticket.Owner.IdentificationNumber,
-					ticket.Owner.Address,
-				)
-				if err != nil {
-					return fmt.Errorf("failed to insert ticket owner data: %w", err)
-				}
-
-				result.ReturnTickets = append(result.ReturnTickets, entities.Ticket{
-					TicketID:    createdTicket.TicketID,
-					BookingID:   createdTicket.BookingID.Int64,
-					FlightID:    createdTicket.FlightID,
-					Price:       createdTicket.Price,
-					FlightClass: entities.FlightClass(createdTicket.FlightClass),
-					Owner:       ticket.Owner,
-				})
+				result.ReturnTickets = append(result.ReturnTickets, createdTicket)
 			}
 		}
 
@@ -135,4 +92,65 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 	})
 
 	return result, err
+}
+
+func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, flightID int64, ticket TicketData) (entities.Ticket, error) {
+	createdSeat, err := q.CreateSeat(ctx, CreateSeatParams{
+		SeatCode:    "", // Nếu cần tự động tạo mã ghế
+		IsAvailable: true,
+		Class:       FlightClass(ticket.FlightClass),
+		FlightID:    pgtype.Int8{Int64: flightID, Valid: true},
+	})
+	if err != nil {
+		return entities.Ticket{}, fmt.Errorf("failed to create seat: %w", err)
+	}
+
+	createdTicket, err := q.CreateTicket(ctx, CreateTicketParams{
+		SeatID:      pgtype.Int8{Int64: createdSeat.SeatID, Valid: true},
+		FlightClass: FlightClass(ticket.FlightClass),
+		Price:       int32(ticket.Price),
+		Status:      TicketStatusActive,
+		BookingID:   pgtype.Int8{Int64: bookingID, Valid: true},
+		FlightID:    flightID,
+	})
+	if err != nil {
+		return entities.Ticket{}, fmt.Errorf("failed to create ticket: %w", err)
+	}
+
+	_, err = q.CreateTicketOwnerSnapshot(ctx, CreateTicketOwnerSnapshotParams{
+		TicketID:       createdTicket.TicketID,
+		FirstName:      pgtype.Text{String: ticket.OwnerData.FirstName, Valid: true},
+		LastName:       pgtype.Text{String: ticket.OwnerData.LastName, Valid: true},
+		PhoneNumber:    pgtype.Text{String: ticket.OwnerData.PhoneNumber, Valid: true},
+		Gender:         GenderType(ticket.OwnerData.Gender),
+		DateOfBirth:    pgtype.Date{Time: parseDate(ticket.OwnerData.DateOfBirth), Valid: true},
+		PassportNumber: pgtype.Text{String: ticket.OwnerData.IdentityCardNumber, Valid: true},
+		Address:        pgtype.Text{String: ticket.OwnerData.Address, Valid: true},
+	})
+	if err != nil {
+		return entities.Ticket{}, fmt.Errorf("failed to insert ticket owner data: %w", err)
+	}
+
+	return entities.Ticket{
+		TicketID:    createdTicket.TicketID,
+		BookingID:   createdTicket.BookingID.Int64,
+		FlightID:    createdTicket.FlightID,
+		Price:       createdTicket.Price,
+		FlightClass: entities.FlightClass(createdTicket.FlightClass),
+		Owner: entities.TicketOwner{
+			FirstName:            ticket.OwnerData.FirstName,
+			LastName:             ticket.OwnerData.LastName,
+			PhoneNumber:          ticket.OwnerData.PhoneNumber,
+			DateOfBirth:          parseDate(ticket.OwnerData.DateOfBirth),
+			Gender:               entities.GenderType(ticket.OwnerData.Gender),
+			PassportNumber:       ticket.OwnerData.IdentityCardNumber,
+			IdentificationNumber: ticket.OwnerData.IdentityCardNumber,
+			Address:              ticket.OwnerData.Address,
+		},
+	}, nil
+}
+
+func parseDate(dateStr string) time.Time {
+	parsedDate, _ := time.Parse("2006-01-02", dateStr)
+	return parsedDate
 }

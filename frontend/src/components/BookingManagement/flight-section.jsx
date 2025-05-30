@@ -56,7 +56,7 @@ export function FlightSection({
               <FlightInfoCard
                 key={index}
                 type={type}
-                passengerName={`${detail.first_name} ${detail.last_name}`}
+                passengerName={`${detail.firstName} ${detail.lastName}`}
                 seatNumber={detail.seatCode || 'Chưa xác định'}
                 onView={detail.onView}
                 onDownload={detail.onDownload} // Sử dụng hàm đã truyền

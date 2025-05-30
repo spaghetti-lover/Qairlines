@@ -140,7 +140,7 @@ export default function CheckInPage() {
 
           const result = await response.json();
           const ownerData = result.data.owner;
-
+          console.log("Owner Data:", ownerData);
           return {
             id: ticketId,
             title: ownerData.gender === "Female" ? "Bà" : "Ông",

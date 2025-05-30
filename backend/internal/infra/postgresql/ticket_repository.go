@@ -78,13 +78,21 @@ func (r *TicketRepositoryPostgres) GetTicketByID(ctx context.Context, ticketID i
 		CreatedAt:   ticket.CreatedAt,
 		UpdatedAt:   ticket.UpdatedAt,
 		Seat: entities.Seat{
-			SeatCode: ticket.SeatCode.String,
+			SeatCode:    ticket.SeatCode.String,
+			SeatID:      ticket.SeatID.Int64,
+			IsAvailable: ticket.IsAvailable.Bool,
+			Class:       entities.FlightClass(ticket.SeatClass.FlightClass),
+			FlightID:    ticket.FlightID,
 		},
 		Owner: entities.TicketOwner{
-			FirstName:   ticket.OwnerFirstName.String,
-			LastName:    ticket.OwnerLastName.String,
-			PhoneNumber: ticket.OwnerPhoneNumber.String,
-			Gender:      entities.GenderType(ticket.OwnerGender.GenderType),
+			FirstName:            ticket.OwnerFirstName.String,
+			LastName:             ticket.OwnerLastName.String,
+			PhoneNumber:          ticket.OwnerPhoneNumber.String,
+			Gender:               entities.GenderType(ticket.OwnerGender.GenderType),
+			DateOfBirth:          ticket.OwnerDateOfBirth.Time,
+			PassportNumber:       ticket.OwnerPassportNumber.String,
+			IdentificationNumber: ticket.OwnerIdentificationNumber.String,
+			Address:              ticket.OwnerAddress.String,
 		},
 	}, nil
 }

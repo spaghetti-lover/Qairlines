@@ -98,11 +98,6 @@ func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
-	isAdmin := r.Header.Get("admin")
-	if isAdmin != "true" {
-		http.Error(w, `{"message":"Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
-		return
-	}
 
 	ticketIDStr := r.URL.Query().Get("id")
 	if ticketIDStr == "" {
@@ -140,7 +135,7 @@ func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
 func (h *TicketHandler) UpdateSeats(w http.ResponseWriter, r *http.Request) {
 	var updates []dto.UpdateSeatRequest
 	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
-		http.Error(w, "Invalid seat data. Please check the input fields.", http.StatusBadRequest)
+		http.Error(w, "Invalid seat data. Please check the input fields."+err.Error(), http.StatusBadRequest)
 		return
 	}
 

@@ -8,9 +8,8 @@ import (
 type TicketStatus string
 
 const (
-	TicketStatusBooked    TicketStatus = "booked"
-	TicketStatusCancelled TicketStatus = "cancelled"
-	TicketStatusUsed      TicketStatus = "used"
+	TicketStatusActive    TicketStatus = "Booked"
+	TicketStatusCancelled TicketStatus = "Cancelled"
 )
 
 type FlightClass string

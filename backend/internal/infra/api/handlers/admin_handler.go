@@ -203,12 +203,6 @@ func (h *AdminHandler) UpdateAdmin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) DeleteAdmin(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
-	if isAdmin != "true" {
-		http.Error(w, `{"message": "Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
-		return
-	}
 
 	// Lấy payload từ context với key đúng
 	authPayload, ok := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)

@@ -1,12 +1,13 @@
 -- name: CreateTicket :one
 INSERT INTO tickets (
-  flight_class,
-  price,
-  status,
-  booking_id,
-  flight_id
+    seat_id,
+    flight_class,
+    price,
+    status,
+    booking_id,
+    flight_id
 ) VALUES (
-  $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
 ) RETURNING *;
 
 -- name: GetTicketByID :one
@@ -20,10 +21,18 @@ SELECT
     t.created_at,
     t.updated_at,
     s.seat_code,
+    s.seat_id,
+    s.is_available,
+    s.flight_id,
+    s.class AS seat_class,
     o.first_name AS owner_first_name,
     o.last_name AS owner_last_name,
     o.gender AS owner_gender,
-    o.phone_number AS owner_phone_number
+    o.phone_number AS owner_phone_number,
+    o.date_of_birth AS owner_date_of_birth,
+    o.passport_number AS owner_passport_number,
+    o.identification_number AS owner_identification_number,
+    o.address AS owner_address
 FROM Tickets t
 LEFT JOIN Seats s ON t.seat_id = s.seat_id
 LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
@@ -72,7 +81,11 @@ SELECT
     o.first_name AS owner_first_name,
     o.last_name AS owner_last_name,
     o.phone_number AS owner_phone_number,
-    o.gender AS owner_gender
+    o.gender AS owner_gender,
+    o.date_of_birth AS owner_date_of_birth,
+    o.passport_number AS owner_passport_number,
+    o.identification_number AS owner_identification_number,
+    o.address AS owner_address
 FROM Tickets t
 LEFT JOIN Seats s ON t.seat_id = s.seat_id
 LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
@@ -86,8 +99,8 @@ RETURNING *;
 
 -- name: CancelTicket :one
 UPDATE Tickets
-SET status = 'cancelled', updated_at = NOW()
-WHERE Tickets.ticket_id = $1 AND status = 'booked'
+SET status = 'Cancelled', updated_at = NOW()
+WHERE Tickets.ticket_id = $1 AND status = 'Active'
 RETURNING ticket_id, status, flight_class, price, booking_id, flight_id, updated_at,
           (SELECT seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code,
           (SELECT first_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_first_name,

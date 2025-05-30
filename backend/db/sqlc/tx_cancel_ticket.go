@@ -37,7 +37,7 @@ func (store *SQLStore) CancelTicketTx(ctx context.Context, arg CancelTicketTxPar
 		}
 
 		// 2. Kiểm tra xem vé có thể hủy được không
-		if ticket.Status != "booked" {
+		if ticket.Status != "Booked" {
 			return fmt.Errorf("ticket with ID %d cannot be cancelled due to its current status: %s", arg.TicketID, ticket.Status)
 		}
 
