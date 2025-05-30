@@ -87,16 +87,16 @@ CREATE TABLE Bookings (
 CREATE TABLE Seats (
   seat_id BIGSERIAL PRIMARY KEY,
   flight_id BIGINT REFERENCES Flights(flight_id) ON DELETE CASCADE,
-  seat_code VARCHAR(3) NOT NULL,
+  seat_code VARCHAR(3) DEFAULT '1A' NOT NULL,
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
   class flight_class NOT NULL DEFAULT 'economy',
-  UNIQUE (flight_id, seat_code)
+  UNIQUE(seat_id, flight_id)
 );
 
 -- Create Tickets table
 CREATE TABLE Tickets (
   ticket_id BIGSERIAL PRIMARY KEY,
-  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE,
+  seat_id BIGINT REFERENCES Seats(seat_id) ON DELETE CASCADE NOT NULL,
   flight_class flight_class NOT NULL DEFAULT 'economy',
   price INT NOT NULL CHECK (price >= 0),
   status ticket_status NOT NULL DEFAULT 'Active',
@@ -135,8 +135,6 @@ CREATE INDEX idx_bookings_return_flight_id ON Bookings (return_flight_id);
 CREATE INDEX idx_tickets_booking_id ON Tickets (booking_id);
 CREATE INDEX idx_tickets_flight_id ON Tickets (flight_id);
 
--- Thêm ràng buộc UNIQUE trong bảng Seats
-ALTER TABLE Seats ADD CONSTRAINT unique_flight_seat UNIQUE (flight_id, seat_code);
 
 -- Đảm bảo ngày đi trước ngày đến
 ALTER TABLE Flights ADD CONSTRAINT departure_before_arrival CHECK (departure_time < arrival_time);

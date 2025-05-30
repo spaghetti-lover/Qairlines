@@ -70,12 +70,12 @@ func mapTicketDataListToResponse(ticketDataList []entities.Ticket) []dto.TicketD
 	var mappedList []dto.TicketDataResponse
 	for _, ticket := range ticketDataList {
 		seatID := ""
-		if ticket.SeatID.Valid {
-			seatID = strconv.FormatInt(ticket.SeatID.Int64, 10)
+		if ticket.SeatID != 0 {
+			seatID = strconv.FormatInt(ticket.SeatID, 10)
 		}
 		mappedList = append(mappedList, dto.TicketDataResponse{
 			TicketID:    strconv.FormatInt(ticket.TicketID, 10),
-			SeatID:      &seatID,
+			SeatID:      seatID,
 			Price:       ticket.Price,
 			FlightClass: string(ticket.FlightClass),
 			OwnerData: dto.OwnerData{

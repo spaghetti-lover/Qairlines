@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
 	"strconv"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -27,14 +26,7 @@ func (r *BookingRepositoryPostgres) CreateBookingTx(ctx context.Context, booking
 	if err != nil {
 		return entities.Booking{}, nil, nil, err
 	}
-	returnFlight, err := strconv.ParseInt(booking.ReturnFlightID, 10, 64)
-	if err != nil && booking.TripType == entities.RoundTrip {
-		return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
-	} else if err != nil {
-		return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
-	} else if booking.TripType == entities.RoundTrip && returnFlight == 0 {
-		return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
-	}
+
 	departureTicketData := make([]db.TicketData, len(booking.DepartureTicketDataList))
 	for i, ticketData := range booking.DepartureTicketDataList {
 		departureTicketData[i] = db.TicketData{
@@ -52,26 +44,39 @@ func (r *BookingRepositoryPostgres) CreateBookingTx(ctx context.Context, booking
 		}
 	}
 	returnTicketDataList := make([]db.TicketData, len(booking.ReturnTicketDataList))
-	for i, ticketData := range booking.ReturnTicketDataList {
-		returnTicketDataList[i] = db.TicketData{
-			Price:       int64(ticketData.Price),
-			FlightClass: string(ticketData.FlightClass),
-			OwnerData: db.OwnerData{
-				IdentityCardNumber: ticketData.Owner.IdentificationNumber,
-				FirstName:          ticketData.Owner.FirstName,
-				LastName:           ticketData.Owner.LastName,
-				PhoneNumber:        ticketData.Owner.PhoneNumber,
-				DateOfBirth:        ticketData.Owner.DateOfBirth.String(),
-				Gender:             string(ticketData.Owner.Gender),
-				Address:            ticketData.Owner.Address,
-			},
+	var returnFlightID int64
+	if booking.ReturnFlightID != "" {
+		returnFlightID, err = strconv.ParseInt(booking.ReturnFlightID, 10, 64)
+
+		if err != nil && booking.TripType == entities.RoundTrip {
+			return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
+		} else if err != nil {
+			return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
+		} else if booking.TripType == entities.RoundTrip && returnFlightID == 0 {
+			return entities.Booking{}, nil, nil, adapters.ErrFlightNotFound
+		}
+		for i, ticketData := range booking.ReturnTicketDataList {
+			returnTicketDataList[i] = db.TicketData{
+				Price:       int64(ticketData.Price),
+				FlightClass: string(ticketData.FlightClass),
+				OwnerData: db.OwnerData{
+					IdentityCardNumber: ticketData.Owner.IdentificationNumber,
+					FirstName:          ticketData.Owner.FirstName,
+					LastName:           ticketData.Owner.LastName,
+					PhoneNumber:        ticketData.Owner.PhoneNumber,
+					DateOfBirth:        ticketData.Owner.DateOfBirth.String(),
+					Gender:             string(ticketData.Owner.Gender),
+					Address:            ticketData.Owner.Address,
+				},
+			}
 		}
 	}
+
 	txParams := db.CreateBookingTxParams{
 		UserEmail:           booking.Email,
 		TripType:            string(booking.TripType),
 		DepartureFlightID:   departureID,
-		ReturnFlightID:      &returnFlight,
+		ReturnFlightID:      returnFlightID,
 		DepartureTicketData: departureTicketData,
 		ReturnTicketData:    returnTicketDataList,
 	}
@@ -128,7 +133,7 @@ func mapDBTicketsToEntitiesTickets(dbTickets []db.Ticket) []entities.Ticket {
 	for _, dbTicket := range dbTickets {
 		entityTickets = append(entityTickets, entities.Ticket{
 			TicketID:    dbTicket.TicketID,
-			SeatID:      sql.NullInt64{Int64: dbTicket.SeatID.Int64, Valid: dbTicket.SeatID.Valid},
+			SeatID:      dbTicket.SeatID,
 			FlightClass: entities.FlightClass(dbTicket.FlightClass),
 			Price:       dbTicket.Price,
 			Status:      entities.TicketStatus(dbTicket.Status),

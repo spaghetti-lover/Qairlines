@@ -108,13 +108,11 @@ RETURNING ticket_id, status, flight_class, price, booking_id, flight_id, updated
           (SELECT phone_number FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_phone_number;
 
 -- name: UpdateSeat :one
-UPDATE Tickets
-SET seat_id = (
-    SELECT seat_id FROM Seats WHERE Seats.seat_code = $2 AND is_available = TRUE
-), updated_at = NOW()
-WHERE ticket_id = $1
-RETURNING ticket_id, seat_id, updated_at,
-          (SELECT Seats.seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code;
+UPDATE Seats
+SET
+    seat_code = $2
+WHERE seat_id = (SELECT seat_id FROM Tickets WHERE ticket_id = $1 AND seat_id IS NOT NULL)
+RETURNING *;
 
 -- name: GetTicketsByBookingIDAndType :many
 SELECT

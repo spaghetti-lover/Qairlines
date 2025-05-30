@@ -70,7 +70,7 @@ INSERT INTO tickets (
 `
 
 type CreateTicketParams struct {
-	SeatID      pgtype.Int8  `json:"seat_id"`
+	SeatID      int64        `json:"seat_id"`
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
@@ -316,7 +316,7 @@ WHERE t.flight_id = $1
 
 type GetTicketsByFlightIDRow struct {
 	TicketID                  int64           `json:"ticket_id"`
-	SeatID                    pgtype.Int8     `json:"seat_id"`
+	SeatID                    int64           `json:"seat_id"`
 	FlightClass               FlightClass     `json:"flight_class"`
 	Price                     int32           `json:"price"`
 	Status                    TicketStatus    `json:"status"`
@@ -421,13 +421,11 @@ func (q *Queries) ListTickets(ctx context.Context, arg ListTicketsParams) ([]Tic
 }
 
 const updateSeat = `-- name: UpdateSeat :one
-UPDATE Tickets
-SET seat_id = (
-    SELECT seat_id FROM Seats WHERE Seats.seat_code = $2 AND is_available = TRUE
-), updated_at = NOW()
-WHERE ticket_id = $1
-RETURNING ticket_id, seat_id, updated_at,
-          (SELECT Seats.seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code
+UPDATE Seats
+SET
+    seat_code = $2
+WHERE seat_id = (SELECT seat_id FROM Tickets WHERE ticket_id = $1 AND seat_id IS NOT NULL)
+RETURNING seat_id, flight_id, seat_code, is_available, class
 `
 
 type UpdateSeatParams struct {
@@ -435,21 +433,15 @@ type UpdateSeatParams struct {
 	SeatCode string `json:"seat_code"`
 }
 
-type UpdateSeatRow struct {
-	TicketID  int64       `json:"ticket_id"`
-	SeatID    pgtype.Int8 `json:"seat_id"`
-	UpdatedAt time.Time   `json:"updated_at"`
-	SeatCode  string      `json:"seat_code"`
-}
-
-func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (UpdateSeatRow, error) {
+func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, error) {
 	row := q.db.QueryRow(ctx, updateSeat, arg.TicketID, arg.SeatCode)
-	var i UpdateSeatRow
+	var i Seat
 	err := row.Scan(
-		&i.TicketID,
 		&i.SeatID,
-		&i.UpdatedAt,
+		&i.FlightID,
 		&i.SeatCode,
+		&i.IsAvailable,
+		&i.Class,
 	)
 	return i, err
 }

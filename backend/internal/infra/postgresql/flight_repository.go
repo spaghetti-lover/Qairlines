@@ -54,7 +54,7 @@ func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight enti
 func (r *FlightRepositoryPostgres) GetFlightByID(ctx context.Context, flightID int64) (*entities.Flight, error) {
 	dbFlight, err := r.store.GetFlight(ctx, flightID)
 	if err != nil {
-		return nil, adapters.ErrFlightNotFound
+		return nil, err
 	}
 	return &entities.Flight{
 		FlightID:         dbFlight.FlightID,

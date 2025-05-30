@@ -58,7 +58,7 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 	user, err := h.userRepository.GetUser(r.Context(), userId)
 
 	if err != nil {
-		http.Error(w, `{"message": "Failed to retrieve user email."}`, http.StatusInternalServerError)
+		http.Error(w, `{"message": "Failed to retrieve user email."}`+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -68,7 +68,6 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"message": "Invalid booking data. Please check the input fields."}`, http.StatusBadRequest)
 		return
 	}
-
 	// Gọi use case để tạo booking
 	bookingResponse, err := h.createBookingUseCase.Execute(r.Context(), request, user.Email)
 	if err != nil {

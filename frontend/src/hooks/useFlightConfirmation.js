@@ -48,7 +48,7 @@ export function useFlightConfirmation() {
     passengerCount,
   } = router.query;
 
-  const tripType = returnFlightId && returnOptionId ? "roundTrip" : "oneway";
+  const tripType = returnFlightId && returnOptionId ? "roundTrip" : "oneWay";
 
   const [departureFlightData, setDepartureFlightData] = useState(null);
   const [returnFlightData, setReturnFlightData] = useState(null);

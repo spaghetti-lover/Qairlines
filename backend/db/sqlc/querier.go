@@ -75,7 +75,7 @@ type Querier interface {
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
 	UpdateFlightTimes(ctx context.Context, arg UpdateFlightTimesParams) (UpdateFlightTimesRow, error)
 	UpdateNews(ctx context.Context, arg UpdateNewsParams) (News, error)
-	UpdateSeat(ctx context.Context, arg UpdateSeatParams) (UpdateSeatRow, error)
+	UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, error)
 	UpdateSeatAvailability(ctx context.Context, arg UpdateSeatAvailabilityParams) error
 	UpdateTicket(ctx context.Context, arg UpdateTicketParams) error
 	UpdateTicketStatus(ctx context.Context, arg UpdateTicketStatusParams) (Ticket, error)

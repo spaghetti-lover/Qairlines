@@ -41,7 +41,7 @@ type CreateBookingResponse struct {
 
 type TicketDataResponse struct {
 	TicketID    string    `json:"ticketId"`
-	SeatID      *string   `json:"seatId,omitempty"`
+	SeatID      string    `json:"seatId"`
 	Price       int32     `json:"price"`
 	FlightClass string    `json:"flightClass"`
 	OwnerData   OwnerData `json:"ownerData"`

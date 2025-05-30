@@ -32,7 +32,7 @@ func (r *TicketRepositoryPostgres) GetTicketsByFlightID(ctx context.Context, fli
 	for _, t := range tickets {
 		result = append(result, entities.Ticket{
 			TicketID:    t.TicketID,
-			SeatID:      sql.NullInt64{Int64: t.SeatID.Int64, Valid: true},
+			SeatID:      t.SeatID,
 			FlightClass: entities.FlightClass(t.FlightClass),
 			Price:       t.Price,
 			Status:      entities.TicketStatus(t.Status),
@@ -41,7 +41,7 @@ func (r *TicketRepositoryPostgres) GetTicketsByFlightID(ctx context.Context, fli
 			CreatedAt:   t.CreatedAt,
 			UpdatedAt:   t.UpdatedAt,
 			Seat: entities.Seat{
-				SeatID:      t.SeatID.Int64,
+				SeatID:      t.SeatID,
 				SeatCode:    t.SeatCode.String,
 				IsAvailable: t.IsAvailable.Bool,
 				Class:       entities.FlightClass(t.SeatClass.FlightClass),
@@ -134,7 +134,7 @@ func (r *TicketRepositoryPostgres) UpdateSeat(ctx context.Context, ticketID int6
 		return nil, adapters.ErrTicketNotFound
 	}
 	if err != nil {
-		return nil, adapters.ErrInvalidSeat
+		return nil, err
 	}
 
 	return &entities.Ticket{

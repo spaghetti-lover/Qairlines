@@ -14,7 +14,7 @@ type CreateBookingTxParams struct {
 	DepartureCity       string
 	ArrivalCity         string
 	DepartureFlightID   int64
-	ReturnFlightID      *int64
+	ReturnFlightID      int64
 	TripType            string
 	DepartureTicketData []TicketData
 	ReturnTicketData    []TicketData
@@ -51,7 +51,7 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 			UserEmail:         pgtype.Text{String: arg.UserEmail, Valid: true},
 			TripType:          TripType(arg.TripType),
 			DepartureFlightID: pgtype.Int8{Int64: arg.DepartureFlightID, Valid: true},
-			ReturnFlightID:    pgtype.Int8{Int64: *arg.ReturnFlightID, Valid: arg.ReturnFlightID != nil},
+			ReturnFlightID:    pgtype.Int8{Int64: arg.ReturnFlightID, Valid: arg.ReturnFlightID != 0},
 			Status:            BookingStatus(entities.BookingStatusPending),
 		})
 		if err != nil {
@@ -78,9 +78,9 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 		}
 
 		// Tạo vé cho chuyến bay về (nếu có)
-		if arg.TripType == "roundTrip" && arg.ReturnFlightID != nil {
+		if arg.TripType == "roundTrip" && arg.ReturnFlightID != 0 {
 			for _, ticket := range arg.ReturnTicketData {
-				createdTicket, err := createTicketForBooking(ctx, q, booking.BookingID, *arg.ReturnFlightID, ticket)
+				createdTicket, err := createTicketForBooking(ctx, q, booking.BookingID, arg.ReturnFlightID, ticket)
 				if err != nil {
 					return err
 				}
@@ -96,23 +96,24 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 
 func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, flightID int64, ticket TicketData) (entities.Ticket, error) {
 	createdSeat, err := q.CreateSeat(ctx, CreateSeatParams{
-		SeatCode:    "", // Nếu cần tự động tạo mã ghế
 		IsAvailable: true,
 		Class:       FlightClass(ticket.FlightClass),
 		FlightID:    pgtype.Int8{Int64: flightID, Valid: true},
 	})
+
 	if err != nil {
 		return entities.Ticket{}, fmt.Errorf("failed to create seat: %w", err)
 	}
 
 	createdTicket, err := q.CreateTicket(ctx, CreateTicketParams{
-		SeatID:      pgtype.Int8{Int64: createdSeat.SeatID, Valid: true},
+		SeatID:      createdSeat.SeatID,
 		FlightClass: FlightClass(ticket.FlightClass),
 		Price:       int32(ticket.Price),
 		Status:      TicketStatusActive,
 		BookingID:   pgtype.Int8{Int64: bookingID, Valid: true},
 		FlightID:    flightID,
 	})
+
 	if err != nil {
 		return entities.Ticket{}, fmt.Errorf("failed to create ticket: %w", err)
 	}

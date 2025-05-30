@@ -46,7 +46,7 @@ func (u *CreateBookingUseCase) Execute(ctx context.Context, booking dto.CreateBo
 	if booking.TripType == "roundTrip" {
 		returnFlightID, err := strconv.ParseInt(booking.ReturnFlightID, 10, 64)
 		if err != nil {
-			return dto.CreateBookingResponse{}, adapters.ErrFlightNotFound
+			return dto.CreateBookingResponse{}, err
 		}
 		returnFlight, err = u.flightRepository.GetFlightByID(ctx, returnFlightID)
 		if err != nil {
@@ -56,7 +56,6 @@ func (u *CreateBookingUseCase) Execute(ctx context.Context, booking dto.CreateBo
 			return dto.CreateBookingResponse{}, err
 		}
 	}
-
 	// Tạo booking trong repository
 	createdBooking, departureTickets, returnTickets, err := u.bookingRepository.CreateBookingTx(ctx, mappers.ToCreateBookingParams(booking, *departureFlight, returnFlight, email))
 

@@ -380,7 +380,7 @@ type Seat struct {
 
 type Ticket struct {
 	TicketID    int64        `json:"ticket_id"`
-	SeatID      pgtype.Int8  `json:"seat_id"`
+	SeatID      int64        `json:"seat_id"`
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`

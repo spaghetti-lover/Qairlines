@@ -135,7 +135,7 @@ func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
 func (h *TicketHandler) UpdateSeats(w http.ResponseWriter, r *http.Request) {
 	var updates []dto.UpdateSeatRequest
 	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
-		http.Error(w, "Invalid seat data. Please check the input fields."+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid seat data. Please check the input fields.", http.StatusBadRequest)
 		return
 	}
 
@@ -149,7 +149,7 @@ func (h *TicketHandler) UpdateSeats(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"message":"Invalid seat data. Please check the input fields."}`, http.StatusBadRequest)
 			return
 		}
-		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
