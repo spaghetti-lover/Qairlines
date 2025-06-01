@@ -69,7 +69,7 @@ export default function Benefit() {
       }}))
 
     } catch (error) {
-        alert("Đã xảy ra lối, vui lòng thử lại")
+        // alert("Đã xảy ra lối, vui lòng thử lại(fixed)")
     }
   }
   return (

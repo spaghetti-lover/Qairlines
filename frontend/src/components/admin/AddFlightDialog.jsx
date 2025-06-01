@@ -61,6 +61,7 @@ export function AddFlightDialog() {
           title: "Đã thêm chuyến bay",
           description: `Chuyến bay ${flightData.flightNumber} đã được thêm thành công.`,
         })
+        window.location.reload();
     } catch (error) {
         alert("Đã xảy ra lỗi, vui lòng thử lại")
         console.log(error)

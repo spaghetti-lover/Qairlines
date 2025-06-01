@@ -96,6 +96,11 @@ export function PassengerInfoDialog({ isOpen, onClose, passengerCount, onInfoFil
         <DialogHeader>
           <DialogTitle>Thông tin hành khách</DialogTitle>
         </DialogHeader>
+        <div>
+          <label htmlFor="email">Nhập email nhận thông tin vé:</label>
+          <Input type="text" id="email" placeholder="a@email.com" />
+        </div>
+
         <form onSubmit={handleSubmit}>
           {passengers.map((passenger, index) => (
             <div key={index} className="mb-6 p-4 border border-gray-200 rounded-lg">
