@@ -107,6 +107,7 @@ export default function ScheduledFlights() {
       title: "Thông báo",
       description: "Thông tin chuyến bay đã được cập nhật thành công.",
     })
+    window.location.reload();
   }
 
   const getStatusBadge = (flight) => {
