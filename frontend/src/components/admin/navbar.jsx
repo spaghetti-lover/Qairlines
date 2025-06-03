@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { LayoutDashboard, Plane, CalendarDays, User, Users, UserPen, FileText, TicketCheck } from 'lucide-react'
+import { LayoutDashboard, Plane, CalendarDays, User, Users, UserPen, FileText, TicketCheck, ship } from 'lucide-react'
 
 const navItems = [
   { 
@@ -12,6 +12,11 @@ const navItems = [
     name: 'Quản lý chuyến bay', 
     href: '/admin/flights', 
     icon: CalendarDays 
+  },
+   { 
+    name: 'Quản lý tàu bay', 
+    href: '/admin/aircrafts', 
+    icon: Ship 
   },
   { 
     name: 'Quản lý khách hàng', 
