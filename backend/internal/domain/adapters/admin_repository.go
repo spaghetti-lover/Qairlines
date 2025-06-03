@@ -2,8 +2,13 @@ package adapters
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
+)
+
+var (
+	ErrAdminNotFound = errors.New("admin not found")
 )
 
 type IAdminRepository interface {

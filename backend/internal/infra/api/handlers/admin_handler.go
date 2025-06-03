@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/admin"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
@@ -130,7 +131,7 @@ func (h *AdminHandler) GetCurrentAdmin(w http.ResponseWriter, r *http.Request) {
 
 	currentAdmin, err := h.getCurrentAdminUseCase.Execute(r.Context(), authPayload.UserId)
 	if err != nil {
-		if errors.Is(err, admin.ErrAdminNotFound) {
+		if errors.Is(err, adapters.ErrAdminNotFound) {
 			http.Error(w, `{"message": "Admin not found."}`, http.StatusNotFound)
 			return
 		}
@@ -183,7 +184,7 @@ func (h *AdminHandler) UpdateAdmin(w http.ResponseWriter, r *http.Request) {
 	updateInput := mappers.AdminUpdateRequestToInput(updateRequest, userID)
 	updatedAdmin, err := h.updateAdminUseCase.Execute(r.Context(), updateInput)
 	if err != nil {
-		if errors.Is(err, admin.ErrAdminNotFound) {
+		if errors.Is(err, adapters.ErrAdminNotFound) {
 			http.Error(w, `{"message": "Admin not found."}`, http.StatusNotFound)
 			return
 		}
@@ -214,7 +215,7 @@ func (h *AdminHandler) DeleteAdmin(w http.ResponseWriter, r *http.Request) {
 	// Gọi use case để xóa admin
 	err := h.deleteAdminUseCase.Execute(r.Context(), authPayload.UserId)
 	if err != nil {
-		if errors.Is(err, admin.ErrAdminNotFound) {
+		if errors.Is(err, adapters.ErrAdminNotFound) {
 			http.Error(w, `{"message": "Admin not found."}`, http.StatusNotFound)
 			return
 		}
