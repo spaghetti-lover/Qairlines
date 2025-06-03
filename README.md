@@ -41,13 +41,14 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 
 ### Backend
 
-- B1: Chạy PostgreSQL database
+- B1: Chạy PostgreSQL database và Kafka
 
 ```
-make postgres
+cd backend
+docker-compose up
 ```
 
-- B2: Truy cập vào database
+- B2: Tạo database
 
 ```
 make createdb
