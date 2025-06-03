@@ -26,8 +26,11 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 
 ### Backend
 
-- Golang
-- "net/http" package
+- Golang: gorilla, "net/http" package
+- Kafka: Gửi mail
+- Viper: Load config
+- Testify: Chạy unit tests
+- Github Action cho CI
 
 ### Cơ sở dữ liệu
 
