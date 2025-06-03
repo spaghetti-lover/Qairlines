@@ -30,6 +30,7 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 - Kafka: Gửi mail
 - Viper: Load config
 - Testify: Chạy unit tests
+- SQLC: Tương tác với database
 - Github Action cho CI
 
 ### Cơ sở dữ liệu
