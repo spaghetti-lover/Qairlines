@@ -4,7 +4,7 @@ const AdminLayout = ({ children }) => {
   return (
     <div className="flex flex-row relative">
       <div className="fixed top-0">
-        <AdminNavbar />
+      <AdminNavbar />
       </div>
       {children}
     </div>
