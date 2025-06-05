@@ -39,7 +39,7 @@ func (u *UpdateAdminUseCase) Execute(ctx context.Context, input UpdateAdminInput
 	}
 	admin, err := u.adminRepository.GetAdminByUserID(ctx, input.UserID)
 	if err != nil {
-		return entities.Admin{}, ErrAdminNotFound
+		return entities.Admin{}, adapters.ErrAdminNotFound
 	}
 
 	admin.FirstName = input.FirstName

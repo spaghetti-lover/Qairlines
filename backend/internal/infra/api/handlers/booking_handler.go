@@ -32,34 +32,26 @@ func NewBookingHandler(createBookingUseCase booking.ICreateBookingUseCase, token
 
 func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		fmt.Println("Authorization header is missing")
-		http.Error(w, `{"message": "Authorization header is missing"}`, http.StatusUnauthorized)
-		return
+	var userEmail string
+
+	if authHeader != "" {
+		const bearerPrefix = "Bearer "
+		if len(authHeader) > len(bearerPrefix) && authHeader[:len(bearerPrefix)] == bearerPrefix {
+			tokenStr := authHeader[len(bearerPrefix):]
+			payload, err := h.tokenMaker.VerifyToken(tokenStr, token.TokenTypeAccessToken)
+			if err == nil {
+				userId := payload.UserId
+				user, err := h.userRepository.GetUser(r.Context(), userId)
+				if err == nil {
+					userEmail = user.Email
+				}
+			}
+		}
 	}
 
-	const bearerPrefix = "Bearer "
-	if len(authHeader) <= len(bearerPrefix) || authHeader[:len(bearerPrefix)] != bearerPrefix {
-		fmt.Println("Invalid authorization header format")
-		http.Error(w, `{"message": "Invalid authorization header format"}`, http.StatusUnauthorized)
-		return
-	}
-
-	tokenStr := authHeader[len(bearerPrefix):]
-	payload, err := h.tokenMaker.VerifyToken(tokenStr, token.TokenTypeAccessToken)
-	if err != nil {
-		fmt.Printf("Token verification failed: %v\n", err)
-		http.Error(w, fmt.Sprintf(`{"message": "Unauthorized. %v"}`, err.Error()), http.StatusUnauthorized)
-		return
-	}
-
-	userId := payload.UserId
-	// Lấy email từ UserId
-	user, err := h.userRepository.GetUser(r.Context(), userId)
-
-	if err != nil {
-		http.Error(w, `{"message": "Failed to retrieve user email."}`+err.Error(), http.StatusInternalServerError)
-		return
+	// Nếu không có email từ token, sử dụng email mặc định cho người dùng không đăng nhập
+	if userEmail == "" {
+		userEmail = "john.doe@example.com"
 	}
 
 	// Parse request body
@@ -68,8 +60,9 @@ func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"message": "Invalid booking data. Please check the input fields."}`, http.StatusBadRequest)
 		return
 	}
+
 	// Gọi use case để tạo booking
-	bookingResponse, err := h.createBookingUseCase.Execute(r.Context(), request, user.Email)
+	bookingResponse, err := h.createBookingUseCase.Execute(r.Context(), request, userEmail)
 	if err != nil {
 		if errors.Is(err, adapters.ErrFlightNotFound) {
 			http.Error(w, `{"message": "One or more flights not found."}`, http.StatusNotFound)

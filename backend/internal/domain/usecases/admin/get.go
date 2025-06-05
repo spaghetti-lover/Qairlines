@@ -2,14 +2,9 @@ package admin
 
 import (
 	"context"
-	"errors"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
-)
-
-var (
-	ErrAdminNotFound = errors.New("admin not found")
 )
 
 type IGetCurrentAdminUseCase interface {
@@ -32,7 +27,7 @@ func (u *GetCurrentAdminUseCase) Execute(ctx context.Context, userID int64) (ent
 		return entities.Admin{}, err
 	}
 	if admin.UserID == "" {
-		return entities.Admin{}, ErrAdminNotFound
+		return entities.Admin{}, adapters.ErrAdminNotFound
 	}
 	return admin, nil
 }

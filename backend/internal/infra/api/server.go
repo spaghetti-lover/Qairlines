@@ -102,7 +102,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// News API
 	apiRouter.HandleFunc("/news/all", newsHandler.GetAllNews).Methods("GET")
-	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.GetNews))).Methods("GET")
+	apiRouter.Handle("/news", http.HandlerFunc(newsHandler.GetNews)).Methods("GET")
 	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.DeleteNews))).Methods("DELETE")
 	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.CreateNews))).Methods("POST")
 	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.UpdateNews))).Methods("PUT")
@@ -130,19 +130,19 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
 	apiRouter.HandleFunc("/flight", flightHandler.GetFlight).Methods("GET")
 	apiRouter.Handle("/flight/update", authMiddleware(http.HandlerFunc(flightHandler.UpdateFlightTimes))).Methods("PUT")
-	apiRouter.Handle("/flight/all", authMiddleware(http.HandlerFunc(flightHandler.GetAllFlights))).Methods("GET")
+	apiRouter.Handle("/flight/all", http.HandlerFunc(flightHandler.GetAllFlights)).Methods("GET")
 	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.DeleteFlight))).Methods("DELETE")
 	apiRouter.HandleFunc("/flight/search", flightHandler.SearchFlights).Methods("GET")
 	apiRouter.HandleFunc("/flight/suggest", flightHandler.GetSuggestedFlights).Methods("GET")
 
 	// Ticket API
-	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")
-	apiRouter.Handle("/ticket/cancel", authMiddleware(http.HandlerFunc(ticketHandler.CancelTicket))).Methods("PUT")
-	apiRouter.Handle("/ticket", authMiddleware(http.HandlerFunc(ticketHandler.GetTicket))).Methods("GET")
-	apiRouter.Handle("/ticket/update-seats", authMiddleware(http.HandlerFunc(ticketHandler.UpdateSeats))).Methods("PUT")
+	apiRouter.Handle("/ticket/list", http.HandlerFunc(ticketHandler.GetTicketsByFlightID)).Methods("GET")
+	apiRouter.Handle("/ticket/cancel", http.HandlerFunc(ticketHandler.CancelTicket)).Methods("PUT")
+	apiRouter.Handle("/ticket", http.HandlerFunc(ticketHandler.GetTicket)).Methods("GET")
+	apiRouter.Handle("/ticket/update-seats", http.HandlerFunc(ticketHandler.UpdateSeats)).Methods("PUT")
 
 	// Booking API
-	apiRouter.Handle("/booking", authMiddleware(http.HandlerFunc(bookingHandler.CreateBooking))).Methods("POST")
+	apiRouter.Handle("/booking", http.HandlerFunc(bookingHandler.CreateBooking)).Methods("POST")
 	// Statistic API
 	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -158,7 +158,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 			utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
 		}
 	}).Methods("GET")
-	apiRouter.Handle("/booking", authMiddleware(http.HandlerFunc(bookingHandler.GetBooking))).Methods("GET")
+	apiRouter.Handle("/booking", http.HandlerFunc(bookingHandler.GetBooking)).Methods("GET")
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{

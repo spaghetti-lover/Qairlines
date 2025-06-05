@@ -79,7 +79,8 @@ export default function CheckInPage() {
     async (flightId, type) => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("Token không tồn tại.");
+        // Xử lý trường hợp không có token
+        //if (!token) throw new Error("Token không tồn tại.");
 
         const response = await fetch(`${API_BASE_URL}/api/flight?id=${flightId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -128,7 +129,8 @@ export default function CheckInPage() {
     async (ticketIds) => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("Token không tồn tại.");
+        // Xử lý trường hợp không có token
+        //if (!token) throw new Error("Token không tồn tại.");
 
         const ticketPromises = ticketIds.map(async (ticketId) => {
           const response = await fetch(`${API_BASE_URL}/api/ticket?id=${ticketId}`, {
@@ -168,7 +170,8 @@ export default function CheckInPage() {
       setLoading(true);
 
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token không tồn tại.");
+      // Xử lý trường hợp không có token
+      //if (!token) throw new Error("Token không tồn tại.");
 
       // Fetch booking
       const response = await fetch(`${API_BASE_URL}/api/booking?id=${bookingID}`, {
@@ -276,7 +279,8 @@ export default function CheckInPage() {
   const updateSeatsApi = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token không tồn tại.");
+      // Xử lý trường hợp không có token
+      //if (!token) throw new Error("Token không tồn tại.");
 
       // Lấy seatCode từ passengerList
       const payload = [

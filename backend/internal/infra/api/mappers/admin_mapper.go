@@ -1,16 +1,3 @@
-// type CreateAdminResponse struct {
-// 	Message string `json:"message"`
-// 	Admin   struct {
-// 		ID        string `json:"id"`
-// 		FirstName string `json:"firstName"`
-// 		LastName  string `json:"lastName"`
-// 		Email     string `json:"email"`
-// 		CreatedAt struct {
-// 			Seconds int64 `json:"seconds"`
-// 		} `json:"createdAt"`
-// 	} `json:"admin"`
-// }
-
 package mappers
 
 import (

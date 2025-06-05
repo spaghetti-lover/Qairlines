@@ -1,12 +1,22 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { LayoutDashboard, Plane, CalendarDays, User, Users, UserPen, FileText, TicketCheck } from 'lucide-react'
+import { LayoutDashboard, Plane, CalendarDays, User, Users, UserPen, FileText, TicketCheck, MapPin } from 'lucide-react'
 
 const navItems = [
   { 
     name: 'Tổng quan', 
     href: '/admin/dashboard', 
     icon: LayoutDashboard 
+  },
+  {
+    name: 'Quản lý tàu bay',
+    href: '/admin/aircraft',
+    icon: Plane
+  },
+  {
+    name: 'Quản lý sân bay',
+    href: '/admin/airports',
+    icon: MapPin
   },
   { 
     name: 'Quản lý chuyến bay', 

@@ -26,8 +26,12 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 
 ### Backend
 
-- Golang
-- "net/http" package
+- Golang: gorilla, "net/http" package
+- Kafka: Gửi mail
+- Viper: Load config
+- Testify: Chạy unit tests
+- SQLC: Tương tác với database
+- Github Action cho CI
 
 ### Cơ sở dữ liệu
 
@@ -37,13 +41,14 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 
 ### Backend
 
-- B1: Chạy PostgreSQL database
+- B1: Chạy PostgreSQL database và Kafka
 
 ```
-make postgres
+cd backend
+docker-compose up
 ```
 
-- B2: Truy cập vào database
+- B2: Tạo database
 
 ```
 make createdb
