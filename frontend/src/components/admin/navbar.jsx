@@ -8,6 +8,11 @@ const navItems = [
     href: '/admin/dashboard', 
     icon: LayoutDashboard 
   },
+  { 
+    name: 'Quản lý chuyến bay', 
+    href: '/admin/flights', 
+    icon: CalendarDays 
+  },
   {
     name: 'Quản lý tàu bay',
     href: '/admin/aircraft',
@@ -17,11 +22,6 @@ const navItems = [
     name: 'Quản lý sân bay',
     href: '/admin/airports',
     icon: MapPin
-  },
-  { 
-    name: 'Quản lý chuyến bay', 
-    href: '/admin/flights', 
-    icon: CalendarDays 
   },
   { 
     name: 'Quản lý khách hàng', 
