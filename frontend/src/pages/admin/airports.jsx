@@ -476,6 +476,12 @@ export default function AirportManagement() {
     </div>
   )
 
+  const handleSearch = () => {
+    // The search is already handled by the filteredAirports filter
+    // This function can be used for additional search logic if needed
+    console.log("Searching for:", searchQuery)
+  }
+
   return (
     <div className="pt-10 pl-64 mx-auto">
       {/* Header */}
@@ -663,15 +669,18 @@ export default function AirportManagement() {
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <div className="relative mb-6 flex">
         <Input
           type="text"
           placeholder="Tìm kiếm theo mã, tên, thành phố hoặc quốc gia..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-12"
+          onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+          className="h-12 rounded-r-none border-r-0 focus:border-r-0"
         />
+        <Button onClick={handleSearch} className="h-12 px-4 bg-blue-600 hover:bg-blue-700 rounded-l-none">
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Table */}
