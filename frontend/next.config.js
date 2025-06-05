@@ -1,5 +1,7 @@
 module.exports = {
   images: {
+    domains: ['localhost'],
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
