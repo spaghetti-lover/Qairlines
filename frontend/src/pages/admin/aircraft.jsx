@@ -7,10 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const hardcodedAircrafts = [
   {
@@ -84,6 +94,8 @@ export default function AircraftManagement() {
   const [aircrafts, setAircrafts] = useState(hardcodedAircrafts)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [deleteAircraftId, setDeleteAircraftId] = useState(null)
   const [editingAircraft, setEditingAircraft] = useState(null)
   const [errors, setErrors] = useState({})
   const [newAircraft, setNewAircraft] = useState({
@@ -156,33 +168,50 @@ export default function AircraftManagement() {
       }
     }
 
-    // Validate số ghế - phải là số hợp lệ
-    if (aircraft.seats && !/^\d+$/.test(aircraft.seats.toString().trim())) {
+    // Validate số ghế - phải là số hợp lệ và lớn hơn 0
+    if (!aircraft.seats || aircraft.seats.toString().trim() === "") {
+      newErrors.seats = "Tổng số ghế là bắt buộc"
+    } else if (!/^\d+$/.test(aircraft.seats.toString().trim())) {
       newErrors.seats = "Tổng số ghế phải là số nguyên dương"
-    } else if (aircraft.seats && safeParseInt(aircraft.seats) <= 0) {
+    } else if (safeParseInt(aircraft.seats) <= 0) {
       newErrors.seats = "Tổng số ghế phải lớn hơn 0"
     } else if (safeParseInt(aircraft.seats) > 1000) {
       newErrors.seats = "Số ghế không được vượt quá 1000"
     }
 
-    if (aircraft.businessSeats && !/^\d+$/.test(aircraft.businessSeats.toString().trim())) {
+    if (!aircraft.businessSeats || aircraft.businessSeats.toString().trim() === "") {
+      newErrors.businessSeats = "Số ghế thương gia là bắt buộc"
+    } else if (!/^\d+$/.test(aircraft.businessSeats.toString().trim())) {
       newErrors.businessSeats = "Số ghế thương gia phải là số nguyên"
-    } else if (aircraft.businessSeats && safeParseInt(aircraft.businessSeats) < 0) {
+    } else if (safeParseInt(aircraft.businessSeats) < 0) {
       newErrors.businessSeats = "Số ghế thương gia không được âm"
     }
 
-    if (aircraft.economySeats && !/^\d+$/.test(aircraft.economySeats.toString().trim())) {
+    if (!aircraft.economySeats || aircraft.economySeats.toString().trim() === "") {
+      newErrors.economySeats = "Số ghế phổ thông là bắt buộc"
+    } else if (!/^\d+$/.test(aircraft.economySeats.toString().trim())) {
       newErrors.economySeats = "Số ghế phổ thông phải là số nguyên"
-    } else if (aircraft.economySeats && safeParseInt(aircraft.economySeats) < 0) {
+    } else if (safeParseInt(aircraft.economySeats) < 0) {
       newErrors.economySeats = "Số ghế phổ thông không được âm"
     }
 
-    // Validate tổng ghế = ghế thương gia + ghế phổ thông
-    if (aircraft.seats && aircraft.businessSeats && aircraft.economySeats) {
-      if (safeParseInt(aircraft.seats) !== safeParseInt(aircraft.businessSeats) + safeParseInt(aircraft.economySeats)) {
+    // Validate tổng ghế = ghế thương gia + ghế phổ thông (chỉ khi tất cả đều có giá trị hợp lệ)
+    if (
+      aircraft.seats &&
+      aircraft.businessSeats &&
+      aircraft.economySeats &&
+      !newErrors.seats &&
+      !newErrors.businessSeats &&
+      !newErrors.economySeats
+    ) {
+      const totalSeats = safeParseInt(aircraft.seats)
+      const businessSeats = safeParseInt(aircraft.businessSeats)
+      const economySeats = safeParseInt(aircraft.economySeats)
+
+      if (totalSeats !== businessSeats + economySeats) {
         newErrors.seats = "Tổng số ghế phải bằng ghế thương gia + ghế phổ thông"
-        newErrors.businessSeats = "Tổng không khớp"
-        newErrors.economySeats = "Tổng không khớp"
+        newErrors.businessSeats = "Tổng không khớp với tổng số ghế"
+        newErrors.economySeats = "Tổng không khớp với tổng số ghế"
       }
     }
 
@@ -190,11 +219,15 @@ export default function AircraftManagement() {
   }
 
   const handleInputChange = (field, value) => {
-    // Validation real-time cho các trường số
+    // Validation real-time cho các trường số - chỉ cho phép số và không cho phép số 0 ở đầu
     if (["seats", "businessSeats", "economySeats"].includes(field)) {
-      // Chỉ cho phép số
+      // Chỉ cho phép số, không cho phép ký tự khác
       if (value && !/^\d*$/.test(value)) {
         return // Không cho phép nhập ký tự không phải số
+      }
+      // Không cho phép số 0 ở đầu (trừ khi chỉ có một số 0)
+      if (value.length > 1 && value.startsWith("0")) {
+        return
       }
     }
 
@@ -202,6 +235,10 @@ export default function AircraftManagement() {
       // Chỉ cho phép số và tối đa 4 chữ số
       if (value && (!/^\d*$/.test(value) || value.length > 4)) {
         return // Không cho phép nhập
+      }
+      // Không cho phép số 0 ở đầu
+      if (value.length > 1 && value.startsWith("0")) {
+        return
       }
     }
 
@@ -212,16 +249,17 @@ export default function AircraftManagement() {
       setErrors({ ...errors, [field]: null })
     }
 
-    // Auto-calculate tổng ghế
+    // Auto-calculate tổng ghế khi thay đổi ghế thương gia hoặc phổ thông
     if (field === "businessSeats" || field === "economySeats") {
       const businessSeats = field === "businessSeats" ? safeParseInt(value) : safeParseInt(newAircraft.businessSeats)
       const economySeats = field === "economySeats" ? safeParseInt(value) : safeParseInt(newAircraft.economySeats)
 
       if (businessSeats >= 0 && economySeats >= 0) {
+        const totalCalculated = businessSeats + economySeats
         setNewAircraft((prev) => ({
           ...prev,
           [field]: value,
-          seats: (businessSeats + economySeats).toString(),
+          seats: totalCalculated > 0 ? totalCalculated.toString() : "",
         }))
       }
     }
@@ -338,8 +376,15 @@ export default function AircraftManagement() {
     })
   }
 
-  const handleDelete = (id) => {
-    setAircrafts(aircrafts.filter((aircraft) => aircraft.id !== id))
+  const confirmDelete = (id) => {
+    setDeleteAircraftId(id)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDelete = () => {
+    setAircrafts(aircrafts.filter((aircraft) => aircraft.id !== deleteAircraftId))
+    setIsDeleteDialogOpen(false)
+    setDeleteAircraftId(null)
     toast({
       title: "Thành công",
       description: "Xóa tàu bay thành công.",
@@ -409,8 +454,14 @@ export default function AircraftManagement() {
     </div>
   )
 
+  const handleSearch = () => {
+    // The search is already handled by the filteredAircrafts useMemo/filter
+    // This function can be used for additional search logic if needed
+    console.log("Searching for:", searchQuery)
+  }
+
   return (
-    <div className="p-6 max-w-7xl mx-auto min-h-screen">
+    <div className="pt-10 pl-64 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
@@ -477,7 +528,7 @@ export default function AircraftManagement() {
                 newAircraft.businessSeats,
                 (value) => handleInputChange("businessSeats", value),
                 "number",
-                false,
+                true,
                 "12",
               )}
               {renderFormField(
@@ -486,7 +537,7 @@ export default function AircraftManagement() {
                 newAircraft.economySeats,
                 (value) => handleInputChange("economySeats", value),
                 "number",
-                false,
+                true,
                 "168",
               )}
               {renderFormField(
@@ -495,7 +546,7 @@ export default function AircraftManagement() {
                 newAircraft.seats,
                 (value) => handleInputChange("seats", value),
                 "number",
-                false,
+                true,
                 "180",
               )}
               {renderFormField(
@@ -513,7 +564,7 @@ export default function AircraftManagement() {
                 ],
               )}
             </div>
-            <div className="flex justify-end gap-2 mt-4">
+            <DialogFooter className="mt-4">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -536,7 +587,7 @@ export default function AircraftManagement() {
               <Button onClick={handleAdd} className="bg-blue-600 hover:bg-blue-700">
                 Thêm Tàu Bay
               </Button>
-            </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -578,15 +629,18 @@ export default function AircraftManagement() {
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <div className="relative mb-6 flex">
         <Input
           type="text"
-          placeholder="Tìm kiếm theo mã tàu bay, loại, hãng sản xuất hoặc trạng thái..."
+          placeholder="Tìm kiếm theo mã tàu bay, loại, hãng sản xuất hoặc trạng thái"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-12"
+          onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+          className="h-12 rounded-r-none border-r-0 focus:border-r-0"
         />
+        <Button onClick={handleSearch} className="h-12 px-4 bg-blue-600 hover:bg-blue-700 rounded-l-none">
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Table */}
@@ -594,19 +648,19 @@ export default function AircraftManagement() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <div className="min-h-[400px]">
-              <Table className="w-full">
+              <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead className="text-center font-semibold w-[5%]">STT</TableHead>
-                    <TableHead className="text-center font-semibold w-[10%]">Mã Tàu Bay</TableHead>
-                    <TableHead className="text-center font-semibold w-[10%]">Loại</TableHead>
-                    <TableHead className="text-center font-semibold w-[10%]">Hãng SX</TableHead>
-                    <TableHead className="text-center font-semibold w-[8%]">Năm SX</TableHead>
-                    <TableHead className="text-center font-semibold w-[8%]">Tổng Ghế</TableHead>
-                    <TableHead className="text-center font-semibold w-[8%]">Thương Gia</TableHead>
-                    <TableHead className="text-center font-semibold w-[8%]">Phổ Thông</TableHead>
-                    <TableHead className="text-center font-semibold w-[13%]">Trạng Thái</TableHead>
-                    <TableHead className="text-center font-semibold w-[20%]">Thao Tác</TableHead>
+                    <TableHead className="text-center font-semibold">STT</TableHead>
+                    <TableHead className="text-center font-semibold">Mã Tàu Bay</TableHead>
+                    <TableHead className="text-center font-semibold">Loại</TableHead>
+                    <TableHead className="text-center font-semibold">Hãng SX</TableHead>
+                    <TableHead className="text-center font-semibold">Năm SX</TableHead>
+                    <TableHead className="text-center font-semibold">Tổng Ghế</TableHead>
+                    <TableHead className="text-center font-semibold">Thương Gia</TableHead>
+                    <TableHead className="text-center font-semibold">Phổ Thông</TableHead>
+                    <TableHead className="text-center font-semibold">Trạng Thái</TableHead>
+                    <TableHead className="text-center font-semibold">Thao Tác</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -695,7 +749,7 @@ export default function AircraftManagement() {
                                   newAircraft.businessSeats,
                                   (value) => handleInputChange("businessSeats", value),
                                   "number",
-                                  false,
+                                  true,
                                   "12",
                                 )}
                                 {renderFormField(
@@ -704,7 +758,7 @@ export default function AircraftManagement() {
                                   newAircraft.economySeats,
                                   (value) => handleInputChange("economySeats", value),
                                   "number",
-                                  false,
+                                  true,
                                   "168",
                                 )}
                                 {renderFormField(
@@ -713,7 +767,7 @@ export default function AircraftManagement() {
                                   newAircraft.seats,
                                   (value) => handleInputChange("seats", value),
                                   "number",
-                                  false,
+                                  true,
                                   "180",
                                 )}
                                 {renderFormField(
@@ -731,7 +785,7 @@ export default function AircraftManagement() {
                                   ],
                                 )}
                               </div>
-                              <div className="flex justify-end gap-2 mt-4">
+                              <DialogFooter className="mt-4">
                                 <Button
                                   variant="outline"
                                   onClick={() => {
@@ -744,13 +798,13 @@ export default function AircraftManagement() {
                                 <Button onClick={handleUpdate} className="bg-blue-600 hover:bg-blue-700">
                                   Cập Nhật
                                 </Button>
-                              </div>
+                              </DialogFooter>
                             </DialogContent>
                           </Dialog>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDelete(aircraft.id)}
+                            onClick={() => confirmDelete(aircraft.id)}
                             className="bg-red-500 hover:bg-red-600 text-white h-8 px-3"
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
@@ -784,6 +838,24 @@ export default function AircraftManagement() {
           </div>
         )}
       </div>
+
+      {/* Dialog xác nhận xóa */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa tàu bay</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa tàu bay này? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
