@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { FeaturedNewsCard, NewsCard } from '@/components/NewsCards';
-// import latestNews from '../../data/latestNews.json';
-// import featuredArticles from '../../data/featuredArticles.json';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import { useRouter } from 'next/router';
 import { toast } from '@/hooks/use-toast';
+import mockNewsDataService from '@/pages/mockNewsData';
 
 // Định nghĩa responsive
 const responsive = {
@@ -29,46 +28,36 @@ const responsive = {
 
 const NewsPage = () => {
   const router = useRouter();
-  const [featuredArticles, setFeaturedArticles] = useState([])
+  const [featuredArticles, setFeaturedArticles] = useState([]);
 
   useEffect(() => {
-    getAllNews()
-  }, [router]);
+    getAllNews();
+  }, []);
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/all`
-
     try {
-      const response = await fetch(getAllNewsApi, {
-          method: "GET",
-      })
-      if (!response.ok) {
-          throw new Error("Send request failed")
-      }
-
-      const res = await response.json()
-      setFeaturedArticles(res.map(a => {return {
-        "slug": a.newsId,
-        "image": a.image,
-        "title": a.title,
-        "description": a.description,
-        "author": a.authorId,
-        "content": a.content,
-        "date": a.createdAt.seconds ? new Date(a.arrival_time).toISOString().replace("T", " ").slice(0, -5) : a.createdAt.split("T")[0],
-        "buttonText": "Đọc thêm",
-        "authorTitle": "Nhà báo",
-        "authorImage": "/AvatarUser/no_avatar.jpg",
-      }}))
-
+      const response = await mockNewsDataService.getAllNews();
+      setFeaturedArticles(response.data.map(article => ({
+        slug: article.id,
+        image: article.image,
+        title: article.title,
+        description: article.description,
+        author: article.authorName,
+        content: article.content,
+        date: new Date(article.createdAt).toLocaleDateString('vi-VN'),
+        buttonText: "Đọc thêm",
+        authorTitle: "Nhà báo",
+        authorImage: "/AvatarUser/no_avatar.jpg",
+      })));
     } catch (error) {
-
       toast({
         title: "Lỗi",
-        description: "Đã có lỗi xảy ra khi kết nối với máy chủ, vui lòng tải lại trang hoặc đăng nhập lại",
+        description: "Không thể tải tin tức. Vui lòng thử lại sau.",
         variant: "destructive"
-      })
+      });
     }
-  }
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
       {/* Phần Bài Viết Nổi Bật */}
@@ -93,7 +82,7 @@ const NewsPage = () => {
           dotListClass="custom-dot-list-style"
           itemClass="carousel-item-padding-40-px"
         >
-          {featuredArticles.map((article, index) => (
+          {featuredArticles.slice(0, 3).map((article, index) => (
             <FeaturedNewsCard key={index} {...article} />
           ))}
         </Carousel>

@@ -1,5 +1,7 @@
 module.exports = {
   images: {
+    domains: ['localhost'],
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -11,6 +13,12 @@ module.exports = {
       {
         protocol: 'https',
         hostname: 'fastly.picsum.photos',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
       },
