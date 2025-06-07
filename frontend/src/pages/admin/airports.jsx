@@ -492,9 +492,9 @@ export default function AirportManagement() {
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-yellow-400 hover:bg-yellow-500 text-black font-medium">
               <Plus className="h-4 w-4 mr-2" />
-              Thêm Sân Bay Mới
+              SÂN BAY MỚI
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
+import aircraftsData from "@/data/aircrafts.json"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,73 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const hardcodedAircrafts = [
-  {
-    id: 1,
-    code: "VN-A321",
-    model: "A321-200",
-    manufacturer: "Airbus",
-    seats: 180,
-    businessSeats: 12,
-    economySeats: 168,
-    yearManufactured: 2018,
-    status: "Hoạt động",
-    lastMaintenance: "2024-01-15",
-    nextMaintenance: "2024-07-15",
-  },
-  {
-    id: 2,
-    code: "VN-B737",
-    model: "B737-800",
-    manufacturer: "Boeing",
-    seats: 160,
-    businessSeats: 8,
-    economySeats: 152,
-    yearManufactured: 2019,
-    status: "Hoạt động",
-    lastMaintenance: "2024-02-10",
-    nextMaintenance: "2024-08-10",
-  },
-  {
-    id: 3,
-    code: "VN-A350",
-    model: "A350-900",
-    manufacturer: "Airbus",
-    seats: 300,
-    businessSeats: 28,
-    economySeats: 272,
-    yearManufactured: 2020,
-    status: "Bảo trì",
-    lastMaintenance: "2024-03-01",
-    nextMaintenance: "2024-09-01",
-  },
-  {
-    id: 4,
-    code: "VN-B787",
-    model: "B787-9",
-    manufacturer: "Boeing",
-    seats: 280,
-    businessSeats: 24,
-    economySeats: 256,
-    yearManufactured: 2021,
-    status: "Hoạt động",
-    lastMaintenance: "2024-01-20",
-    nextMaintenance: "2024-07-20",
-  },
-  {
-    id: 5,
-    code: "VN-A319",
-    model: "A319-100",
-    manufacturer: "Airbus",
-    seats: 140,
-    businessSeats: 8,
-    economySeats: 132,
-    yearManufactured: 2017,
-    status: "Ngừng hoạt động",
-    lastMaintenance: "2023-12-05",
-    nextMaintenance: "2024-06-05",
-  },
-]
+const hardcodedAircrafts = aircraftsData
 
 export default function AircraftManagement() {
   const [aircrafts, setAircrafts] = useState(hardcodedAircrafts)
@@ -123,25 +58,25 @@ export default function AircraftManagement() {
   }
 
   const safeParseInt = (value) => {
-    const parsed = Number.parseInt(value)
+    const parsed = Number.parseInt(value.toString())
     return isNaN(parsed) ? 0 : parsed
   }
 
   const validateForm = (aircraft, isEdit = false) => {
     const newErrors = {}
 
-    // Validate mã tàu bay
+    // Validate số hiệu
     if (!aircraft.code.trim()) {
-      newErrors.code = "Mã tàu bay là bắt buộc"
-    } else if (!/^[A-Z]{2}-[A-Z0-9]{3,6}$/i.test(aircraft.code.trim())) {
-      newErrors.code = "Mã tàu bay phải có định dạng XX-XXXXX (VD: VN-A321)"
+      newErrors.code = "Số hiệu là bắt buộc"
+    } else if (!/^[A-Z]{2}[0-9]{3,6}$/i.test(aircraft.code.trim())) {
+      newErrors.code = "Số hiệu phải có định dạng VNNNN (VD: VN123)"
     } else {
-      // Kiểm tra trùng lặp mã tàu bay
+      // Kiểm tra trùng lặp số hiệu
       const existingAircraft = aircrafts.find(
         (a) => a.code.toLowerCase() === aircraft.code.trim().toLowerCase() && (!isEdit || a.id !== editingAircraft?.id),
       )
       if (existingAircraft) {
-        newErrors.code = "Mã tàu bay đã tồn tại"
+        newErrors.code = "Số hiệu đã tồn tại"
       }
     }
 
@@ -246,7 +181,7 @@ export default function AircraftManagement() {
 
     // Clear error khi user bắt đầu sửa
     if (errors[field]) {
-      setErrors({ ...errors, [field]: null })
+      setErrors({ ...errors, [field]: "" })
     }
 
     // Auto-calculate tổng ghế khi thay đổi ghế thương gia hoặc phổ thông
@@ -288,7 +223,7 @@ export default function AircraftManagement() {
       seats: safeParseInt(newAircraft.seats),
       businessSeats: safeParseInt(newAircraft.businessSeats),
       economySeats: safeParseInt(newAircraft.economySeats),
-      yearManufactured: safeParseInt(newAircraft.yearManufactured) || null,
+      yearManufactured: safeParseInt(newAircraft.yearManufactured) || new Date().getFullYear(),
       status: newAircraft.status,
       lastMaintenance: new Date().toISOString().split("T")[0],
       nextMaintenance: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
@@ -342,7 +277,7 @@ export default function AircraftManagement() {
     }
 
     const updatedAircrafts = aircrafts.map((aircraft) =>
-      aircraft.id === editingAircraft.id
+      aircraft.id === editingAircraft?.id
         ? {
             ...aircraft,
             code: newAircraft.code.trim().toUpperCase(),
@@ -351,7 +286,7 @@ export default function AircraftManagement() {
             seats: safeParseInt(newAircraft.seats),
             businessSeats: safeParseInt(newAircraft.businessSeats),
             economySeats: safeParseInt(newAircraft.economySeats),
-            yearManufactured: safeParseInt(newAircraft.yearManufactured) || null,
+            yearManufactured: safeParseInt(newAircraft.yearManufactured) || new Date().getFullYear(),
             status: newAircraft.status,
           }
         : aircraft,
@@ -455,7 +390,7 @@ export default function AircraftManagement() {
   )
 
   const handleSearch = () => {
-    // The search is already handled by the filteredAircrafts useMemo/filter
+    // The search is already handled by the filteredAircrafts filter
     // This function can be used for additional search logic if needed
     console.log("Searching for:", searchQuery)
   }
@@ -470,9 +405,9 @@ export default function AircraftManagement() {
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-yellow-400 hover:bg-yellow-500 text-black font-medium">
               <Plus className="h-4 w-4 mr-2" />
-              Thêm Tàu Bay Mới
+              TÀU BAY MỚI
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -482,12 +417,12 @@ export default function AircraftManagement() {
             <div className="grid grid-cols-2 gap-4">
               {renderFormField(
                 "code",
-                "Mã Tàu Bay",
+                "Số Hiệu",
                 newAircraft.code,
                 (value) => handleInputChange("code", value),
                 "text",
                 true,
-                "VN-A321",
+                "VN123",
               )}
               {renderFormField(
                 "model",
@@ -632,7 +567,7 @@ export default function AircraftManagement() {
       <div className="relative mb-6 flex">
         <Input
           type="text"
-          placeholder="Tìm kiếm theo mã tàu bay, loại, hãng sản xuất hoặc trạng thái"
+          placeholder="Tìm kiếm theo số hiệu, loại, hãng sản xuất hoặc trạng thái"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -652,7 +587,7 @@ export default function AircraftManagement() {
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead className="text-center font-semibold">STT</TableHead>
-                    <TableHead className="text-center font-semibold">Mã Tàu Bay</TableHead>
+                    <TableHead className="text-center font-semibold">Số Hiệu</TableHead>
                     <TableHead className="text-center font-semibold">Loại</TableHead>
                     <TableHead className="text-center font-semibold">Hãng SX</TableHead>
                     <TableHead className="text-center font-semibold">Năm SX</TableHead>
@@ -703,12 +638,12 @@ export default function AircraftManagement() {
                               <div className="grid grid-cols-2 gap-4">
                                 {renderFormField(
                                   "code",
-                                  "Mã Tàu Bay",
+                                  "Số Hiệu",
                                   newAircraft.code,
                                   (value) => handleInputChange("code", value),
                                   "text",
                                   true,
-                                  "VN-A321",
+                                  "VN123",
                                 )}
                                 {renderFormField(
                                   "model",

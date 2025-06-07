@@ -6,7 +6,7 @@ const initialMockNews = [
     id: '1',
     title: '[VN102] Chuyến bay bị delay',
     description: 'Đấm "đọc thêm" để xem chi tiết',
-    content: 'Do ảnh hưởng của thời tiết, chuyến bay mang số hiệu VN102 sẽ bị delay khoảng 2 tiếng. Hành khách vui lòng liên hệ quầy vé để biết thêm chi tiết.',
+    content: 'Do ảnh hưởng của thời tiết, chuyến bay mang số hiệu VN102 sẽ bị delay khoảng 2 tiếng. Ngành hàng không không chỉ đơn thuần là vận chuyển con người từ điểm A đến điểm B; nó còn là việc tạo ra một hành trình an toàn, hiệu quả và ngày càng thoải mái. Trong bối cảnh cạnh tranh gay gắt và kỳ vọng của hành khách ngày càng cao, các hãng hàng không liên tục đầu tư vào việc nâng cấp mọi khía cạnh của trải nghiệm bay. Từ những chiếc máy bay đầu tiên chỉ tập trung vào chức năng, đến nay, chúng ta đang chứng kiến sự bùng nổ của các tiện ích và công nghệ được thiết kế để tối ưu hóa sự hài lòng của hành khách.Hành khách vui lòng liên hệ quầy vé để biết thêm chi tiết.',
     image: '/QAirline-card.png',
     authorId: '1',
     authorName: 'John Wick',
@@ -19,7 +19,7 @@ const initialMockNews = [
     title: 'New Routes Announced',
     description: 'Giới thiệu tuyến bay mới',
     content: 'Chúng tôi rất vui mừng thông báo về việc mở rộng mạng lưới đường bay của mình với các tuyến bay mới từ Hà Nội đến Đà Nẵng và từ TP.HCM đến Nha Trang. Các chuyến bay sẽ bắt đầu hoạt động từ ngày 1 tháng 2 năm 2024.',
-    image: '/QAirline-card.png',
+    image: '/tour-2.jpg',
     authorId: '1',
     authorName: 'Nguyễn Văn A',
     createdAt: '2024-01-14T15:45:00Z',
@@ -31,7 +31,7 @@ const initialMockNews = [
     title: 'Special Discounts for Summer',
     description: 'Khuyến mãi đặc biệt mùa hè',
     content: 'Để chào mừng mùa hè, chúng tôi xin gửi đến quý khách hàng chương trình khuyến mãi đặc biệt với mức giảm giá lên đến 30% cho tất cả các chuyến bay nội địa. Chương trình áp dụng từ ngày 20 tháng 1 đến hết ngày 31 tháng 3 năm 2024.',
-    image: '/QAirline-card.png',
+    image: '/tour-3.jpg',
     authorId: '1',
     authorName: 'Nguyễn Văn A',
     createdAt: '2024-01-13T08:20:00Z',
@@ -49,6 +49,12 @@ const mockUsers = {
     email: 'admin@example.com',
     role: 'admin'
   }
+};
+
+// Hàm random hình ảnh tour
+const getRandomTourImage = () => {
+  const tourNumber = Math.floor(Math.random() * 5) + 1; // Random số từ 1-5
+  return `/tour-${tourNumber}.jpg`;
 };
 
 // Class quản lý mock data
@@ -128,7 +134,7 @@ class MockNewsDataService {
             title: newsData.title,
             description: newsData.description,
             content: newsData.content,
-            image: '/QAirline-card.png',
+            image: getRandomTourImage(), // Luôn sử dụng hình ảnh random
             authorId: newsData.authorId,
             authorName: `${currentUser.firstName} ${currentUser.lastName}`,
             createdAt: new Date().toISOString(),
@@ -164,7 +170,7 @@ class MockNewsDataService {
               title: newsData.title,
               description: newsData.description,
               content: newsData.content,
-              image: '/QAirline-card.png',
+              image: getRandomTourImage(), // Luôn sử dụng hình ảnh random
               authorId: newsData.authorId,
               authorName: `${currentUser.firstName} ${currentUser.lastName}`,
               updatedAt: new Date().toISOString()
