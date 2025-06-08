@@ -62,7 +62,7 @@ NEXT_PUBLIC_API_MAIL_URL="http://localhost:8081"
 ```
 ### Backend
 
-- B1: Chạy PostgreSQL database và Kafka (chờ chạy xong mới được chạy MAILMAIL Server)
+- B1: Chạy PostgreSQL database và Kafka (chờ chạy xong mới được chạy MAIL Server)
 ```
 cd backend
 docker-compose up
