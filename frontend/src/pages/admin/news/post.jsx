@@ -20,11 +20,11 @@ export default function NewsPostingPage() {
     title: '',
     description: '',
     content: '',
-    image: '/QAirline-card.png',
+    image: null,
     authorId: '1',
     authorName: 'Admin User'
   })
-  const [previewImage, setPreviewImage] = useState('/QAirline-card.png')
+  const [previewImage, setPreviewImage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -73,14 +73,64 @@ export default function NewsPostingPage() {
     }
   }
 
+  const handleImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  setIsLoading(true);
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+
+    const data = await response.json();
+    setFormData(prev => ({
+      ...prev,
+      image: data.url
+    }));
+    setPreviewImage(data.url);
+    
+    toast({
+      title: "Thành công",
+      description: "Tải ảnh lên thành công"
+    });
+  } catch (error) {
+    toast({
+      title: "Lỗi",
+      description: "Không thể tải ảnh lên: " + error.message,
+      variant: "destructive"
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
+      if (!formData.image) {
+        toast({
+          title: "Lỗi",
+          description: "Vui lòng tải lên một hình ảnh",
+          variant: "destructive"
+        })
+        setIsLoading(false)
+        return
+      }
+
       const submissionData = {
         ...formData,
-        image: '/QAirline-card.png' // Luôn gửi ảnh mặc định
+        image: formData.image // Use the uploaded image URL
       }
 
       if (id) {
@@ -98,7 +148,13 @@ export default function NewsPostingPage() {
       }
       router.push('/admin/news')
     } catch (error) {
-      // ...existing error handling...
+      toast({
+        title: "Lỗi",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -159,6 +215,18 @@ export default function NewsPostingPage() {
             />
           </div>
 
+          <div>
+            <Label htmlFor="image">Ảnh bài viết</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={isLoading}
+              className="mt-2"
+            />
+          </div>
+
           {/* ...existing dropzone code... */}
 
           <Button 
@@ -176,16 +244,18 @@ export default function NewsPostingPage() {
             <CardDescription>Tác giả: {formData.authorName}</CardDescription>
           </CardHeader>
           <CardContent>
-            {previewImage && (
-              <div className="mb-4">
+            {previewImage ? (
+              <div className="mt-2 relative h-48">
                 <Image
-                  src="/QAirline-card.png" 
-                  alt="News article illustration"
-                  width={400}
-                  height={200}
-                  className="rounded-lg object-cover w-full"
-                  priority 
+                  src={previewImage}
+                  alt="Preview"
+                  fill
+                  className="object-cover rounded-md"
                 />
+              </div>
+            ) : (
+              <div className="mt-2 h-48 flex items-center justify-center bg-gray-100 rounded-md">
+                <p className="text-gray-500">Chưa có ảnh</p>
               </div>
             )}
             <h2 className="text-xl font-semibold mb-2">{formData.title || 'Tiêu Đề'}</h2>

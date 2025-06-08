@@ -134,7 +134,7 @@ class MockNewsDataService {
             title: newsData.title,
             description: newsData.description,
             content: newsData.content,
-            image: getRandomTourImage(), // Luôn sử dụng hình ảnh random
+            image: newsData.image,
             authorId: newsData.authorId,
             authorName: `${currentUser.firstName} ${currentUser.lastName}`,
             createdAt: new Date().toISOString(),
@@ -170,7 +170,7 @@ class MockNewsDataService {
               title: newsData.title,
               description: newsData.description,
               content: newsData.content,
-              image: getRandomTourImage(), // Luôn sử dụng hình ảnh random
+              image: newsData.image || this.news[index].image,
               authorId: newsData.authorId,
               authorName: `${currentUser.firstName} ${currentUser.lastName}`,
               updatedAt: new Date().toISOString()
