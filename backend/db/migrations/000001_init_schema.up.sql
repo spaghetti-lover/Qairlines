@@ -178,7 +178,13 @@ VALUES
 ('VN211', 'Vietnam Airlines', 'Airbus A320', 'Ho Chi Minh City', 'Hanoi', 'Tan Son Nhat', 'Noi Bai', '2025-06-06 17:00:00', '2025-06-07 19:00:00', 1200000, 44, 6, 'On Time'),
 ('VN212', 'Vietnam Airlines', 'Boeing 787', 'SGN', 'HAN', 'Tan Son Nhat', 'Noi Bai', '2025-06-07 17:00:00', '2025-06-08 19:30:00', 1500000, 44, 6, 'On Time'),
 ('VN213', 'Vietnam Airlines', 'Boeing 787', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-07 17:00:00', '2025-06-08 19:30:00', 1500000, 44, 6, 'On Time'),
-('VN214', 'Vietnam Airlines', 'Airbus A320', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-06 17:00:00', '2025-06-07 19:00:00', 1200000, 44, 6, 'On Time');
+('VN214', 'Vietnam Airlines', 'Airbus A320', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-06 17:00:00', '2025-06-07 19:00:00', 1200000, 44, 6, 'On Time'),
+('VN215', 'Vietnam Airlines', 'Boeing 787', 'SGN', 'HAN', 'Tan Son Nhat', 'Noi Bai', '2025-06-09 17:00:00', '2025-06-09 19:30:00', 1500000, 44, 6, 'On Time'),
+('VN216', 'Vietnam Airlines', 'Boeing 787', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-09 17:00:00', '2025-06-09 19:30:00', 1500000, 44, 6, 'On Time'),
+('VN217', 'Vietnam Airlines', 'Airbus A320', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-10 17:00:00', '2025-06-10 19:00:00', 1200000, 44, 6, 'On Time'),
+('VN218', 'Vietnam Airlines', 'Boeing 787', 'SGN', 'HAN', 'Tan Son Nhat', 'Noi Bai', '2025-06-10 17:00:00', '2025-06-10 19:00:00', 1500000, 44, 6, 'On Time'),
+('VN219', 'Vietnam Airlines', 'Boeing 787', 'HAN', 'SGN', 'Noi Bai', 'Tan Son Nhat', '2025-06-08 17:00:00', '2025-06-08 19:30:00', 1500000, 44, 6, 'On Time');
+
 
 INSERT INTO Bookings (user_email, trip_type, departure_flight_id, return_flight_id, status)
 VALUES
