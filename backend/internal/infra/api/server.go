@@ -1,11 +1,10 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
@@ -19,10 +18,9 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/user"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
-	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/routes"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type Server struct {
@@ -89,76 +87,40 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
 	bookingHandler := handlers.NewBookingHandler(bookingCreateUseCase, tokenMaker, userRepo, bookingGetUseCase)
 	// Middleware
-	authMiddleware := middleware.AuthMiddleware(tokenMaker)
+	//authMiddleware := middleware.AuthMiddleware(tokenMaker)
 
-	// Use gorilla/mux for routing
-	router := mux.NewRouter()
+	// Create a new Gin router
+	router := gin.Default()
 
 	// Group all APIs under "/api"
-	apiRouter := router.PathPrefix("/api").Subrouter()
+	apiRouter := router.Group("/api")
 
 	// Health API
-	router.HandleFunc("/health", healthHandler.ServeHTTP).Methods("GET")
+	router.GET("/health", healthHandler.GetHealth)
 
 	// News API
-	apiRouter.HandleFunc("/news/all", newsHandler.GetAllNews).Methods("GET")
-	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.GetNews))).Methods("GET")
-	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.DeleteNews))).Methods("DELETE")
-	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.CreateNews))).Methods("POST")
-	apiRouter.Handle("/news", authMiddleware(http.HandlerFunc(newsHandler.UpdateNews))).Methods("PUT")
+	routes.RegisterNewsRoutes(apiRouter, newsHandler)
 
 	// Customer API
-	apiRouter.HandleFunc("/customer", customerHandler.CreateCustomerTx).Methods("POST")
-	apiRouter.Handle("/customer/{id}", authMiddleware(http.HandlerFunc(customerHandler.UpdateCustomer))).Methods("PUT")
-	apiRouter.Handle("/customer/all", authMiddleware(http.HandlerFunc(customerHandler.GetAllCustomers))).Methods("GET")
-	apiRouter.Handle("/customer/delete", authMiddleware(http.HandlerFunc(customerHandler.DeleteCustomer))).Methods("DELETE")
-	apiRouter.Handle("/customer", authMiddleware(http.HandlerFunc(customerHandler.GetCustomerDetails))).Methods("GET")
+	routes.RegisterCustomerRoutes(apiRouter, customerHandler)
 
 	// Auth API
-	apiRouter.HandleFunc("/auth/login", authHandler.Login).Methods("POST")
-	apiRouter.Handle("/customer/change-password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
-	apiRouter.Handle("/auth/{id}/password", authMiddleware(http.HandlerFunc(authHandler.ChangePassword))).Methods("PUT")
+	routes.RegisterAuthRoutes(apiRouter, authHandler)
 
 	// Admin API
-	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.GetCurrentAdmin))).Methods("GET")
-	apiRouter.HandleFunc("/admin", adminHandler.CreateAdminTx).Methods("POST")
-	apiRouter.Handle("/admin/all", authMiddleware(http.HandlerFunc(adminHandler.GetAllAdmins))).Methods("GET")
-	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.UpdateAdmin))).Methods("PUT")
-	apiRouter.Handle("/admin", authMiddleware(http.HandlerFunc(adminHandler.DeleteAdmin))).Methods("DELETE")
+	routes.RegisterAdminRoutes(apiRouter, adminHandler)
 
 	// Flight API
-	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.CreateFlight))).Methods("POST")
-	apiRouter.HandleFunc("/flight", flightHandler.GetFlight).Methods("GET")
-	apiRouter.Handle("/flight/update", authMiddleware(http.HandlerFunc(flightHandler.UpdateFlightTimes))).Methods("PUT")
-	apiRouter.Handle("/flight/all", authMiddleware(http.HandlerFunc(flightHandler.GetAllFlights))).Methods("GET")
-	apiRouter.Handle("/flight", authMiddleware(http.HandlerFunc(flightHandler.DeleteFlight))).Methods("DELETE")
-	apiRouter.HandleFunc("/flight/search", flightHandler.SearchFlights).Methods("GET")
-	apiRouter.HandleFunc("/flight/suggest", flightHandler.GetSuggestedFlights).Methods("GET")
+	routes.RegisterFlightRoutes(apiRouter, flightHandler)
 
 	// Ticket API
-	apiRouter.Handle("/ticket/list", authMiddleware(http.HandlerFunc(ticketHandler.GetTicketsByFlightID))).Methods("GET")
-	apiRouter.Handle("/ticket/cancel", authMiddleware(http.HandlerFunc(ticketHandler.CancelTicket))).Methods("PUT")
-	apiRouter.Handle("/ticket", authMiddleware(http.HandlerFunc(ticketHandler.GetTicket))).Methods("GET")
-	apiRouter.Handle("/ticket/update-seats", authMiddleware(http.HandlerFunc(ticketHandler.UpdateSeats))).Methods("PUT")
+	routes.RegisterTicketRoutes(apiRouter, ticketHandler)
 
 	// Booking API
-	apiRouter.Handle("/booking", authMiddleware(http.HandlerFunc(bookingHandler.CreateBooking))).Methods("POST")
+	routes.RegisterBookingRoutes(apiRouter, bookingHandler)
+
 	// Statistic API
-	apiRouter.HandleFunc("/statistic", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		response := map[string]interface{}{
-			"message": "Statistics retrieved successfully.",
-			"data": map[string]interface{}{
-				"flights": 120,
-				"tickets": 450,
-				"revenue": 1145430000,
-			},
-		}
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
-		}
-	}).Methods("GET")
-	apiRouter.Handle("/booking", authMiddleware(http.HandlerFunc(bookingHandler.GetBooking))).Methods("GET")
+	routes.RegisterStatisticRoutes(apiRouter)
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{

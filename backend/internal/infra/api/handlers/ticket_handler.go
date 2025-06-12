@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
@@ -28,134 +28,123 @@ func NewTicketHandler(getTicketsByFlightIDUseCase ticket.IGetTicketsByFlightIDUs
 	}
 }
 
-func (h *TicketHandler) GetTicketsByFlightID(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
+func (h *TicketHandler) GetTicketsByFlightID(c *gin.Context) {
+	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
-		http.Error(w, `{"message": "Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	// Lấy flightID từ query
-	flightIDStr := r.URL.Query().Get("flightId")
-
+	flightIDStr := c.Query("flightId")
 	if flightIDStr == "" {
-		http.Error(w, `{"message": "Flight ID is required."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Flight ID is required."})
 		return
 	}
 
 	flightID, err := strconv.ParseInt(flightIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, `{"message": "Invalid Flight ID."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid Flight ID."})
 		return
 	}
 
-	// Gọi use case
-	tickets, err := h.getTicketsByFlightIDUseCase.Execute(r.Context(), flightID)
+	tickets, err := h.getTicketsByFlightIDUseCase.Execute(c.Request.Context(), flightID)
 	if err != nil {
 		if err == adapters.ErrFlightNotFound {
-			http.Error(w, `{"message": "Flight not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Flight not found."})
 			return
 		}
-		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
-	// Tạo response
 	response := mappers.ToGetTicketsByFlightIDResponse(tickets)
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	c.JSON(http.StatusOK, response)
 }
 
-func (h *TicketHandler) GetTicket(w http.ResponseWriter, r *http.Request) {
-	ticketIDStr := r.URL.Query().Get("id")
+func (h *TicketHandler) GetTicket(c *gin.Context) {
+	ticketIDStr := c.Query("id")
 	if ticketIDStr == "" {
-		http.Error(w, `{"message": "id is required"}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 		return
 	}
+
 	ticketID, err := strconv.ParseInt(ticketIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, `{"message":"Invalid id"}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid id"})
 		return
 	}
-	ticket, err := h.getTicketUseCase.Execute(r.Context(), ticketID)
+
+	ticket, err := h.getTicketUseCase.Execute(c.Request.Context(), ticketID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrTicketNotFound) {
-			http.Error(w, "Ticket not found", http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Ticket not found"})
 			return
 		}
-		http.Error(w, "An unexpected error occurred", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred"})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Ticket retrieved successfully.",
 		"data":    ticket,
 	})
 }
 
-func (h *TicketHandler) CancelTicket(w http.ResponseWriter, r *http.Request) {
-
-	ticketIDStr := r.URL.Query().Get("id")
+func (h *TicketHandler) CancelTicket(c *gin.Context) {
+	ticketIDStr := c.Query("id")
 	if ticketIDStr == "" {
-		http.Error(w, `{"message":"id is required"}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 		return
 	}
 
 	ticketID, err := strconv.ParseInt(ticketIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, `{"message":"Invalid id"}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid id"})
 		return
 	}
 
-	ticket, err := h.cancelTicketUseCase.Execute(r.Context(), ticketID)
+	ticket, err := h.cancelTicketUseCase.Execute(c.Request.Context(), ticketID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrTicketNotFound) {
-			http.Error(w, `{"message":"Ticket not found"}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Ticket not found"})
 			return
 		}
 		if errors.Is(err, adapters.ErrTicketCannotBeCancelled) {
-			http.Error(w, `{"message":"Ticket cannot be cancelled due to its current status."}`, http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Ticket cannot be cancelled due to its current status."})
 			return
 		}
-		http.Error(w, `{"message":"An unexpected error occurred"}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred"})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Ticket cancelled successfully.",
 		"ticket":  ticket,
 	})
 }
 
-func (h *TicketHandler) UpdateSeats(w http.ResponseWriter, r *http.Request) {
+func (h *TicketHandler) UpdateSeats(c *gin.Context) {
 	var updates []dto.UpdateSeatRequest
-	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
-		http.Error(w, "Invalid seat data. Please check the input fields.", http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&updates); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid seat data. Please check the input fields."})
 		return
 	}
 
-	responses, err := h.updateSeatsUseCase.Execute(r.Context(), updates)
+	responses, err := h.updateSeatsUseCase.Execute(c.Request.Context(), updates)
 	if err != nil {
 		if errors.Is(err, adapters.ErrTicketNotFound) {
-			http.Error(w, `{"message":"One or more tickets not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "One or more tickets not found."})
 			return
 		}
 		if errors.Is(err, adapters.ErrInvalidSeat) {
-			http.Error(w, `{"message":"Invalid seat data. Please check the input fields."}`, http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid seat data. Please check the input fields."})
 			return
 		}
-		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`+err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later.", "error": err.Error()})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Seats updated successfully.",
 		"data":    mappers.ToUpdateSeatResponses(responses),
 	})

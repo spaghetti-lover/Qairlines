@@ -1,11 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type HealthHandler struct {
@@ -18,16 +17,12 @@ func NewHealthHandler(healthUseCase usecases.IHealthUseCase) *HealthHandler {
 	}
 }
 
-func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) GetHealth(c *gin.Context) {
 	health, err := h.healthUseCase.Execute()
 	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "failed to get health status", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get health status", "error": err.Error()})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(health); err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
-		return
-	}
+	c.JSON(http.StatusOK, health)
 }

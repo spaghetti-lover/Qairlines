@@ -1,19 +1,17 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/auth"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	appErrors "github.com/spaghetti-lover/qairlines/pkg/errors"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type PasswordChangeRequest struct {
@@ -33,54 +31,50 @@ func NewAuthHandler(loginUseCase auth.ILoginUseCase, changePasswordUseCase auth.
 	}
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Login(c *gin.Context) {
 	var input auth.LoginInput
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "invalid request body", err)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request body", "error": err.Error()})
 		return
 	}
 
 	if input.Email == "" || input.Password == "" {
-		http.Error(w, `{"message": "Email and password are required."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Email and password are required."})
 		return
 	}
 
-	output, err := h.loginUseCase.Execute(r.Context(), input)
+	output, err := h.loginUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
 		if appErr, ok := err.(*appErrors.AppError); ok {
-			http.Error(w, fmt.Sprintf(`{"message": "%s"}`, appErr.Message), http.StatusUnauthorized)
+			c.JSON(http.StatusUnauthorized, gin.H{"message": appErr.Message})
 			return
 		}
-		http.Error(w, `{"message": "Internal server error"}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
 		return
 	}
 
 	response := mappers.LoginOutputToResponse(*output)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	c.JSON(http.StatusOK, response)
 }
 
-// ChangePassword handles password change requests
-func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	// Lấy token payload từ context
-	authPayload, ok := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	authPayload, ok := c.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
 	if !ok || authPayload == nil {
-		http.Error(w, `{"message": "Authentication failed. Invalid token1."}`, http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
 		return
 	}
 
 	// Parse request
 	var request dto.ChangePasswordRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"message": "Invalid request format."}`, http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request format."})
 		return
 	}
 
 	// Validate request
 	if request.Email == "" || request.OldPassword == "" || request.NewPassword == "" {
-		http.Error(w, `{"message": "Email, old password, and new password are required."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Email, old password, and new password are required."})
 		return
 	}
 
@@ -88,18 +82,18 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	input := mappers.ChangePasswordRequestToInput(request)
 
 	// Call use case
-	err := h.changePasswordUseCase.Execute(r.Context(), input)
+	err := h.changePasswordUseCase.Execute(c.Request.Context(), input)
 	if err != nil {
 		switch {
 		case errors.Is(err, auth.ErrOldPasswordIncorrect):
-			http.Error(w, `{"message": "Old password is incorrect."}`, http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Old password is incorrect."})
 		case errors.Is(err, auth.ErrPasswordValidationFailed):
-			http.Error(w, `{"message": "New password does not meet the required criteria."}`, http.StatusUnprocessableEntity)
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "New password does not meet the required criteria."})
 		case errors.Is(err, auth.ErrUserNotFound):
-			http.Error(w, `{"message": "User not found with the provided email."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "User not found with the provided email."})
 		default:
 			log.Printf("Error type: %T, Error value: %v", err, err)
-			http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		}
 		return
 	}
@@ -108,8 +102,5 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	response := dto.ChangePasswordResponse{
 		Message: "Password changed successfully.",
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	c.JSON(http.StatusOK, response)
 }

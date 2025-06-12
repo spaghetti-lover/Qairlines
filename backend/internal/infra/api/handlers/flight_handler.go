@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
@@ -31,231 +31,180 @@ func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlight
 	}
 }
 
-func (h *FlightHandler) CreateFlight(w http.ResponseWriter, r *http.Request) {
+func (h *FlightHandler) CreateFlight(c *gin.Context) {
 	var req dto.CreateFlightRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, fmt.Sprintf(`{"message": "Invalid request body, %v"}`, err), http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("Invalid request body, %v", err)})
 		return
 	}
 
 	flightEntity := mappers.CreateFlightRequestToEntity(req)
-	createdFlight, err := h.createFlightUseCase.Execute(r.Context(), flightEntity)
+	createdFlight, err := h.createFlightUseCase.Execute(c.Request.Context(), flightEntity)
 	if err != nil {
-		http.Error(w, fmt.Sprintf(`{"message": "Failed to create flight, %v"}`, err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Failed to create flight, %v", err)})
 		return
 	}
 
 	response := mappers.CreateFlightEntityToResponse(createdFlight)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	c.JSON(http.StatusCreated, response)
 }
 
-func (h *FlightHandler) GetFlight(w http.ResponseWriter, r *http.Request) {
-	// Lấy ID từ query parameter
-	flightIDStr := r.URL.Query().Get("id")
+func (h *FlightHandler) GetFlight(c *gin.Context) {
+	flightIDStr := c.Query("id")
 	if flightIDStr == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Flight ID is required.",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Flight ID is required."})
 		return
 	}
 
 	flightID, err := strconv.ParseInt(flightIDStr, 10, 64)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid Flight ID.",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid Flight ID."})
 		return
 	}
 
-	// Gọi use case để lấy thông tin chuyến bay
-	flightDetails, err := h.getFlightUseCase.Execute(r.Context(), flightID)
+	flightDetails, err := h.getFlightUseCase.Execute(c.Request.Context(), flightID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrFlightNotFound) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "Flight not found.",
-			})
+			c.JSON(http.StatusNotFound, gin.H{"message": "Flight not found."})
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "An unexpected error occurred. Please try again later.",
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
-	// Trả về phản hồi thành công
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Flight details retrieved successfully.",
 		"data":    flightDetails,
 	})
 }
 
-func (h *FlightHandler) UpdateFlightTimes(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
+func (h *FlightHandler) UpdateFlightTimes(c *gin.Context) {
+	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
-		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	// Lấy flightID từ query parameter
-	flightIDStr := r.URL.Query().Get("id")
+	flightIDStr := c.Query("id")
 	if flightIDStr == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Flight ID is required."})
 		return
 	}
 
 	flightID, err := strconv.ParseInt(flightIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, `{"message":"Invalid id"}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid Flight ID."})
 		return
 	}
 
-	// Parse request body
 	var request dto.UpdateFlightTimesRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"message":"Invalid flight data. Please check the input fields."}`, http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid flight data. Please check the input fields."})
 		return
 	}
 
-	// Gọi use case để cập nhật thời gian chuyến bay
-	response, err := h.updateFlightTimesUseCase.Execute(r.Context(), flightID, request)
+	response, err := h.updateFlightTimesUseCase.Execute(c.Request.Context(), flightID, request)
 	if err != nil {
 		if errors.Is(err, adapters.ErrFlightNotFound) {
-			http.Error(w, `{"message":"Flight not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Flight not found."})
 			return
 		}
-		http.Error(w, fmt.Sprintf(`{"message":"An unexpected error occurred. Please try again later.%v"}`, err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err)})
 		return
 	}
 
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Flight updated successfully.",
 		"flight":  response,
 	})
 }
 
-func (h *FlightHandler) GetAllFlights(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
+func (h *FlightHandler) GetAllFlights(c *gin.Context) {
+	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
-		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	// Gọi use case để lấy danh sách chuyến bay
-	flights, tickets, err := h.getAllFlightsUseCase.Execute(r.Context())
+	flights, tickets, err := h.getAllFlightsUseCase.Execute(c.Request.Context())
 	if err != nil {
-		http.Error(w, "An unexpected error occurred. Please try again later, "+err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err)})
 		return
 	}
+
 	response := mappers.MapFlightsAndTicketsToResponse(flights, tickets)
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Flights retrieved successfully.",
 		"data":    response,
 	})
 }
 
-func (h *FlightHandler) DeleteFlight(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
+func (h *FlightHandler) DeleteFlight(c *gin.Context) {
+	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
-		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	// Lấy flightID từ query parameter
-	flightIDStr := r.URL.Query().Get("id")
+	flightIDStr := c.Query("id")
 	if flightIDStr == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Flight ID is required."})
 		return
 	}
 
 	flightID, err := strconv.ParseInt(flightIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid Flight ID."})
 		return
 	}
 
-	// Gọi use case để xóa chuyến bay
-	err = h.deleteFlightUseCase.Execute(r.Context(), flightID)
+	err = h.deleteFlightUseCase.Execute(c.Request.Context(), flightID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrFlightNotFound) {
-			http.Error(w, `{"message":"Flight not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Flight not found."})
 			return
 		}
-		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`+err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err)})
 		return
 	}
 
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Flight deleted successfully."}`))
+	c.JSON(http.StatusOK, gin.H{"message": "Flight deleted successfully."})
 }
 
-func (h *FlightHandler) SearchFlights(w http.ResponseWriter, r *http.Request) {
-	// Lấy query parameters
-	departureCity := r.URL.Query().Get("departureCity")
-	arrivalCity := r.URL.Query().Get("arrivalCity")
-	flightDate := r.URL.Query().Get("flightDate")
+func (h *FlightHandler) SearchFlights(c *gin.Context) {
+	departureCity := c.Query("departureCity")
+	arrivalCity := c.Query("arrivalCity")
+	flightDate := c.Query("flightDate")
 
-	// Kiểm tra các query parameters
 	if departureCity == "" || arrivalCity == "" || flightDate == "" {
-		http.Error(w, `{"message": "Invalid query parameters. Please check departureCity, arrivalCity, and flightDate."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters. Please check departureCity, arrivalCity, and flightDate."})
 		return
 	}
 
-	// Gọi use case để tìm kiếm chuyến bay
-	flights, err := h.searchFlightsUseCase.Execute(r.Context(), departureCity, arrivalCity, flightDate)
+	flights, err := h.searchFlightsUseCase.Execute(c.Request.Context(), departureCity, arrivalCity, flightDate)
 	if err != nil {
 		if errors.Is(err, adapters.ErrNoFlightsFound) {
-			http.Error(w, `{"message": "No flights found for the given criteria."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "No flights found for the given criteria."})
 			return
 		}
-		http.Error(w, fmt.Sprintf(`{"message": "An unexpected error occurred. Please try again later.%v"}`, err.Error()), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err)})
 		return
 	}
 
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Flights retrieved successfully.",
 		"data":    flights,
 	})
 }
 
-func (h *FlightHandler) GetSuggestedFlights(w http.ResponseWriter, r *http.Request) {
-	// Gọi use case để lấy danh sách chuyến bay gợi ý
-	flights, err := h.getSuggestedFlightsUseCase.Execute(r.Context())
+func (h *FlightHandler) GetSuggestedFlights(c *gin.Context) {
+	flights, err := h.getSuggestedFlightsUseCase.Execute(c.Request.Context())
 	if err != nil {
-		http.Error(w, fmt.Sprintf(`{"message": "An unexpected error occurred. %v"}`, err.Error()), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err)})
 		return
 	}
 
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Suggested flights retrieved successfully.",
 		"data":    flights,
 	})

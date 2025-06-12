@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type SendMailHandler struct {
@@ -20,17 +19,18 @@ func NewSendMailHandler(mailUseCase usecases.IMailUseCase) *SendMailHandler {
 	}
 }
 
-func (h *SendMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *SendMailHandler) SendMail(c *gin.Context) {
 	var req entities.Mail
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "failed to decode request body", err)
+	// Decode request body
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "failed to decode request body", "error": err.Error()})
 		return
 	}
 
 	// Basic validation
 	if req.To == "" || req.Subject == "" || req.Body == "" {
-		utils.WriteError(w, http.StatusBadRequest, "to, subject, and body are required fields", nil)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "to, subject, and body are required fields"})
 		return
 	}
 
@@ -40,16 +40,12 @@ func (h *SendMailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Body:    req.Body,
 	}
 
-	if err := h.mailUseCase.Execute(r.Context(), emailMessage.To, emailMessage.Subject, emailMessage.Body); err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "failed to send email", err)
+	// Execute use case
+	if err := h.mailUseCase.Execute(c.Request.Context(), emailMessage.To, emailMessage.Subject, emailMessage.Body); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to send email", "error": err.Error()})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-
-	if err := json.NewEncoder(w).Encode(emailMessage); err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "failed to encode response", err)
-		return
-	}
+	// Return response
+	c.JSON(http.StatusAccepted, emailMessage)
 }

@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
@@ -16,7 +16,6 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type CustomerHandler struct {
@@ -39,21 +38,18 @@ func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, c
 	}
 }
 
-func (h *CustomerHandler) CreateCustomerTx(w http.ResponseWriter, r *http.Request) {
-	// Decode request body
+func (h *CustomerHandler) CreateCustomerTx(c *gin.Context) {
 	var createCustomerRequest dto.CreateCustomerRequest
-	if err := json.NewDecoder(r.Body).Decode(&createCustomerRequest); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid customer data. Please check the input fields.", err)
+	if err := c.ShouldBindJSON(&createCustomerRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid customer data. Please check the input fields.", "error": err.Error()})
 		return
 	}
 
-	// Validate required fields
 	if createCustomerRequest.FirstName == "" || createCustomerRequest.LastName == "" || createCustomerRequest.Email == "" || createCustomerRequest.Password == "" {
-		utils.WriteError(w, http.StatusBadRequest, "All fields are required.", nil)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "All fields are required."})
 		return
 	}
 
-	// Map DTO to entity
 	customerParams := entities.CreateUserParams{
 		FirstName: createCustomerRequest.FirstName,
 		LastName:  createCustomerRequest.LastName,
@@ -61,43 +57,40 @@ func (h *CustomerHandler) CreateCustomerTx(w http.ResponseWriter, r *http.Reques
 		Password:  createCustomerRequest.Password,
 	}
 
-	// Execute use case to create customer
-	createdCustomer, err := h.customerCreateUseCase.Execute(r.Context(), customerParams)
-
+	createdCustomer, err := h.customerCreateUseCase.Execute(c.Request.Context(), customerParams)
 	if err != nil {
-		http.Error(w, fmt.Sprintf(`{"message": "Email được sử dụng hoặc mật khẩu không hợp lệ, %v"}`, err.Error()), http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("Email được sử dụng hoặc mật khẩu không hợp lệ, %v", err.Error())})
 		return
 	}
 
-	// Map entity to response DTO
 	response := mappers.CreateCustomerGetOutputToResponse(createdCustomer)
 	if response.User.FirstName == "" || response.User.LastName == "" || response.User.Email == "" {
-		http.Error(w, `{"message": "Failed to create customer."}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create customer."})
 		return
 	}
-	// Write response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+
+	c.JSON(http.StatusCreated, response)
 }
 
-func (h *CustomerHandler) UpdateCustomer(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+func (h *CustomerHandler) UpdateCustomer(c *gin.Context) {
+	id := c.Query("id")
 	if id == "" {
-		utils.WriteError(w, http.StatusBadRequest, "id is required", nil)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 		return
 	}
-	var customerUpdateRequest dto.CustomerUpdateRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&customerUpdateRequest); err != nil {
-		http.Error(w, `{"message": "Invalid customer data. Please check the input fields."}`, http.StatusBadRequest)
+	var customerUpdateRequest dto.CustomerUpdateRequest
+	if err := c.ShouldBindJSON(&customerUpdateRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid customer data. Please check the input fields."})
 		return
 	}
+
 	userID, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		http.Error(w, `{"message": "Invalid user ID."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid user ID."})
 		return
 	}
+
 	customer := entities.Customer{
 		UserID:               userID,
 		PhoneNumber:          customerUpdateRequest.PhoneNumber,
@@ -114,99 +107,83 @@ func (h *CustomerHandler) UpdateCustomer(w http.ResponseWriter, r *http.Request)
 		LastName:  customerUpdateRequest.LastName,
 	}
 
-	updatedCustomer, updatedUser, err := h.customerUpdateUseCase.Execute(r.Context(), userID, customer, user)
-
+	updatedCustomer, updatedUser, err := h.customerUpdateUseCase.Execute(c.Request.Context(), userID, customer, user)
 	if err != nil {
-		http.Error(w, `{"message": "Update customer failed"}`+err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Update customer failed: %v", err.Error())})
 		return
 	}
 
 	response := mappers.CustomerUpdateResponse(updatedCustomer, updatedUser)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	c.JSON(http.StatusOK, response)
 }
 
-func (h *CustomerHandler) GetAllCustomers(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
+func (h *CustomerHandler) GetAllCustomers(c *gin.Context) {
+	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
-		http.Error(w, `{"message":"Authentication failed. Admin privileges required."}`, http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	// Gọi use case để lấy danh sách khách hàng
-	customers, err := h.getAllCustomerUseCase.Execute(r.Context())
+	customers, err := h.getAllCustomerUseCase.Execute(c.Request.Context())
 	if err != nil {
-		http.Error(w, `{"message":"An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Customers retrieved successfully.",
 		"data":    customers,
 	})
 }
 
-func (h *CustomerHandler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
-	// Kiểm tra quyền admin
-	isAdmin := r.Header.Get("admin")
+func (h *CustomerHandler) DeleteCustomer(c *gin.Context) {
+	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
-		http.Error(w, "Authentication failed. Admin privileges required.", http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	// Lấy customerID từ query parameter
-	customerIDStr := r.URL.Query().Get("id")
+	customerIDStr := c.Query("id")
 	if customerIDStr == "" {
-		http.Error(w, "id is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "id is required"})
 		return
 	}
 
 	customerID, err := strconv.ParseInt(customerIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid id", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid id"})
 		return
 	}
 
-	// Gọi use case để xóa khách hàng
-	err = h.deleteCustomerUseCase.Execute(r.Context(), customerID)
+	err = h.deleteCustomerUseCase.Execute(c.Request.Context(), customerID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrCustomerNotFound) {
-			http.Error(w, `{"message":"Customer not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found."})
 			return
 		}
-		http.Error(w, "An unexpected error occurred. Please try again later.", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
-	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Customer deleted successfully."}`))
+	c.JSON(http.StatusOK, gin.H{"message": "Customer deleted successfully."})
 }
 
-func (h *CustomerHandler) GetCustomerDetails(w http.ResponseWriter, r *http.Request) {
-	payload := r.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
-	if payload == nil {
-		http.Error(w, `{"message": "Unauthorized"}`, http.StatusUnauthorized)
+func (h *CustomerHandler) GetCustomerDetails(c *gin.Context) {
+	payload, ok := c.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	if !ok || payload == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 		return
 	}
-	customerDetails, err := h.getCustomerDetailsUseCase.Execute(r.Context(), payload.UserId)
+
+	customerDetails, err := h.getCustomerDetailsUseCase.Execute(c.Request.Context(), payload.UserId)
 	if err != nil {
 		if errors.Is(err, adapters.ErrCustomerNotFound) {
-			http.Error(w, "Customer not found.", http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Customer not found."})
 			return
 		}
-		http.Error(w, fmt.Sprintf("An unexpected error occurred. %v", err.Error()), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err.Error())})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"data": customerDetails,
-	})
+
+	c.JSON(http.StatusOK, gin.H{"data": customerDetails})
 }

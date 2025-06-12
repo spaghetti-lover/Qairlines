@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/booking"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
@@ -30,90 +30,85 @@ func NewBookingHandler(createBookingUseCase booking.ICreateBookingUseCase, token
 	}
 }
 
-func (h *BookingHandler) CreateBooking(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
+func (h *BookingHandler) CreateBooking(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		fmt.Println("Authorization header is missing")
-		http.Error(w, `{"message": "Authorization header is missing"}`, http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authorization header is missing"})
 		return
 	}
 
 	const bearerPrefix = "Bearer "
 	if len(authHeader) <= len(bearerPrefix) || authHeader[:len(bearerPrefix)] != bearerPrefix {
-		fmt.Println("Invalid authorization header format")
-		http.Error(w, `{"message": "Invalid authorization header format"}`, http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid authorization header format"})
 		return
 	}
 
 	tokenStr := authHeader[len(bearerPrefix):]
 	payload, err := h.tokenMaker.VerifyToken(tokenStr, token.TokenTypeAccessToken)
 	if err != nil {
-		fmt.Printf("Token verification failed: %v\n", err)
-		http.Error(w, fmt.Sprintf(`{"message": "Unauthorized. %v"}`, err.Error()), http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": fmt.Sprintf("Unauthorized. %v", err.Error())})
 		return
 	}
 
 	userId := payload.UserId
 	// Lấy email từ UserId
-	user, err := h.userRepository.GetUser(r.Context(), userId)
-
+	user, err := h.userRepository.GetUser(c.Request.Context(), userId)
 	if err != nil {
-		http.Error(w, `{"message": "Failed to retrieve user email."}`+err.Error(), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Failed to retrieve user email. %v", err.Error())})
 		return
 	}
 
 	// Parse request body
 	var request dto.CreateBookingRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, `{"message": "Invalid booking data. Please check the input fields."}`, http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid booking data. Please check the input fields."})
 		return
 	}
+
 	// Gọi use case để tạo booking
-	bookingResponse, err := h.createBookingUseCase.Execute(r.Context(), request, user.Email)
+	bookingResponse, err := h.createBookingUseCase.Execute(c.Request.Context(), request, user.Email)
 	if err != nil {
 		if errors.Is(err, adapters.ErrFlightNotFound) {
-			http.Error(w, `{"message": "One or more flights not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "One or more flights not found."})
 			return
 		}
-		http.Error(w, fmt.Sprintf(`{"message": "An unexpected error occurred. %v"}`, err.Error()), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err.Error())})
 		return
 	}
 
 	// Trả về response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusCreated, gin.H{
 		"message": "Booking created successfully.",
 		"data":    bookingResponse,
 	})
 }
 
-func (h *BookingHandler) GetBooking(w http.ResponseWriter, r *http.Request) {
-	bookingIDStr := r.URL.Query().Get("id")
+func (h *BookingHandler) GetBooking(c *gin.Context) {
+	bookingIDStr := c.Query("id")
 	if bookingIDStr == "" {
-		http.Error(w, `{"message": "Booking ID is required."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Booking ID is required."})
 		return
 	}
+
 	bookingID, err := strconv.ParseInt(bookingIDStr, 10, 64)
 	if err != nil {
-		http.Error(w, `{"message": "Invalid booking ID."}`, http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid booking ID."})
 		return
 	}
-	booking, departureTickets, returnTickets, err := h.getBookingUseCase.Execute(r.Context(), bookingID)
+
+	booking, departureTickets, returnTickets, err := h.getBookingUseCase.Execute(c.Request.Context(), bookingID)
 	if err != nil {
 		if errors.Is(err, adapters.ErrBookingNotFound) {
-			http.Error(w, `{"message": "Booking not found."}`, http.StatusNotFound)
+			c.JSON(http.StatusNotFound, gin.H{"message": "Booking not found."})
 			return
 		}
-		http.Error(w, `{"message": "An unexpected error occurred. Please try again later."}`, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
 	response := mappers.ToGetBookingResponse(booking, departureTickets, returnTickets)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Booking details retrieved successfully.",
 		"data":    response,
 	})

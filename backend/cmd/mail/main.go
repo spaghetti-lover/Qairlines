@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
 	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
@@ -58,14 +59,14 @@ func main() {
 	mailUseCase := usecases.NewMailUseCase(mailRepo)
 	mailHandler := handlers.NewSendMailHandler(mailUseCase)
 
-	mux := http.NewServeMux()
-	mux.Handle("/send-mail", mailHandler)
+	router := gin.Default()
+	router.POST("/send-mail", mailHandler.SendMail)
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-	}).Handler(mux)
+	}).Handler(router)
 	server := &http.Server{
 		Addr:    config.MailServer,
 		Handler: corsHandler,
