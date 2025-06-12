@@ -51,6 +51,8 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	routes.RegisterBookingRoutes(apiRouter, container.BookingHandler)
 	// Statistic API
 	routes.RegisterStatisticRoutes(apiRouter)
+	// View Static File
+	router.StaticFS("/images", gin.Dir("./uploads", false))
 
 	// Wrap router with CORS middleware
 	corsHandler := cors.New(cors.Options{

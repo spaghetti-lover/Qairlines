@@ -41,7 +41,6 @@ func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsReque
 		Title:       req.Title,
 		Description: req.Description,
 		Content:     req.Content,
-		Image:       req.Image,
 		AuthorID:    authorID,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),

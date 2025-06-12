@@ -13,11 +13,10 @@ type NewsResponse struct {
 }
 
 type CreateNewsRequest struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Content     string `json:"content"`
-	Image       string `json:"news-image"`
-	AuthorID    string `json:"authorId"`
+	Title       string `form:"title" binding:"required"`
+	Description string `form:"description" binding:"required"`
+	Content     string `form:"content" binding:"required"`
+	AuthorID    string `form:"authorId" binding:"required"`
 }
 
 type CreateNewsResponse struct {

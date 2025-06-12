@@ -2,14 +2,20 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
+	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
 type NewsHandler struct {
@@ -74,6 +80,12 @@ func (h *NewsHandler) DeleteNews(c *gin.Context) {
 }
 
 func (h *NewsHandler) CreateNews(c *gin.Context) {
+	config, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config:", err)
+	}
+
+	var publicURL = fmt.Sprintf("http://localhost%s/images/", config.ServerAddressPort)
 	isAdmin := c.GetHeader("admin")
 	if isAdmin != "true" {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
@@ -81,22 +93,63 @@ func (h *NewsHandler) CreateNews(c *gin.Context) {
 	}
 
 	var req dto.CreateNewsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid news data. Please check the input fields."})
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid news data. Please check the input fields." + err.Error()})
 		return
 	}
 
-	new, err := h.createNewsUseCase.Execute(c.Request.Context(), req)
+	image, err := c.FormFile("news-image")
 	if err != nil {
-		if errors.Is(err, news.ErrInvalidNewsData) {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid news data. Please check the input fields."})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Image file is required."})
+		return
+	}
+
+	// Yêu cầu giới hạn file nhỏ hơn 5MB
+	// 1 << 20 = 1 * 2^20 = 1 * 1048576 = 1MB
+	// 5 << 20 = 5 * 2^20 = 5 * 1048576 = 5MB
+	if image.Size > 5<<20 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File too large (5 MB)"})
+		return
+	}
+
+	// Tạo thư mục uploads nếu chưa tồn tại
+	uploadsDir := "./uploads"
+	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
+		err = os.MkdirAll(uploadsDir, os.ModePerm)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create uploads directory."})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+	}
+
+	// Lưu file vào thư mục uploads
+	filename, err := utils.ValidateAndSaveFile(image, "./uploads")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Image file is required"})
+		return
+	}
+	dst := filepath.Join(uploadsDir, filename)
+	if err := c.SaveUploadedFile(image, dst); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to save image file."})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "News post created successfully.", "data": new})
+	publicImageURL := publicURL + filename
+	// new, err := h.createNewsUseCase.Execute(c.Request.Context(), req)
+	// if err != nil {
+	// 	if errors.Is(err, news.ErrInvalidNewsData) {
+	// 		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid news data. Please check the input fields."})
+	// 		return
+	// 	}
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+	// 	return
+	// }
+
+	// c.JSON(http.StatusCreated, gin.H{"message": "News post created successfully.", "data": new})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "News post created successfully.",
+		"data":    dto.CreateNewsResponse{Title: req.Title, Description: req.Description, Content: req.Content, Image: publicImageURL, AuthorID: req.AuthorID},
+	})
 }
 
 // func (h *NewsHandler) UpdateNews(c *gin.Context) {
