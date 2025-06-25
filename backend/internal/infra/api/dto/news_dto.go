@@ -19,6 +19,14 @@ type CreateNewsRequest struct {
 	AuthorID    string `form:"authorId" binding:"required"`
 }
 
+type CreateNewsToDBRequest struct {
+	Title       string `form:"title" binding:"required"`
+	Description string `form:"description" binding:"required"`
+	Content     string `form:"content" binding:"required"`
+	AuthorID    string `form:"authorId" binding:"required"`
+	Image       string `form:"news-image" binding:"required"`
+}
+
 type CreateNewsResponse struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`

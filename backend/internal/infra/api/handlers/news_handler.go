@@ -135,20 +135,16 @@ func (h *NewsHandler) CreateNews(c *gin.Context) {
 	}
 
 	publicImageURL := publicURL + filename
-	// new, err := h.createNewsUseCase.Execute(c.Request.Context(), req)
-	// if err != nil {
-	// 	if errors.Is(err, news.ErrInvalidNewsData) {
-	// 		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid news data. Please check the input fields."})
-	// 		return
-	// 	}
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
-	// 	return
-	// }
 
-	// c.JSON(http.StatusCreated, gin.H{"message": "News post created successfully.", "data": new})
+	createNews := dto.CreateNewsToDBRequest{Title: req.Title, Description: req.Description, Content: req.Content, Image: publicImageURL, AuthorID: req.AuthorID}
+	news, err := h.createNewsUseCase.Execute(c, createNews)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to create news." + err.Error()})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "News post created successfully.",
-		"data":    dto.CreateNewsResponse{Title: req.Title, Description: req.Description, Content: req.Content, Image: publicImageURL, AuthorID: req.AuthorID},
+		"data":    news,
 	})
 }
 

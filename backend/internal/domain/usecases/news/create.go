@@ -12,7 +12,7 @@ import (
 )
 
 type ICreateNewsUseCase interface {
-	Execute(ctx context.Context, req dto.CreateNewsRequest) (*dto.CreateNewsResponse, error)
+	Execute(ctx context.Context, req dto.CreateNewsToDBRequest) (*dto.CreateNewsResponse, error)
 }
 
 type CreateNewsUseCase struct {
@@ -25,7 +25,7 @@ func NewCreateNewsUseCase(newsRepository adapters.INewsRepository) ICreateNewsUs
 	}
 }
 
-func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsRequest) (*dto.CreateNewsResponse, error) {
+func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsToDBRequest) (*dto.CreateNewsResponse, error) {
 	// Validate input
 	if req.Title == "" || req.Description == "" || req.Content == "" || req.AuthorID == "" {
 		return nil, ErrInvalidNewsData
@@ -42,6 +42,7 @@ func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsReque
 		Description: req.Description,
 		Content:     req.Content,
 		AuthorID:    authorID,
+		Image:       req.Image,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
