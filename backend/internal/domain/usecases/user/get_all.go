@@ -9,7 +9,7 @@ package user
 
 // // UserGetAllUseCase is a use case for getting all users.
 // type IUserGetAllUseCase interface {
-// 	Execute(ctx context.Context) ([]entities.User, error)
+// 	Execute(ctxtx context.Context) ([]entities.User, error)
 // }
 
 // // UserGetAllUseCase is a use case for getting all users.
@@ -23,7 +23,7 @@ package user
 // 	}
 // }
 
-// func (r *UserGetAllUseCase) Execute(ctx context.Context) ([]entities.User, error) {
+// func (r *UserGetAllUseCase) Execute(ctxtx context.Context) ([]entities.User, error) {
 // 	users, err := r.userRepository.GetAllUser(ctx)
 // 	if err != nil {
 // 		return []entities.User{}, err

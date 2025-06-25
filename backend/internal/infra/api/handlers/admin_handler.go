@@ -40,41 +40,41 @@ func NewAdminHandler(
 	}
 }
 
-func (h *AdminHandler) CreateAdminTx(c *gin.Context) {
+func (h *AdminHandler) CreateAdminTx(ctx *gin.Context) {
 	// Kiểm tra header "admin"
-	if c.GetHeader("admin") != "true" {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
+	if ctx.GetHeader("admin") != "true" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
 	// Decode request body
 	var createAdminRequest dto.CreateAdminRequest
-	if err := c.ShouldBindJSON(&createAdminRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid admin data. Please check the input fields."})
+	if err := ctx.ShouldBindJSON(&createAdminRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid admin data. Please check the input fields."})
 		return
 	}
 
 	// Validate required fields
 	if createAdminRequest.FirstName == "" || createAdminRequest.LastName == "" || createAdminRequest.Email == "" || createAdminRequest.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "All fields are required."})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "All fields are required."})
 		return
 	}
 
 	hashedPassword, err := utils.HashPassword(createAdminRequest.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Failed to hash password, %v", err.Error())})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("Failed to hash password, %v", err.Error())})
 		return
 	}
 
 	// Execute use case to create admin
-	createdAdmin, err := h.adminCreateUseCase.Execute(c.Request.Context(), entities.CreateUserParams{
+	createdAdmin, err := h.adminCreateUseCase.Execute(ctx.Request.Context(), entities.CreateUserParams{
 		FirstName: createAdminRequest.FirstName,
 		LastName:  createAdminRequest.LastName,
 		Email:     createAdminRequest.Email,
 		Password:  hashedPassword,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -82,21 +82,21 @@ func (h *AdminHandler) CreateAdminTx(c *gin.Context) {
 	response := mappers.CreateAdminGetOutputToResponse(createdAdmin)
 
 	// Write response
-	c.JSON(http.StatusCreated, response)
+	ctx.JSON(http.StatusCreated, response)
 }
 
-func (h *AdminHandler) GetAllAdmins(c *gin.Context) {
+func (h *AdminHandler) GetAllAdmins(ctx *gin.Context) {
 	// Kiểm tra quyền admin
-	isAdmin := c.GetHeader("admin")
+	isAdmin := ctx.GetHeader("admin")
 	if isAdmin != "true" {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
 	// Lấy danh sách admin
-	admins, err := h.getAllAdminsUseCase.Execute(c.Request.Context())
+	admins, err := h.getAllAdminsUseCase.Execute(ctx.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
@@ -107,32 +107,32 @@ func (h *AdminHandler) GetAllAdmins(c *gin.Context) {
 	}
 
 	// Trả về response
-	c.JSON(http.StatusOK, response)
+	ctx.JSON(http.StatusOK, response)
 }
 
-func (h *AdminHandler) GetCurrentAdmin(c *gin.Context) {
+func (h *AdminHandler) GetCurrentAdmin(ctx *gin.Context) {
 	// Kiểm tra quyền admin
-	isAdmin := c.GetHeader("admin")
+	isAdmin := ctx.GetHeader("admin")
 	if isAdmin != "true" {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
 	// Lấy payload từ context với key đúng
-	authPayload, ok := c.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	authPayload, ok := ctx.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
 	if !ok || authPayload == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
 		return
 	}
 
 	// Gọi use case để lấy thông tin admin hiện tại
-	currentAdmin, err := h.getCurrentAdminUseCase.Execute(c.Request.Context(), authPayload.UserId)
+	currentAdmin, err := h.getCurrentAdminUseCase.Execute(ctx.Request.Context(), authPayload.UserId)
 	if err != nil {
 		if errors.Is(err, adapters.ErrAdminNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Admin not found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"message": "Admin not found."})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
@@ -140,21 +140,21 @@ func (h *AdminHandler) GetCurrentAdmin(c *gin.Context) {
 	response := mappers.CurrentAdminEntityToResponse(currentAdmin)
 
 	// Trả về response
-	c.JSON(http.StatusOK, response)
+	ctx.JSON(http.StatusOK, response)
 }
 
-func (h *AdminHandler) UpdateAdmin(c *gin.Context) {
+func (h *AdminHandler) UpdateAdmin(ctx *gin.Context) {
 	// Kiểm tra quyền admin
-	isAdmin := c.GetHeader("admin")
+	isAdmin := ctx.GetHeader("admin")
 	if isAdmin != "true" {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
 	// Lấy payload từ context với key đúng
-	authPayload, ok := c.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	authPayload, ok := ctx.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
 	if !ok || authPayload == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
 		return
 	}
 
@@ -162,26 +162,26 @@ func (h *AdminHandler) UpdateAdmin(c *gin.Context) {
 
 	// Parse request body
 	var updateRequest dto.AdminUpdateRequest
-	if err := c.ShouldBindJSON(&updateRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid admin data. Please check the input fields."})
+	if err := ctx.ShouldBindJSON(&updateRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid admin data. Please check the input fields."})
 		return
 	}
 
 	// Validate request
 	if updateRequest.FirstName == "" || updateRequest.LastName == "" || updateRequest.Email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid admin data. Please check the input fields."})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid admin data. Please check the input fields."})
 		return
 	}
 
 	// Call use case
 	updateInput := mappers.AdminUpdateRequestToInput(updateRequest, userID)
-	updatedAdmin, err := h.updateAdminUseCase.Execute(c.Request.Context(), updateInput)
+	updatedAdmin, err := h.updateAdminUseCase.Execute(ctx.Request.Context(), updateInput)
 	if err != nil {
 		if errors.Is(err, adapters.ErrAdminNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Admin not found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"message": "Admin not found."})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
@@ -189,28 +189,28 @@ func (h *AdminHandler) UpdateAdmin(c *gin.Context) {
 	response := mappers.AdminUpdateEntityToResponse(updatedAdmin)
 
 	// Return response
-	c.JSON(http.StatusOK, response)
+	ctx.JSON(http.StatusOK, response)
 }
 
-func (h *AdminHandler) DeleteAdmin(c *gin.Context) {
+func (h *AdminHandler) DeleteAdmin(ctx *gin.Context) {
 	// Lấy payload từ context với key đúng
-	authPayload, ok := c.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
+	authPayload, ok := ctx.Request.Context().Value(middleware.AuthorizationPayloadKey).(*token.Payload)
 	if !ok || authPayload == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Invalid token."})
 		return
 	}
 
 	// Gọi use case để xóa admin
-	err := h.deleteAdminUseCase.Execute(c.Request.Context(), authPayload.UserId)
+	err := h.deleteAdminUseCase.Execute(ctx.Request.Context(), authPayload.UserId)
 	if err != nil {
 		if errors.Is(err, adapters.ErrAdminNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Admin not found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"message": "Admin not found."})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
 	// Trả về thành công
-	c.JSON(http.StatusOK, gin.H{"message": "Admin deleted successfully."})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Admin deleted successfully."})
 }

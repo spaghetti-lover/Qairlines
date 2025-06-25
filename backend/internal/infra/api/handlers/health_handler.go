@@ -17,12 +17,12 @@ func NewHealthHandler(healthUseCase usecases.IHealthUseCase) *HealthHandler {
 	}
 }
 
-func (h *HealthHandler) GetHealth(c *gin.Context) {
+func (h *HealthHandler) GetHealth(ctx *gin.Context) {
 	health, err := h.healthUseCase.Execute()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get health status", "error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get health status", "error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, health)
+	ctx.JSON(http.StatusOK, health)
 }

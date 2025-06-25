@@ -8,7 +8,7 @@ package user
 // )
 
 // type IUserGetUseCase interface {
-// 	Execute(ctx context.Context, userID int64) (entities.User, error)
+// 	Execute(ctxtx context.Context, userID int64) (entities.User, error)
 // }
 
 // type UserGetUseCase struct {
@@ -20,7 +20,7 @@ package user
 // 		userRepository: userRepository,
 // 	}
 // }
-// func (r *UserGetUseCase) Execute(ctx context.Context, userID int64) (entities.User, error) {
+// func (r *UserGetUseCase) Execute(ctxtx context.Context, userID int64) (entities.User, error) {
 // 	user, err := r.userRepository.GetUser(ctx, userID)
 // 	if err != nil {
 // 		return entities.User{}, err

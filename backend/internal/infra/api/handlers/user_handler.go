@@ -18,19 +18,19 @@ func NewUserHandler(userGetByEmailUseCase usecases.IUserGetByEmailUseCase) *User
 	}
 }
 
-func (h *UserHandler) GetUserByEmail(c *gin.Context) {
-	email := c.Query("email")
+func (h *UserHandler) GetUserByEmail(ctx *gin.Context) {
+	email := ctx.Query("email")
 	if email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "email is required"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "email is required"})
 		return
 	}
 
-	user, err := h.userGetByEmailUseCase.Execute(c.Request.Context(), email)
+	user, err := h.userGetByEmailUseCase.Execute(ctx.Request.Context(), email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get user by email", "error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get user by email", "error": err.Error()})
 		return
 	}
 
 	response := mappers.UserGetOutputToResponse(*user)
-	c.JSON(http.StatusOK, response)
+	ctx.JSON(http.StatusOK, response)
 }

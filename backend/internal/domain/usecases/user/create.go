@@ -12,7 +12,7 @@ package user
 // )
 
 // type IUserCreateUseCase interface {
-// 	Execute(ctx context.Context, arg entities.CreateUserParams) (entities.User, error)
+// 	Execute(ctxtx context.Context, arg entities.CreateUserParams) (entities.User, error)
 // }
 
 // type UserCreateUseCase struct {
@@ -27,7 +27,7 @@ package user
 // 	}
 // }
 
-// func (u *UserCreateUseCase) Execute(ctx context.Context, arg entities.CreateUserParams) (entities.User, error) {
+// func (u *UserCreateUseCase) Execute(ctxtx context.Context, arg entities.CreateUserParams) (entities.User, error) {
 // 	// Kiểm tra email đã tồn tại
 // 	existingUser, err := u.userRepository.GetUserByEmail(ctx, arg.Email)
 // 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
