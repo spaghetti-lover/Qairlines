@@ -3,6 +3,7 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type CustomResponseWriter struct {
@@ -31,12 +33,14 @@ func LoggerMiddleware() gin.HandlerFunc {
 		panic(err)
 	}
 
-	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		panic(err)
-	}
-
-	logger := zerolog.New(logFile).With().Timestamp().Logger()
+	logger := zerolog.New(&lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    1, // megabytes
+		MaxBackups: 3,
+		MaxAge:     5,    // days
+		Compress:   true, // disabled by default
+		LocalTime:  true,
+	}).With().Timestamp().Logger()
 
 	return func(ctx *gin.Context) {
 		start := time.Now()
@@ -62,7 +66,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 						formFiles = append(formFiles, map[string]any{
 							"field":        field,
 							"filename":     f.Filename,
-							"size":         f.Size,
+							"size":         formatFileSize(f.Size),
 							"content_type": f.Header.Get("Content-Type"),
 						})
 					}
@@ -150,5 +154,16 @@ func LoggerMiddleware() gin.HandlerFunc {
 			Interface("response_body", responseBodyParsed).
 			Int64("duration_ms", duration.Milliseconds()).
 			Msg("HTTP Request Log")
+	}
+}
+
+func formatFileSize(size int64) string {
+	switch {
+	case size >= 1<<20:
+		return fmt.Sprintf("%.2f MB", float64(size)/(1<<20))
+	case size >= 1<<10:
+		return fmt.Sprintf("%.2f KB", float64(size)/(1<<10))
+	default:
+		return fmt.Sprintf("%.2f B", float64(size))
 	}
 }
