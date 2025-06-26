@@ -30,7 +30,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Create a new Gin router
 	router := gin.Default()
-	router.Use(middleware.RateLimitingMiddleware())
+	router.Use(middleware.RateLimitingMiddleware(), middleware.LoggerMiddleware())
 
 	// Clean up clients for rate limiting
 	go middleware.CleanUpClients()

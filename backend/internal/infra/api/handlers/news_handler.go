@@ -176,7 +176,7 @@ func (h *NewsHandler) CreateNews(ctx *gin.Context) {
 // 	req := dto.UpdateNewsRequest{
 // 		Title:       c.PostForm("title"),
 // 		Description: c.PostForm("description"),
-// 		Content:     c.PostForm("content"),
+// 		Content:     c.PostForm(5 <<"content"),
 // 		AuthorID:    c.PostForm("authorId"),
 // 	}
 
