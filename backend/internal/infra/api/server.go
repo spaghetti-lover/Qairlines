@@ -9,6 +9,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/di"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/routes"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
@@ -29,6 +30,10 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Create a new Gin router
 	router := gin.Default()
+	router.Use(middleware.RateLimitingMiddleware())
+
+	// Clean up clients for rate limiting
+	go middleware.CleanUpClients()
 
 	// Group all APIs under "/api"
 	apiRouter := router.Group("/api")

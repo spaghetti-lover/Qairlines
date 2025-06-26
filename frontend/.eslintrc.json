@@ -1,4 +1,4 @@
-// .eslintrc.json
+// .eslintrctx.JSON
 {
   "extends": ["next/core-web-vitals"],
   "settings": {

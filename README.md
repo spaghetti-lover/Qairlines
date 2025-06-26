@@ -4,7 +4,7 @@
 
 ## Qairline là gì?
 
-Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến giúp người dùng dễ dàng tìm kiếm, so sánh và đặt vé máy bay. Với giao diện thân thiện và các tính năng thông minh, trang web cung cấp trải nghiệm đặt vé nhanh chóng, tiện lợi và an toàn
+Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến giúp người dùng dễ dàng tìm kiếm, so sánh và đặt vé máy bay. Với giao diện thân thiện và các tính năng thông minh, trang web cung cấp trải nghiệm đặt vé nhanh chóng, tiện lợi và an toàn. Link demo: https://www.youtube.com/watch?v=EIDpxah3Ugw&t=53s
 
 [Truy cập website chính thức tại đây](https://www.qairline.website/)
 
@@ -36,6 +36,28 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 ## Cách chạy
 
 ### Backend
+
+- Để chạy được thì thêm file app.env vào folder backend:
+  ```
+  MAIL_FROM = "phungducanh2511@gmail.com"
+  MAIL_PASSWORD = "htss ejab pbtv adas"
+  MAIL_PORT = 587
+  MAIL_HOST = "smtp.gmail.com"
+  MAIL_SERVER = "localhost:8081"
+  KAFKA_BROKER_URL = "localhost:9092"
+  KAFKA_TOPIC = "mail-topic"
+  KAFKA_GROUP_ID = "mail-group"
+  DB_DRIVER = "postgres"
+  DB_SOURCE = "postgresql://root:secret@localhost:5432/qairline?sslmode=disable"
+  SERVER_ADDRESS_PORT = :8080
+  TOKEN_SYMMETRIC_KEY=12345678901234567890123456789012
+  ACCESS_TOKEN_DURATION=7h
+  ```
+- Thêm cả file .env vào folder frontend:
+  ```
+  NEXT_PUBLIC_API_BASE_URL="http://localhost:8080"
+  NEXT_PUBLIC_API_MAIL_URL="http://localhost:8081"
+  ```
 
 - B1: Chạy PostgreSQL database
 
