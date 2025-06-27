@@ -8,8 +8,8 @@ import (
 func RegisterNewsRoutes(router *gin.RouterGroup, newsHandler *handlers.NewsHandler) {
 	new := router.Group("/news")
 	{
-		new.GET("/all", newsHandler.GetAllNews)
-		new.GET("/", newsHandler.GetNews)
+		new.GET("/", newsHandler.ListNews)
+		new.GET("/:id", newsHandler.GetNews)
 		new.DELETE("/", newsHandler.DeleteNews)
 		new.POST("/", newsHandler.CreateNews)
 	}

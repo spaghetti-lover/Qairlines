@@ -25,6 +25,6 @@ type CreateNewsParams struct {
 }
 
 type ListNewsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Page  int `form:"page" binding:"required"`
+	Limit int `form:"limit" binding:"required"`
 }

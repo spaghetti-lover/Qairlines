@@ -18,8 +18,11 @@ func NewNewsModelRepositoryPostgres(store *db.Store) adapters.INewsRepository {
 	return &NewsModelRepositoryPostgres{store: *store}
 }
 
-func (r *NewsModelRepositoryPostgres) GetAllNewsWithAuthor(ctx context.Context) ([]entities.News, error) {
-	news, err := r.store.GetAllNewsWithAuthor(ctx)
+func (r *NewsModelRepositoryPostgres) ListNews(ctx context.Context, page int, limit int) ([]entities.News, error) {
+	news, err := r.store.ListNews(ctx, db.ListNewsParams{
+		Limit:  int32(limit),
+		Offset: int32(page),
+	})
 	if err != nil {
 		return []entities.News{}, err
 	}
@@ -30,7 +33,7 @@ func (r *NewsModelRepositoryPostgres) GetAllNewsWithAuthor(ctx context.Context) 
 			Title:     n.Title,
 			Content:   n.Content.String,
 			Image:     n.Image.String,
-			Author:    n.FirstName.String + n.LastName.String,
+			AuthorID:  n.ID,
 			CreatedAt: n.CreatedAt,
 			UpdatedAt: n.UpdatedAt,
 		})

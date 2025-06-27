@@ -54,7 +54,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	customerGetUseCase := customer.NewGetCustomerDetailsUseCase(customerRepo, tokenMaker)
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
 	changePasswordUseCase := auth.NewChangePasswordUseCase(userRepo)
-	newsGetAllWithAuthorUseCase := news.NewNewsGetAllWithAuthorUseCase(newsRepo)
+	newsGetAllWithAuthorUseCase := news.NewListNewsUseCase(newsRepo)
 	newsGetUseCase := news.NewGetNewsUseCase(newsRepo)
 	newsDeleteUseCase := news.NewDeleteNewsUseCase(newsRepo)
 	newsCreateUseCase := news.NewCreateNewsUseCase(newsRepo)

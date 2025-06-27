@@ -36,7 +36,6 @@ type Querier interface {
 	GetAllAdmin(ctx context.Context) ([]int64, error)
 	GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error)
 	GetAllFlights(ctx context.Context) ([]GetAllFlightsRow, error)
-	GetAllNewsWithAuthor(ctx context.Context) ([]GetAllNewsWithAuthorRow, error)
 	GetAllSeats(ctx context.Context) ([]Seat, error)
 	GetAllTicketOwnerSnapshots(ctx context.Context) ([]Ticketownersnapshot, error)
 	GetAllUser(ctx context.Context) ([]User, error)

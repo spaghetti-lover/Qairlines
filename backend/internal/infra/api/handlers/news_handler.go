@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
+	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
@@ -19,25 +20,39 @@ import (
 )
 
 type NewsHandler struct {
-	getAllNewsWithAuthor news.IGetAllNewsWithAuthor
-	deleteNewsUseCase    news.IDeleteNewsUseCase
-	createNewsUseCase    news.ICreateNewsUseCase
-	updateNewsUseCase    news.IUpdateNewsUseCase
-	getNewsUseCase       news.IGetNewsUseCase
+	listNewsUseCase   news.IListNewsUseCase
+	deleteNewsUseCase news.IDeleteNewsUseCase
+	createNewsUseCase news.ICreateNewsUseCase
+	updateNewsUseCase news.IUpdateNewsUseCase
+	getNewsUseCase    news.IGetNewsUseCase
 }
 
-func NewNewsHandler(getAllNewsWithAuthor news.IGetAllNewsWithAuthor, deleteNewsUseCase news.IDeleteNewsUseCase, createNewsUseCase news.ICreateNewsUseCase, updateNewsUseCase news.IUpdateNewsUseCase, getNewsUseCase news.IGetNewsUseCase) *NewsHandler {
+func NewNewsHandler(listNewsUseCase news.IListNewsUseCase, deleteNewsUseCase news.IDeleteNewsUseCase, createNewsUseCase news.ICreateNewsUseCase, updateNewsUseCase news.IUpdateNewsUseCase, getNewsUseCase news.IGetNewsUseCase) *NewsHandler {
 	return &NewsHandler{
-		getAllNewsWithAuthor: getAllNewsWithAuthor,
-		deleteNewsUseCase:    deleteNewsUseCase,
-		createNewsUseCase:    createNewsUseCase,
-		updateNewsUseCase:    updateNewsUseCase,
-		getNewsUseCase:       getNewsUseCase,
+		listNewsUseCase:   listNewsUseCase,
+		deleteNewsUseCase: deleteNewsUseCase,
+		createNewsUseCase: createNewsUseCase,
+		updateNewsUseCase: updateNewsUseCase,
+		getNewsUseCase:    getNewsUseCase,
 	}
 }
 
-func (h *NewsHandler) GetAllNews(ctx *gin.Context) {
-	news, err := h.getAllNewsWithAuthor.Execute(ctx.Request.Context())
+func (h *NewsHandler) ListNews(ctx *gin.Context) {
+	var params entities.ListNewsParams
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Can not bind query param"})
+		return
+	}
+
+	if params.Page == 0 {
+		params.Page = 1
+	}
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+	log.Println(params.Page, params.Limit)
+	news, err := h.listNewsUseCase.Execute(ctx, params.Page, params.Limit)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get news", "error": err.Error()})
 		return
@@ -210,7 +225,7 @@ func (h *NewsHandler) GetNews(ctx *gin.Context) {
 		return
 	}
 
-	newsIDStr := ctx.Query("id")
+	newsIDStr := ctx.Param("id")
 	if newsIDStr == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "News ID is required."})
 		return

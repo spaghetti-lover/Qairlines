@@ -14,14 +14,14 @@ import (
 
 const createNews = `-- name: CreateNews :one
 INSERT INTO "news" (
-  title,
-  description,
-  content,
-  image,
-  author_id
-) VALUES (
-  $1, $2, $3, $4, $5
-) RETURNING id, title, description, content, image, author_id, created_at, updated_at
+    title,
+    description,
+    content,
+    image,
+    author_id
+  )
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, title, description, content, image, author_id, created_at, updated_at
 `
 
 type CreateNewsParams struct {
@@ -67,74 +67,11 @@ func (q *Queries) DeleteNews(ctx context.Context, id int64) (int64, error) {
 	return result.RowsAffected(), nil
 }
 
-const getAllNewsWithAuthor = `-- name: GetAllNewsWithAuthor :many
-SELECT id, title, description, content, image, author_id, n.created_at, n.updated_at, user_id, email, hashed_password, first_name, last_name, role, is_active, u.created_at, u.updated_at
-FROM "news" n
-JOIN "users" u ON n.author_id = u.user_id
-ORDER BY n.created_at DESC
-`
-
-type GetAllNewsWithAuthorRow struct {
-	ID             int64       `json:"id"`
-	Title          string      `json:"title"`
-	Description    pgtype.Text `json:"description"`
-	Content        pgtype.Text `json:"content"`
-	Image          pgtype.Text `json:"image"`
-	AuthorID       pgtype.Int8 `json:"author_id"`
-	CreatedAt      time.Time   `json:"created_at"`
-	UpdatedAt      time.Time   `json:"updated_at"`
-	UserID         int64       `json:"user_id"`
-	Email          string      `json:"email"`
-	HashedPassword string      `json:"hashed_password"`
-	FirstName      pgtype.Text `json:"first_name"`
-	LastName       pgtype.Text `json:"last_name"`
-	Role           UserRole    `json:"role"`
-	IsActive       bool        `json:"is_active"`
-	CreatedAt_2    time.Time   `json:"created_at_2"`
-	UpdatedAt_2    time.Time   `json:"updated_at_2"`
-}
-
-func (q *Queries) GetAllNewsWithAuthor(ctx context.Context) ([]GetAllNewsWithAuthorRow, error) {
-	rows, err := q.db.Query(ctx, getAllNewsWithAuthor)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetAllNewsWithAuthorRow{}
-	for rows.Next() {
-		var i GetAllNewsWithAuthorRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Title,
-			&i.Description,
-			&i.Content,
-			&i.Image,
-			&i.AuthorID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.UserID,
-			&i.Email,
-			&i.HashedPassword,
-			&i.FirstName,
-			&i.LastName,
-			&i.Role,
-			&i.IsActive,
-			&i.CreatedAt_2,
-			&i.UpdatedAt_2,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getNews = `-- name: GetNews :one
-SELECT id, title, description, content, image, author_id, created_at, updated_at FROM "news"
-WHERE id = $1 LIMIT 1
+SELECT id, title, description, content, image, author_id, created_at, updated_at
+FROM "news"
+WHERE id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetNews(ctx context.Context, id int64) (News, error) {
@@ -154,10 +91,10 @@ func (q *Queries) GetNews(ctx context.Context, id int64) (News, error) {
 }
 
 const listNews = `-- name: ListNews :many
-SELECT id, title, description, content, image, author_id, created_at, updated_at FROM "news"
-ORDER BY created_at DESC
-LIMIT $1
-OFFSET $2
+SELECT id, title, description, content, image, author_id, created_at, updated_at
+FROM "news"
+ORDER BY id
+LIMIT $1 OFFSET $2
 `
 
 type ListNewsParams struct {
@@ -197,7 +134,7 @@ func (q *Queries) ListNews(ctx context.Context, arg ListNewsParams) ([]News, err
 const removeAuthorFromBlogPosts = `-- name: RemoveAuthorFromBlogPosts :exec
 UPDATE "news"
 SET author_id = NULL,
-    updated_at = NOW()
+  updated_at = NOW()
 WHERE author_id = $1
 `
 
@@ -208,16 +145,14 @@ func (q *Queries) RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype
 
 const updateNews = `-- name: UpdateNews :one
 UPDATE "news"
-SET
-  title = $1,
+SET title = $1,
   description = $2,
   content = $3,
   image = $4,
   author_id = $5,
   updated_at = $6
 WHERE id = $7
-RETURNING
-  id,
+RETURNING id,
   title,
   description,
   content,
