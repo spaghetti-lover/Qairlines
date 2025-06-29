@@ -6,14 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type CustomResponseWriter struct {
@@ -26,21 +23,7 @@ func (w *CustomResponseWriter) Write(data []byte) (n int, err error) {
 	return w.ResponseWriter.Write(data)
 }
 
-func LoggerMiddleware() gin.HandlerFunc {
-	logPath := "logs/http.log"
-
-	if err := os.MkdirAll(filepath.Dir(logPath), os.ModePerm); err != nil {
-		panic(err)
-	}
-
-	logger := zerolog.New(&lumberjack.Logger{
-		Filename:   logPath,
-		MaxSize:    1, // megabytes
-		MaxBackups: 3,
-		MaxAge:     5,    // days
-		Compress:   true, // disabled by default
-		LocalTime:  true,
-	}).With().Timestamp().Logger()
+func LoggerMiddleware(httpLogger zerolog.Logger) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		start := time.Now()
@@ -79,7 +62,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 		} else {
 			bodyBytes, err := io.ReadAll(ctx.Request.Body)
 			if err != nil {
-				logger.Error().Err(err).Msg("Failed to request body")
+				httpLogger.Error().Err(err).Msg("Failed to request body")
 			}
 
 			ctx.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
@@ -129,11 +112,11 @@ func LoggerMiddleware() gin.HandlerFunc {
 			responseBodyParsed = responseBodyRaw
 		}
 
-		logEvent := logger.Info()
+		logEvent := httpLogger.Info()
 		if statusCode >= 500 {
-			logEvent = logger.Error()
+			logEvent = httpLogger.Error()
 		} else if statusCode >= 400 {
-			logEvent = logger.Warn()
+			logEvent = httpLogger.Warn()
 		}
 
 		logEvent.

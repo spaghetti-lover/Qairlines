@@ -38,10 +38,21 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
 	defer stop()
 
-	connPool, err := pgxpool.New(ctx, config.DBSource)
+	poolConfig, err := pgxpool.ParseConfig(config.DBSource)
+	if err != nil {
+		log.Fatal("cannot parse pool config:", err)
+	}
+
+	poolConfig.MaxConns = 20
+	poolConfig.MinConns = 5
+	poolConfig.MaxConnLifetime = 30 * time.Minute
+	poolConfig.HealthCheckPeriod = 1 * time.Minute
+
+	connPool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
 		log.Fatal("cannot connect to database: ", err)
 	}
+
 	defer connPool.Close()
 
 	store := db.NewStore(connPool)

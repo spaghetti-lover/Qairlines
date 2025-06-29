@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,8 @@ func NewHealthHandler(healthUseCase usecases.IHealthUseCase) *HealthHandler {
 }
 
 func (h *HealthHandler) GetHealth(ctx *gin.Context) {
+	var a []int
+	fmt.Print(a[1])
 	health, err := h.healthUseCase.Execute()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get health status", "error": err.Error()})

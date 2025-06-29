@@ -5,7 +5,13 @@ createdb:
 migrateup:
 	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/qairline?sslmode=disable" -verbose up
 migratedown:
-	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/qairline?sslmode=disable" -verbose down
+	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/qairline?sslmode=disable" -verbose down 1
+migrateforce:
+	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/qairline?sslmode=disable" -verbose force $(VERSION)
+migratedrop:
+	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/qairline?sslmode=disable" -verbose drop
+migrategoto:
+	migrate -path db/migrations -database "postgresql://root:secret@localhost:5432/qairline?sslmode=disable" -verbose goto $(VERSION)
 createmigrate:
 	@read -p "Enter migration name: " name; \
 	migrate create -ext sql -dir db/migrations -seq $$name

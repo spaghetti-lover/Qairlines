@@ -6,12 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
+	"github.com/rs/zerolog"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/di"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/routes"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Server struct {
@@ -25,12 +27,29 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
 	}
-	// Middleware
-	//authMiddleware := middleware.AuthMiddleware(tokenMaker)
+	httpLogger := zerolog.New(&lumberjack.Logger{
+		Filename:   "logs/http.log",
+		MaxSize:    1, // megabytes
+		MaxBackups: 3,
+		MaxAge:     5,    // days
+		Compress:   true, // disabled by default
+		LocalTime:  true,
+	}).With().Timestamp().Logger()
+
+	recoveryLogger := zerolog.New(&lumberjack.Logger{
+		Filename:   "logs/recovery.log",
+		MaxSize:    1, // megabytes
+		MaxBackups: 3,
+		MaxAge:     5,    // days
+		Compress:   true, // disabled by default
+		LocalTime:  true,
+	}).With().Timestamp().Logger()
 
 	// Create a new Gin router
 	router := gin.Default()
-	router.Use(middleware.RateLimitingMiddleware(), middleware.LoggerMiddleware())
+	router.Use(middleware.RateLimitingMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
+
+	gin.SetMode(gin.DebugMode)
 
 	// Clean up clients for rate limiting
 	go middleware.CleanUpClients()
