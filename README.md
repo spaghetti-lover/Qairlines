@@ -2,6 +2,9 @@
 
 ![Screenshot 2024-12-22 024054](https://github.com/user-attachments/assets/3616554a-92ff-4023-b21e-979cf2a29660)
 
+## Demo
+[![Watch the demo](https://img.youtube.com/vi/EIDpxah3Ugw/0.jpg)](https://www.youtube.com/watch?v=EIDpxah3Ugw&t=213s)
+
 ## Qairline là gì?
 
 Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến giúp người dùng dễ dàng tìm kiếm, so sánh và đặt vé máy bay. Với giao diện thân thiện và các tính năng thông minh, trang web cung cấp trải nghiệm đặt vé nhanh chóng, tiện lợi và an toàn
@@ -94,11 +97,8 @@ npm install --force
 npm run dev
 ```
 
+
 ## Screenshot
-<iframe width="560" height="315" 
-src="https://www.youtube.com/watch?v=EIDpxah3Ugw&t=213s" 
-title="YouTube video player" frameborder="0" 
-allowfullscreen></iframe>
 ![Screenshot 2024-12-22 024234](https://github.com/user-attachments/assets/03ba9f8a-cef8-4a68-bf83-3544d0e5dd5a)
 ![image](https://github.com/user-attachments/assets/41e01cc0-613c-41b9-9287-8794c354bcf0)
 ![image](https://github.com/user-attachments/assets/3fe77d89-5bf3-47db-8f0f-9881c9145c15)
