@@ -94,8 +94,11 @@ npm install --force
 npm run dev
 ```
 
-## Ảnh Chụp Màn Hình
-
+## Screenshot
+<iframe width="560" height="315" 
+src="https://www.youtube.com/watch?v=EIDpxah3Ugw&t=213s" 
+title="YouTube video player" frameborder="0" 
+allowfullscreen></iframe>
 ![Screenshot 2024-12-22 024234](https://github.com/user-attachments/assets/03ba9f8a-cef8-4a68-bf83-3544d0e5dd5a)
 ![image](https://github.com/user-attachments/assets/41e01cc0-613c-41b9-9287-8794c354bcf0)
 ![image](https://github.com/user-attachments/assets/3fe77d89-5bf3-47db-8f0f-9881c9145c15)
