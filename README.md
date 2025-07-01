@@ -39,6 +39,7 @@ Trang web đặt vé máy bay QAirline là một nền tảng trực tuyến gi�
 
 - Để chạy được thì thêm file app.env vào folder backend:
   ```
+  APP_EVN=development (or production)
   MAIL_FROM = "phungducanh2511@gmail.com"
   MAIL_PASSWORD = "htss ejab pbtv adas"
   MAIL_PORT = 587
