@@ -12,8 +12,8 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/di"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/routes"
+	"github.com/spaghetti-lover/qairlines/pkg/logger"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Server struct {
@@ -27,23 +27,9 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
 	}
-	httpLogger := zerolog.New(&lumberjack.Logger{
-		Filename:   "logs/http.log",
-		MaxSize:    1, // megabytes
-		MaxBackups: 3,
-		MaxAge:     5,    // days
-		Compress:   true, // disabled by default
-		LocalTime:  true,
-	}).With().Timestamp().Logger()
 
-	recoveryLogger := zerolog.New(&lumberjack.Logger{
-		Filename:   "logs/recovery.log",
-		MaxSize:    1, // megabytes
-		MaxBackups: 3,
-		MaxAge:     5,    // days
-		Compress:   true, // disabled by default
-		LocalTime:  true,
-	}).With().Timestamp().Logger()
+	httpLogger := newLoggerWithPath("logs/http.log", "info")
+	recoveryLogger := newLoggerWithPath("logs/recovery.log", "warning")
 
 	// Create a new Gin router
 	router := gin.Default()
@@ -97,4 +83,21 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
+}
+
+func newLoggerWithPath(path string, level string) *zerolog.Logger {
+	config, err := config.LoadConfig(".")
+	if err != nil {
+		panic(fmt.Sprintf("failed to load config: %v", err))
+	}
+	settings := logger.LoggerConfig{
+		Level:      level,
+		Filename:   path,
+		MaxSize:    1, // megabytes
+		MaxBackups: 5,
+		MaxAge:     5,    // days
+		Compress:   true, // disabled by default
+		IsDev:      config.AppEnv,
+	}
+	return logger.NewLogger(settings)
 }
