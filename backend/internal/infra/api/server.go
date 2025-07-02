@@ -30,10 +30,11 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	httpLogger := newLoggerWithPath("logs/http.log", "info")
 	recoveryLogger := newLoggerWithPath("logs/recovery.log", "warning")
+	rateLimiterLogger := newLoggerWithPath("logs/rate_limiter.log", "warning")
 
 	// Create a new Gin router
 	router := gin.Default()
-	router.Use(middleware.RateLimitingMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
+	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger), middleware.RateLimitingMiddleware(rateLimiterLogger))
 
 	gin.SetMode(gin.DebugMode)
 
