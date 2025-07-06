@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
@@ -124,7 +123,7 @@ func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, fl
 		LastName:       &ticket.OwnerData.LastName,
 		PhoneNumber:    &ticket.OwnerData.PhoneNumber,
 		Gender:         GenderType(ticket.OwnerData.Gender),
-		DateOfBirth:    pgtype.Date{Time: parseDate(ticket.OwnerData.DateOfBirth), Valid: true},
+		DateOfBirth:    parseDate(ticket.OwnerData.DateOfBirth),
 		PassportNumber: &ticket.OwnerData.IdentityCardNumber,
 		Address:        &ticket.OwnerData.Address,
 	})

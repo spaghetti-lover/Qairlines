@@ -89,7 +89,7 @@ func (r *TicketRepositoryPostgres) GetTicketByID(ctx context.Context, ticketID i
 			LastName:             *ticket.OwnerLastName,
 			PhoneNumber:          *ticket.OwnerPhoneNumber,
 			Gender:               entities.GenderType(ticket.OwnerGender.GenderType),
-			DateOfBirth:          ticket.OwnerDateOfBirth.Time,
+			DateOfBirth:          ticket.OwnerDateOfBirth,
 			PassportNumber:       *ticket.OwnerPassportNumber,
 			IdentificationNumber: *ticket.OwnerIdentificationNumber,
 			Address:              *ticket.OwnerAddress,

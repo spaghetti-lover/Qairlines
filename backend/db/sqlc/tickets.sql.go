@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const cancelTicket = `-- name: CancelTicket :one
@@ -219,7 +217,7 @@ type GetTicketByIDRow struct {
 	OwnerLastName             *string         `json:"owner_last_name"`
 	OwnerGender               NullGenderType  `json:"owner_gender"`
 	OwnerPhoneNumber          *string         `json:"owner_phone_number"`
-	OwnerDateOfBirth          pgtype.Date     `json:"owner_date_of_birth"`
+	OwnerDateOfBirth          time.Time       `json:"owner_date_of_birth"`
 	OwnerPassportNumber       *string         `json:"owner_passport_number"`
 	OwnerIdentificationNumber *string         `json:"owner_identification_number"`
 	OwnerAddress              *string         `json:"owner_address"`
@@ -365,7 +363,7 @@ type GetTicketsByFlightIDRow struct {
 	OwnerLastName             *string         `json:"owner_last_name"`
 	OwnerPhoneNumber          *string         `json:"owner_phone_number"`
 	OwnerGender               NullGenderType  `json:"owner_gender"`
-	OwnerDateOfBirth          pgtype.Date     `json:"owner_date_of_birth"`
+	OwnerDateOfBirth          time.Time       `json:"owner_date_of_birth"`
 	OwnerPassportNumber       *string         `json:"owner_passport_number"`
 	OwnerIdentificationNumber *string         `json:"owner_identification_number"`
 	OwnerAddress              *string         `json:"owner_address"`

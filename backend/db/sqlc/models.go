@@ -8,8 +8,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type BookingStatus string
@@ -330,14 +328,14 @@ type Booking struct {
 }
 
 type Customer struct {
-	UserID               int64       `json:"user_id"`
-	PhoneNumber          *string     `json:"phone_number"`
-	Gender               GenderType  `json:"gender"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       *string     `json:"passport_number"`
-	IdentificationNumber *string     `json:"identification_number"`
-	Address              *string     `json:"address"`
-	LoyaltyPoints        *int32      `json:"loyalty_points"`
+	UserID               int64      `json:"user_id"`
+	PhoneNumber          *string    `json:"phone_number"`
+	Gender               GenderType `json:"gender"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	PassportNumber       *string    `json:"passport_number"`
+	IdentificationNumber *string    `json:"identification_number"`
+	Address              *string    `json:"address"`
+	LoyaltyPoints        *int32     `json:"loyalty_points"`
 }
 
 type Flight struct {
@@ -389,26 +387,26 @@ type Ticket struct {
 }
 
 type Ticketownersnapshot struct {
-	TicketID             int64       `json:"ticket_id"`
-	FirstName            *string     `json:"first_name"`
-	LastName             *string     `json:"last_name"`
-	PhoneNumber          *string     `json:"phone_number"`
-	Gender               GenderType  `json:"gender"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       *string     `json:"passport_number"`
-	IdentificationNumber *string     `json:"identification_number"`
-	Address              *string     `json:"address"`
+	TicketID             int64      `json:"ticket_id"`
+	FirstName            *string    `json:"first_name"`
+	LastName             *string    `json:"last_name"`
+	PhoneNumber          *string    `json:"phone_number"`
+	Gender               GenderType `json:"gender"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	PassportNumber       *string    `json:"passport_number"`
+	IdentificationNumber *string    `json:"identification_number"`
+	Address              *string    `json:"address"`
 }
 
 type User struct {
-	UserID         int64              `json:"user_id"`
-	Email          string             `json:"email"`
-	HashedPassword string             `json:"hashed_password"`
-	FirstName      *string            `json:"first_name"`
-	LastName       *string            `json:"last_name"`
-	Role           UserRole           `json:"role"`
-	IsActive       bool               `json:"is_active"`
-	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
-	CreatedAt      time.Time          `json:"created_at"`
-	UpdatedAt      time.Time          `json:"updated_at"`
+	UserID         int64     `json:"user_id"`
+	Email          string    `json:"email"`
+	HashedPassword string    `json:"hashed_password"`
+	FirstName      *string   `json:"first_name"`
+	LastName       *string   `json:"last_name"`
+	Role           UserRole  `json:"role"`
+	IsActive       bool      `json:"is_active"`
+	DeletedAt      time.Time `json:"deleted_at"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }

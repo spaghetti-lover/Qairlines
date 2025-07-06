@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -59,7 +58,7 @@ func (r *CustomerRepositoryPostgres) CreateCustomer(ctx context.Context, arg ent
 		UserID:               arg.UserID,
 		PhoneNumber:          &arg.PhoneNumber,
 		Gender:               db.GenderType(arg.Gender),
-		DateOfBirth:          pgtype.Date{Time: arg.DateOfBirth, Valid: true},
+		DateOfBirth:          arg.DateOfBirth,
 		PassportNumber:       &arg.PassportNumber,
 		IdentificationNumber: &arg.IdentificationNumber,
 		Address:              &arg.Address,
@@ -72,7 +71,7 @@ func (r *CustomerRepositoryPostgres) CreateCustomer(ctx context.Context, arg ent
 		UserID:               customers.UserID,
 		PhoneNumber:          *customers.PhoneNumber,
 		Gender:               entities.CustomerGender(customers.Gender),
-		DateOfBirth:          customers.DateOfBirth.Time,
+		DateOfBirth:          customers.DateOfBirth,
 		PassportNumber:       *customers.PassportNumber,
 		IdentificationNumber: *customers.IdentificationNumber,
 		Address:              *customers.Address,
@@ -87,7 +86,7 @@ func (r *CustomerRepositoryPostgres) UpdateCustomer(ctx context.Context, custome
 		LastName:             user.LastName,
 		PhoneNumber:          customer.PhoneNumber,
 		Gender:               entities.GenderType(customer.Gender),
-		DateOfBirth:          pgtype.Date{Time: customer.DateOfBirth, Valid: true},
+		DateOfBirth:          customer.DateOfBirth,
 		Address:              customer.Address,
 		PassportNumber:       customer.PassportNumber,
 		IdentificationNumber: customer.IdentificationNumber,
@@ -135,7 +134,7 @@ func (r *CustomerRepositoryPostgres) GetAllCustomers(ctx context.Context) ([]ent
 				LastName:  *user.LastName,
 				Email:     user.Email,
 			},
-			DateOfBirth:          row.DateOfBirth.Time,
+			DateOfBirth:          row.DateOfBirth,
 			Gender:               entities.CustomerGender(row.Gender),
 			LoyaltyPoints:        *row.LoyaltyPoints,
 			Address:              *row.Address,
@@ -179,7 +178,7 @@ func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid i
 			Email:     row.Email,
 		},
 		PhoneNumber:          *row.PhoneNumber,
-		DateOfBirth:          row.DateOfBirth.Time,
+		DateOfBirth:          row.DateOfBirth,
 		Gender:               entities.CustomerGender(row.Gender),
 		IdentificationNumber: *row.IdentificationNumber,
 		PassportNumber:       *row.PassportNumber,

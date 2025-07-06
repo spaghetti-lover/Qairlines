@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
@@ -14,7 +14,7 @@ type UpdateCustomerTxParams struct {
 	PhoneNumber          string              `json:"phone_number"`
 	Gender               entities.GenderType `json:"gender"`
 	Address              string              `json:"address"`
-	DateOfBirth          pgtype.Date         `json:"date_of_birth"`
+	DateOfBirth          time.Time           `json:"date_of_birth"`
 	PassportNumber       string              `json:"passport_number"`
 	IdentificationNumber string              `json:"identification_number"`
 }

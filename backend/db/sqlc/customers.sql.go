@@ -7,8 +7,7 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createCustomer = `-- name: CreateCustomer :one
@@ -27,14 +26,14 @@ RETURNING user_id, phone_number, gender, date_of_birth, passport_number, identif
 `
 
 type CreateCustomerParams struct {
-	UserID               int64       `json:"user_id"`
-	PhoneNumber          *string     `json:"phone_number"`
-	Gender               GenderType  `json:"gender"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       *string     `json:"passport_number"`
-	IdentificationNumber *string     `json:"identification_number"`
-	Address              *string     `json:"address"`
-	LoyaltyPoints        *int32      `json:"loyalty_points"`
+	UserID               int64      `json:"user_id"`
+	PhoneNumber          *string    `json:"phone_number"`
+	Gender               GenderType `json:"gender"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	PassportNumber       *string    `json:"passport_number"`
+	IdentificationNumber *string    `json:"identification_number"`
+	Address              *string    `json:"address"`
+	LoyaltyPoints        *int32     `json:"loyalty_points"`
 }
 
 func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error) {
@@ -91,16 +90,16 @@ FROM Users u
 `
 
 type GetAllCustomersRow struct {
-	Uid                  int64       `json:"uid"`
-	FirstName            *string     `json:"first_name"`
-	LastName             *string     `json:"last_name"`
-	Email                string      `json:"email"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	Gender               GenderType  `json:"gender"`
-	LoyaltyPoints        *int32      `json:"loyalty_points"`
-	Address              *string     `json:"address"`
-	PassportNumber       *string     `json:"passport_number"`
-	IdentificationNumber *string     `json:"identification_number"`
+	Uid                  int64      `json:"uid"`
+	FirstName            *string    `json:"first_name"`
+	LastName             *string    `json:"last_name"`
+	Email                string     `json:"email"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	Gender               GenderType `json:"gender"`
+	LoyaltyPoints        *int32     `json:"loyalty_points"`
+	Address              *string    `json:"address"`
+	PassportNumber       *string    `json:"passport_number"`
+	IdentificationNumber *string    `json:"identification_number"`
 }
 
 func (q *Queries) GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error) {
@@ -199,17 +198,17 @@ WHERE u.user_id = $1
 `
 
 type GetCustomerByIDRow struct {
-	Uid                  int64       `json:"uid"`
-	FirstName            *string     `json:"first_name"`
-	LastName             *string     `json:"last_name"`
-	Email                string      `json:"email"`
-	PhoneNumber          *string     `json:"phone_number"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	Gender               GenderType  `json:"gender"`
-	IdentificationNumber *string     `json:"identification_number"`
-	PassportNumber       *string     `json:"passport_number"`
-	Address              *string     `json:"address"`
-	LoyaltyPoints        *int32      `json:"loyalty_points"`
+	Uid                  int64      `json:"uid"`
+	FirstName            *string    `json:"first_name"`
+	LastName             *string    `json:"last_name"`
+	Email                string     `json:"email"`
+	PhoneNumber          *string    `json:"phone_number"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	Gender               GenderType `json:"gender"`
+	IdentificationNumber *string    `json:"identification_number"`
+	PassportNumber       *string    `json:"passport_number"`
+	Address              *string    `json:"address"`
+	LoyaltyPoints        *int32     `json:"loyalty_points"`
 }
 
 func (q *Queries) GetCustomerByID(ctx context.Context, userID int64) (GetCustomerByIDRow, error) {
@@ -285,14 +284,14 @@ WHERE user_id = $8
 `
 
 type UpdateCustomerParams struct {
-	PhoneNumber          *string     `json:"phone_number"`
-	Gender               GenderType  `json:"gender"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       *string     `json:"passport_number"`
-	IdentificationNumber *string     `json:"identification_number"`
-	Address              *string     `json:"address"`
-	LoyaltyPoints        *int32      `json:"loyalty_points"`
-	UserID               int64       `json:"user_id"`
+	PhoneNumber          *string    `json:"phone_number"`
+	Gender               GenderType `json:"gender"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	PassportNumber       *string    `json:"passport_number"`
+	IdentificationNumber *string    `json:"identification_number"`
+	Address              *string    `json:"address"`
+	LoyaltyPoints        *int32     `json:"loyalty_points"`
+	UserID               int64      `json:"user_id"`
 }
 
 func (q *Queries) UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error {

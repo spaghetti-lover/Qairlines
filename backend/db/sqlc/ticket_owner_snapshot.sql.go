@@ -7,8 +7,7 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 const createTicketOwnerSnapshot = `-- name: CreateTicketOwnerSnapshot :one
@@ -20,15 +19,15 @@ RETURNING ticket_id, first_name, last_name, phone_number, gender, date_of_birth,
 `
 
 type CreateTicketOwnerSnapshotParams struct {
-	TicketID             int64       `json:"ticket_id"`
-	FirstName            *string     `json:"first_name"`
-	LastName             *string     `json:"last_name"`
-	PhoneNumber          *string     `json:"phone_number"`
-	Gender               GenderType  `json:"gender"`
-	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       *string     `json:"passport_number"`
-	IdentificationNumber *string     `json:"identification_number"`
-	Address              *string     `json:"address"`
+	TicketID             int64      `json:"ticket_id"`
+	FirstName            *string    `json:"first_name"`
+	LastName             *string    `json:"last_name"`
+	PhoneNumber          *string    `json:"phone_number"`
+	Gender               GenderType `json:"gender"`
+	DateOfBirth          time.Time  `json:"date_of_birth"`
+	PassportNumber       *string    `json:"passport_number"`
+	IdentificationNumber *string    `json:"identification_number"`
+	Address              *string    `json:"address"`
 }
 
 func (q *Queries) CreateTicketOwnerSnapshot(ctx context.Context, arg CreateTicketOwnerSnapshotParams) (Ticketownersnapshot, error) {
