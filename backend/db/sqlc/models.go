@@ -320,10 +320,10 @@ type Admin struct {
 
 type Booking struct {
 	BookingID         int64         `json:"booking_id"`
-	UserEmail         pgtype.Text   `json:"user_email"`
+	UserEmail         *string       `json:"user_email"`
 	TripType          TripType      `json:"trip_type"`
-	DepartureFlightID pgtype.Int8   `json:"departure_flight_id"`
-	ReturnFlightID    pgtype.Int8   `json:"return_flight_id"`
+	DepartureFlightID *int64        `json:"departure_flight_id"`
+	ReturnFlightID    *int64        `json:"return_flight_id"`
 	Status            BookingStatus `json:"status"`
 	CreatedAt         time.Time     `json:"created_at"`
 	UpdatedAt         time.Time     `json:"updated_at"`
@@ -331,26 +331,24 @@ type Booking struct {
 
 type Customer struct {
 	UserID               int64       `json:"user_id"`
-	PhoneNumber          pgtype.Text `json:"phone_number"`
+	PhoneNumber          *string     `json:"phone_number"`
 	Gender               GenderType  `json:"gender"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
-	Address              pgtype.Text `json:"address"`
-	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
-	CreatedAt            time.Time   `json:"created_at"`
-	UpdatedAt            time.Time   `json:"updated_at"`
+	PassportNumber       *string     `json:"passport_number"`
+	IdentificationNumber *string     `json:"identification_number"`
+	Address              *string     `json:"address"`
+	LoyaltyPoints        *int32      `json:"loyalty_points"`
 }
 
 type Flight struct {
 	FlightID         int64        `json:"flight_id"`
 	FlightNumber     string       `json:"flight_number"`
-	Airline          pgtype.Text  `json:"airline"`
-	AircraftType     pgtype.Text  `json:"aircraft_type"`
-	DepartureCity    pgtype.Text  `json:"departure_city"`
-	ArrivalCity      pgtype.Text  `json:"arrival_city"`
-	DepartureAirport pgtype.Text  `json:"departure_airport"`
-	ArrivalAirport   pgtype.Text  `json:"arrival_airport"`
+	Airline          *string      `json:"airline"`
+	AircraftType     *string      `json:"aircraft_type"`
+	DepartureCity    *string      `json:"departure_city"`
+	ArrivalCity      *string      `json:"arrival_city"`
+	DepartureAirport *string      `json:"departure_airport"`
+	ArrivalAirport   *string      `json:"arrival_airport"`
 	DepartureTime    time.Time    `json:"departure_time"`
 	ArrivalTime      time.Time    `json:"arrival_time"`
 	BasePrice        int32        `json:"base_price"`
@@ -360,19 +358,19 @@ type Flight struct {
 }
 
 type News struct {
-	ID          int64       `json:"id"`
-	Title       string      `json:"title"`
-	Description pgtype.Text `json:"description"`
-	Content     pgtype.Text `json:"content"`
-	Image       pgtype.Text `json:"image"`
-	AuthorID    pgtype.Int8 `json:"author_id"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Description *string   `json:"description"`
+	Content     *string   `json:"content"`
+	Image       *string   `json:"image"`
+	AuthorID    *int64    `json:"author_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type Seat struct {
 	SeatID      int64       `json:"seat_id"`
-	FlightID    pgtype.Int8 `json:"flight_id"`
+	FlightID    *int64      `json:"flight_id"`
 	SeatCode    string      `json:"seat_code"`
 	IsAvailable bool        `json:"is_available"`
 	Class       FlightClass `json:"class"`
@@ -384,7 +382,7 @@ type Ticket struct {
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
-	BookingID   pgtype.Int8  `json:"booking_id"`
+	BookingID   *int64       `json:"booking_id"`
 	FlightID    int64        `json:"flight_id"`
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`
@@ -392,24 +390,25 @@ type Ticket struct {
 
 type Ticketownersnapshot struct {
 	TicketID             int64       `json:"ticket_id"`
-	FirstName            pgtype.Text `json:"first_name"`
-	LastName             pgtype.Text `json:"last_name"`
-	PhoneNumber          pgtype.Text `json:"phone_number"`
+	FirstName            *string     `json:"first_name"`
+	LastName             *string     `json:"last_name"`
+	PhoneNumber          *string     `json:"phone_number"`
 	Gender               GenderType  `json:"gender"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
-	Address              pgtype.Text `json:"address"`
+	PassportNumber       *string     `json:"passport_number"`
+	IdentificationNumber *string     `json:"identification_number"`
+	Address              *string     `json:"address"`
 }
 
 type User struct {
-	UserID         int64       `json:"user_id"`
-	Email          string      `json:"email"`
-	HashedPassword string      `json:"hashed_password"`
-	FirstName      pgtype.Text `json:"first_name"`
-	LastName       pgtype.Text `json:"last_name"`
-	Role           UserRole    `json:"role"`
-	IsActive       bool        `json:"is_active"`
-	CreatedAt      time.Time   `json:"created_at"`
-	UpdatedAt      time.Time   `json:"updated_at"`
+	UserID         int64              `json:"user_id"`
+	Email          string             `json:"email"`
+	HashedPassword string             `json:"hashed_password"`
+	FirstName      *string            `json:"first_name"`
+	LastName       *string            `json:"last_name"`
+	Role           UserRole           `json:"role"`
+	IsActive       bool               `json:"is_active"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
+	CreatedAt      time.Time          `json:"created_at"`
+	UpdatedAt      time.Time          `json:"updated_at"`
 }

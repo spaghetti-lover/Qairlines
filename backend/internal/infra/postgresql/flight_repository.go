@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -23,11 +22,11 @@ func NewFlightRepositoryPostgres(store *db.Store) *FlightRepositoryPostgres {
 func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight entities.Flight) (entities.Flight, error) {
 	dbFlight, err := r.store.CreateFlight(ctx, db.CreateFlightParams{
 		FlightNumber:     flight.FlightNumber,
-		AircraftType:     pgtype.Text{String: flight.AircraftType, Valid: true},
-		DepartureCity:    pgtype.Text{String: flight.DepartureCity, Valid: true},
-		ArrivalCity:      pgtype.Text{String: flight.ArrivalCity, Valid: true},
-		DepartureAirport: pgtype.Text{String: flight.DepartureAirport, Valid: true},
-		ArrivalAirport:   pgtype.Text{String: flight.ArrivalAirport, Valid: true},
+		AircraftType:     &flight.AircraftType,
+		DepartureCity:    &flight.DepartureCity,
+		ArrivalCity:      &flight.ArrivalCity,
+		DepartureAirport: &flight.DepartureAirport,
+		ArrivalAirport:   &flight.ArrivalAirport,
 		DepartureTime:    flight.DepartureTime,
 		ArrivalTime:      flight.ArrivalTime,
 		BasePrice:        flight.BasePrice,
@@ -39,11 +38,11 @@ func (r *FlightRepositoryPostgres) CreateFlight(ctx context.Context, flight enti
 
 	return entities.Flight{
 		FlightNumber:     dbFlight.FlightNumber,
-		AircraftType:     dbFlight.AircraftType.String,
-		DepartureCity:    dbFlight.DepartureCity.String,
-		ArrivalCity:      dbFlight.ArrivalCity.String,
-		DepartureAirport: dbFlight.DepartureAirport.String,
-		ArrivalAirport:   dbFlight.ArrivalAirport.String,
+		AircraftType:     *dbFlight.AircraftType,
+		DepartureCity:    *dbFlight.DepartureCity,
+		ArrivalCity:      *dbFlight.ArrivalCity,
+		DepartureAirport: *dbFlight.DepartureAirport,
+		ArrivalAirport:   *dbFlight.ArrivalAirport,
 		DepartureTime:    dbFlight.DepartureTime,
 		ArrivalTime:      dbFlight.ArrivalTime,
 		BasePrice:        dbFlight.BasePrice,
@@ -59,11 +58,11 @@ func (r *FlightRepositoryPostgres) GetFlightByID(ctx context.Context, flightID i
 	return &entities.Flight{
 		FlightID:         dbFlight.FlightID,
 		FlightNumber:     dbFlight.FlightNumber,
-		AircraftType:     dbFlight.AircraftType.String,
-		DepartureCity:    dbFlight.DepartureCity.String,
-		ArrivalCity:      dbFlight.ArrivalCity.String,
-		DepartureAirport: dbFlight.DepartureAirport.String,
-		ArrivalAirport:   dbFlight.ArrivalAirport.String,
+		AircraftType:     *dbFlight.AircraftType,
+		DepartureCity:    *dbFlight.DepartureCity,
+		ArrivalCity:      *dbFlight.ArrivalCity,
+		DepartureAirport: *dbFlight.DepartureAirport,
+		ArrivalAirport:   *dbFlight.ArrivalAirport,
 		DepartureTime:    dbFlight.DepartureTime,
 		ArrivalTime:      dbFlight.ArrivalTime,
 		BasePrice:        dbFlight.BasePrice,
@@ -102,9 +101,9 @@ func (r *FlightRepositoryPostgres) GetAllFlights(ctx context.Context) ([]entitie
 		flights = append(flights, entities.Flight{
 			FlightID:      row.FlightID,
 			FlightNumber:  row.FlightNumber,
-			AircraftType:  row.AircraftType.String,
-			DepartureCity: row.DepartureCity.String,
-			ArrivalCity:   row.ArrivalCity.String,
+			AircraftType:  *row.AircraftType,
+			DepartureCity: *row.DepartureCity,
+			ArrivalCity:   *row.ArrivalCity,
 			DepartureTime: row.DepartureTime,
 			ArrivalTime:   row.ArrivalTime,
 			BasePrice:     row.BasePrice,
@@ -129,8 +128,8 @@ func (r *FlightRepositoryPostgres) DeleteFlightByID(ctx context.Context, flightI
 
 func (r *FlightRepositoryPostgres) SearchFlights(ctx context.Context, departureCity, arrivalCity string, flightDate time.Time) ([]entities.Flight, error) {
 	rows, err := r.store.SearchFlights(ctx, db.SearchFlightsParams{
-		DepartureCity: pgtype.Text{String: departureCity, Valid: true},
-		ArrivalCity:   pgtype.Text{String: arrivalCity, Valid: true},
+		DepartureCity: &departureCity,
+		ArrivalCity:   &arrivalCity,
 		DepartureTime: flightDate,
 	})
 	if err != nil {
@@ -146,14 +145,14 @@ func (r *FlightRepositoryPostgres) SearchFlights(ctx context.Context, departureC
 		flights = append(flights, entities.Flight{
 			FlightID:         row.FlightID,
 			FlightNumber:     row.FlightNumber,
-			Airline:          row.Airline.String,
-			DepartureCity:    row.DepartureCity.String,
-			ArrivalCity:      row.ArrivalCity.String,
+			Airline:          *row.Airline,
+			DepartureCity:    *row.DepartureCity,
+			ArrivalCity:      *row.ArrivalCity,
 			DepartureTime:    row.DepartureTime,
 			ArrivalTime:      row.ArrivalTime,
-			DepartureAirport: row.DepartureAirport.String,
-			ArrivalAirport:   row.ArrivalAirport.String,
-			AircraftType:     row.AircraftType.String,
+			DepartureAirport: *row.DepartureAirport,
+			ArrivalAirport:   *row.ArrivalAirport,
+			AircraftType:     *row.AircraftType,
 			BasePrice:        row.BasePrice,
 		})
 	}
@@ -176,14 +175,14 @@ func (r *FlightRepositoryPostgres) GetSuggestedFlights(ctx context.Context) ([]e
 		flights = append(flights, entities.Flight{
 			FlightID:         row.FlightID,
 			FlightNumber:     row.FlightNumber,
-			Airline:          row.Airline.String,
-			DepartureCity:    row.DepartureCity.String,
-			ArrivalCity:      row.ArrivalCity.String,
+			Airline:          *row.Airline,
+			DepartureCity:    *row.DepartureCity,
+			ArrivalCity:      *row.ArrivalCity,
 			DepartureTime:    row.DepartureTime,
 			ArrivalTime:      row.ArrivalTime,
-			DepartureAirport: row.DepartureAirport.String,
-			ArrivalAirport:   row.ArrivalAirport.String,
-			AircraftType:     row.AircraftType.String,
+			DepartureAirport: *row.DepartureAirport,
+			ArrivalAirport:   *row.ArrivalAirport,
+			AircraftType:     *row.AircraftType,
 			BasePrice:        row.BasePrice,
 		})
 	}

@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -20,15 +18,15 @@ INSERT INTO users (
   role
 ) VALUES (
   $1, $2, $3, $4, $5
-) RETURNING user_id, email, hashed_password, first_name, last_name, role, is_active, created_at, updated_at
+) RETURNING user_id, email, hashed_password, first_name, last_name, role, is_active, deleted_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Email          string      `json:"email"`
-	HashedPassword string      `json:"hashed_password"`
-	FirstName      pgtype.Text `json:"first_name"`
-	LastName       pgtype.Text `json:"last_name"`
-	Role           UserRole    `json:"role"`
+	Email          string   `json:"email"`
+	HashedPassword string   `json:"hashed_password"`
+	FirstName      *string  `json:"first_name"`
+	LastName       *string  `json:"last_name"`
+	Role           UserRole `json:"role"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -48,6 +46,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.LastName,
 		&i.Role,
 		&i.IsActive,
+		&i.DeletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -77,7 +76,7 @@ func (q *Queries) DeleteUser(ctx context.Context, userID int64) error {
 }
 
 const getAllUser = `-- name: GetAllUser :many
-SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, created_at, updated_at FROM users
+SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, deleted_at, created_at, updated_at FROM users
 `
 
 func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
@@ -97,6 +96,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 			&i.LastName,
 			&i.Role,
 			&i.IsActive,
+			&i.DeletedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -111,7 +111,7 @@ func (q *Queries) GetAllUser(ctx context.Context) ([]User, error) {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, created_at, updated_at
+SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, deleted_at, created_at, updated_at
 FROM users
 WHERE user_id = $1
 `
@@ -127,6 +127,7 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 		&i.LastName,
 		&i.Role,
 		&i.IsActive,
+		&i.DeletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -134,7 +135,7 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, created_at, updated_at
+SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, deleted_at, created_at, updated_at
 FROM users
 WHERE email = $1
 `
@@ -150,6 +151,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.LastName,
 		&i.Role,
 		&i.IsActive,
+		&i.DeletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -157,7 +159,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, created_at, updated_at
+SELECT user_id, email, hashed_password, first_name, last_name, role, is_active, deleted_at, created_at, updated_at
 FROM users
 ORDER BY user_id
 LIMIT $1
@@ -186,6 +188,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.LastName,
 			&i.Role,
 			&i.IsActive,
+			&i.DeletedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -208,9 +211,9 @@ WHERE user_id = $1
 `
 
 type UpdateUserParams struct {
-	UserID    int64       `json:"user_id"`
-	FirstName pgtype.Text `json:"first_name"`
-	LastName  pgtype.Text `json:"last_name"`
+	UserID    int64   `json:"user_id"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {

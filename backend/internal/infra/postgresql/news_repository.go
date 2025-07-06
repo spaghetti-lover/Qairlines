@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -31,8 +30,8 @@ func (r *NewsModelRepositoryPostgres) ListNews(ctx context.Context, page int, li
 		newsList = append(newsList, entities.News{
 			ID:        n.ID,
 			Title:     n.Title,
-			Content:   n.Content.String,
-			Image:     n.Image.String,
+			Content:   *n.Content,
+			Image:     *n.Image,
 			AuthorID:  n.ID,
 			CreatedAt: n.CreatedAt,
 			UpdatedAt: n.UpdatedAt,
@@ -58,10 +57,10 @@ func (r *NewsModelRepositoryPostgres) DeleteNewsByID(ctx context.Context, newsID
 func (r *NewsModelRepositoryPostgres) CreateNews(ctx context.Context, news *entities.News) (*entities.News, error) {
 	newsModel := db.CreateNewsParams{
 		Title:       news.Title,
-		Description: pgtype.Text{String: news.Description, Valid: true},
-		Content:     pgtype.Text{String: news.Content, Valid: true},
-		Image:       pgtype.Text{String: news.Image, Valid: true},
-		AuthorID:    pgtype.Int8{Int64: news.AuthorID, Valid: true},
+		Description: &news.Description,
+		Content:     &news.Content,
+		Image:       &news.Image,
+		AuthorID:    &news.AuthorID,
 	}
 
 	createdNews, err := r.store.CreateNews(ctx, newsModel)
@@ -72,10 +71,10 @@ func (r *NewsModelRepositoryPostgres) CreateNews(ctx context.Context, news *enti
 	return &entities.News{
 		ID:          createdNews.ID,
 		Title:       createdNews.Title,
-		Description: createdNews.Description.String,
-		Content:     createdNews.Content.String,
-		Image:       createdNews.Image.String,
-		AuthorID:    createdNews.AuthorID.Int64,
+		Description: *createdNews.Description,
+		Content:     *createdNews.Content,
+		Image:       *createdNews.Image,
+		AuthorID:    *createdNews.AuthorID,
 		CreatedAt:   createdNews.CreatedAt,
 		UpdatedAt:   createdNews.UpdatedAt,
 	}, nil
@@ -85,10 +84,10 @@ func (r *NewsModelRepositoryPostgres) UpdateNews(ctx context.Context, news *enti
 	newsModel := db.UpdateNewsParams{
 		ID:          news.ID,
 		Title:       news.Title,
-		Description: pgtype.Text{String: news.Description, Valid: true},
-		Content:     pgtype.Text{String: news.Content, Valid: true},
-		Image:       pgtype.Text{String: news.Image, Valid: true},
-		AuthorID:    pgtype.Int8{Int64: news.AuthorID, Valid: true},
+		Description: &news.Description,
+		Content:     &news.Content,
+		Image:       &news.Image,
+		AuthorID:    &news.AuthorID,
 	}
 
 	updatedNews, err := r.store.UpdateNews(ctx, newsModel)
@@ -99,10 +98,10 @@ func (r *NewsModelRepositoryPostgres) UpdateNews(ctx context.Context, news *enti
 	return &entities.News{
 		ID:          updatedNews.ID,
 		Title:       updatedNews.Title,
-		Description: updatedNews.Description.String,
-		Content:     updatedNews.Content.String,
-		Image:       updatedNews.Image.String,
-		AuthorID:    updatedNews.AuthorID.Int64,
+		Description: *updatedNews.Description,
+		Content:     *updatedNews.Content,
+		Image:       *updatedNews.Image,
+		AuthorID:    *updatedNews.AuthorID,
 		CreatedAt:   updatedNews.CreatedAt,
 		UpdatedAt:   updatedNews.UpdatedAt,
 	}, nil
@@ -117,10 +116,10 @@ func (r *NewsModelRepositoryPostgres) GetNews(ctx context.Context, newsID int64)
 	return entities.News{
 		ID:          news.ID,
 		Title:       news.Title,
-		Description: news.Description.String,
-		Content:     news.Content.String,
-		Image:       news.Image.String,
-		AuthorID:    news.AuthorID.Int64,
+		Description: *news.Description,
+		Content:     *news.Content,
+		Image:       *news.Image,
+		AuthorID:    *news.AuthorID,
 		CreatedAt:   news.CreatedAt,
 		UpdatedAt:   news.UpdatedAt,
 	}, nil

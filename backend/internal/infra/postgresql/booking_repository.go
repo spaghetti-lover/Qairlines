@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -100,7 +99,7 @@ func (r *BookingRepositoryPostgres) GetBookingByID(ctx context.Context, bookingI
 
 	// Lấy danh sách vé cho chuyến bay đi
 	departureTickets, err := r.store.GetTicketsByBookingIDAndType(ctx, db.GetTicketsByBookingIDAndTypeParams{
-		BookingID: pgtype.Int8{Int64: booking.BookingID, Valid: true},
+		BookingID: &booking.BookingID,
 		Column2:   "departure",
 	})
 	if err != nil {
@@ -109,7 +108,7 @@ func (r *BookingRepositoryPostgres) GetBookingByID(ctx context.Context, bookingI
 
 	// Lấy danh sách vé cho chuyến bay về
 	returnTickets, err := r.store.GetTicketsByBookingIDAndType(ctx, db.GetTicketsByBookingIDAndTypeParams{
-		BookingID: pgtype.Int8{Int64: booking.BookingID, Valid: true},
+		BookingID: &booking.BookingID,
 		Column2:   "return",
 	})
 	if err != nil {
@@ -118,10 +117,10 @@ func (r *BookingRepositoryPostgres) GetBookingByID(ctx context.Context, bookingI
 
 	return entities.Booking{
 		BookingID:         booking.BookingID,
-		UserEmail:         booking.UserEmail.String,
+		UserEmail:         *booking.UserEmail,
 		TripType:          entities.TripType(booking.TripType),
-		DepartureFlightID: booking.DepartureFlightID.Int64,
-		ReturnFlightID:    &booking.ReturnFlightID.Int64,
+		DepartureFlightID: *booking.DepartureFlightID,
+		ReturnFlightID:    booking.ReturnFlightID,
 		CreatedAt:         booking.CreatedAt,
 		UpdatedAt:         booking.UpdatedAt,
 		Status:            entities.BookingStatus(booking.Status),
@@ -137,7 +136,7 @@ func mapDBTicketsToEntitiesTickets(dbTickets []db.Ticket) []entities.Ticket {
 			FlightClass: entities.FlightClass(dbTicket.FlightClass),
 			Price:       dbTicket.Price,
 			Status:      entities.TicketStatus(dbTicket.Status),
-			BookingID:   dbTicket.BookingID.Int64,
+			BookingID:   *dbTicket.BookingID,
 			FlightID:    dbTicket.FlightID,
 			CreatedAt:   dbTicket.CreatedAt,
 			UpdatedAt:   dbTicket.UpdatedAt,

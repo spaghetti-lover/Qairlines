@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
@@ -33,8 +32,8 @@ func (r *UserRepositoryPostgres) GetAllUser(ctx context.Context) ([]entities.Use
 	for i, user := range users {
 		usersList[i] = entities.User{
 			UserID:    user.UserID,
-			FirstName: user.FirstName.String,
-			LastName:  user.LastName.String,
+			FirstName: *user.FirstName,
+			LastName:  *user.LastName,
 			HashedPwd: user.HashedPassword,
 			Role:      entities.UserRole(user.Role),
 		}
@@ -50,8 +49,8 @@ func (r *UserRepositoryPostgres) GetUser(ctx context.Context, userID int64) (ent
 
 	return entities.User{
 		UserID:    user.UserID,
-		FirstName: user.FirstName.String,
-		LastName:  user.LastName.String,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
 		HashedPwd: user.HashedPassword,
 		Role:      entities.UserRole(user.Role),
 		Email:     user.Email,
@@ -97,8 +96,8 @@ func (r *UserRepositoryPostgres) GetUserByEmail(ctx context.Context, email strin
 	}
 	return &entities.User{
 		UserID:    user.UserID,
-		FirstName: user.FirstName.String,
-		LastName:  user.LastName.String,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
 		Email:     user.Email,
 		HashedPwd: user.HashedPassword,
 		Role:      entities.UserRole(user.Role),
@@ -121,8 +120,8 @@ func (r *UserRepositoryPostgres) UpdatePassword(ctx context.Context, email strin
 func (r *UserRepositoryPostgres) UpdateUser(ctx context.Context, arg entities.UpdateUserParams) (entities.User, error) {
 	err := r.store.UpdateUser(ctx, db.UpdateUserParams{
 		UserID:    arg.UserID,
-		FirstName: pgtype.Text{String: arg.FirstName, Valid: true},
-		LastName:  pgtype.Text{String: arg.LastName, Valid: true},
+		FirstName: &arg.FirstName,
+		LastName:  &arg.LastName,
 	})
 	if err != nil {
 		return entities.User{}, err

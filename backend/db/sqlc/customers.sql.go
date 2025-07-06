@@ -7,35 +7,34 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createCustomer = `-- name: CreateCustomer :one
 INSERT INTO customers (
-  user_id,
-  phone_number,
-  gender,
-  date_of_birth,
-  passport_number,
-  identification_number,
-  address,
-  loyalty_points
-) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points, created_at, updated_at
+    user_id,
+    phone_number,
+    gender,
+    date_of_birth,
+    passport_number,
+    identification_number,
+    address,
+    loyalty_points
+  )
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points
 `
 
 type CreateCustomerParams struct {
 	UserID               int64       `json:"user_id"`
-	PhoneNumber          pgtype.Text `json:"phone_number"`
+	PhoneNumber          *string     `json:"phone_number"`
 	Gender               GenderType  `json:"gender"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
-	Address              pgtype.Text `json:"address"`
-	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
+	PassportNumber       *string     `json:"passport_number"`
+	IdentificationNumber *string     `json:"identification_number"`
+	Address              *string     `json:"address"`
+	LoyaltyPoints        *int32      `json:"loyalty_points"`
 }
 
 func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error) {
@@ -59,8 +58,6 @@ func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) 
 		&i.IdentificationNumber,
 		&i.Address,
 		&i.LoyaltyPoints,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -79,34 +76,31 @@ func (q *Queries) DeleteCustomerByID(ctx context.Context, userID int64) (int64, 
 }
 
 const getAllCustomers = `-- name: GetAllCustomers :many
-SELECT
-    u.user_id AS uid,
-    u.first_name,
-    u.last_name,
-    u.email,
-    c.date_of_birth,
-    c.gender,
-    c.loyalty_points,
-    c.created_at,
-    c.address,
-    c.passport_number,
-    c.identification_number
+SELECT u.user_id AS uid,
+  u.first_name,
+  u.last_name,
+  u.email,
+  c.date_of_birth,
+  c.gender,
+  c.loyalty_points,
+  c.address,
+  c.passport_number,
+  c.identification_number
 FROM Users u
-JOIN Customers c ON u.user_id = c.user_id
+  JOIN Customers c ON u.user_id = c.user_id
 `
 
 type GetAllCustomersRow struct {
 	Uid                  int64       `json:"uid"`
-	FirstName            pgtype.Text `json:"first_name"`
-	LastName             pgtype.Text `json:"last_name"`
+	FirstName            *string     `json:"first_name"`
+	LastName             *string     `json:"last_name"`
 	Email                string      `json:"email"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
 	Gender               GenderType  `json:"gender"`
-	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
-	CreatedAt            time.Time   `json:"created_at"`
-	Address              pgtype.Text `json:"address"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
+	LoyaltyPoints        *int32      `json:"loyalty_points"`
+	Address              *string     `json:"address"`
+	PassportNumber       *string     `json:"passport_number"`
+	IdentificationNumber *string     `json:"identification_number"`
 }
 
 func (q *Queries) GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error) {
@@ -126,7 +120,6 @@ func (q *Queries) GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, er
 			&i.DateOfBirth,
 			&i.Gender,
 			&i.LoyaltyPoints,
-			&i.CreatedAt,
 			&i.Address,
 			&i.PassportNumber,
 			&i.IdentificationNumber,
@@ -142,8 +135,10 @@ func (q *Queries) GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, er
 }
 
 const getCustomer = `-- name: GetCustomer :one
-SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points, created_at, updated_at FROM customers
-WHERE user_id = $1 LIMIT 1
+SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points
+FROM customers
+WHERE user_id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetCustomer(ctx context.Context, userID int64) (Customer, error) {
@@ -158,16 +153,16 @@ func (q *Queries) GetCustomer(ctx context.Context, userID int64) (Customer, erro
 		&i.IdentificationNumber,
 		&i.Address,
 		&i.LoyaltyPoints,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getCustomerByEmail = `-- name: GetCustomerByEmail :one
-SELECT c.user_id, c.phone_number, c.gender, c.date_of_birth, c.passport_number, c.identification_number, c.address, c.loyalty_points, c.created_at, c.updated_at FROM customers c
-JOIN users u ON c.user_id = u.user_id
-WHERE u.email = $1 LIMIT 1
+SELECT c.user_id, c.phone_number, c.gender, c.date_of_birth, c.passport_number, c.identification_number, c.address, c.loyalty_points
+FROM customers c
+  JOIN users u ON c.user_id = u.user_id
+WHERE u.email = $1
+LIMIT 1
 `
 
 func (q *Queries) GetCustomerByEmail(ctx context.Context, email string) (Customer, error) {
@@ -182,46 +177,39 @@ func (q *Queries) GetCustomerByEmail(ctx context.Context, email string) (Custome
 		&i.IdentificationNumber,
 		&i.Address,
 		&i.LoyaltyPoints,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getCustomerByID = `-- name: GetCustomerByID :one
-SELECT
-    u.user_id AS uid,
-    u.first_name,
-    u.last_name,
-    u.email,
-    c.phone_number,
-    c.date_of_birth,
-    c.gender,
-    c.identification_number,
-    c.passport_number,
-    c.address,
-    c.loyalty_points,
-    c.created_at,
-    c.updated_at
+SELECT u.user_id AS uid,
+  u.first_name,
+  u.last_name,
+  u.email,
+  c.phone_number,
+  c.date_of_birth,
+  c.gender,
+  c.identification_number,
+  c.passport_number,
+  c.address,
+  c.loyalty_points
 FROM Users u
-JOIN Customers c ON u.user_id = c.user_id
+  JOIN Customers c ON u.user_id = c.user_id
 WHERE u.user_id = $1
 `
 
 type GetCustomerByIDRow struct {
 	Uid                  int64       `json:"uid"`
-	FirstName            pgtype.Text `json:"first_name"`
-	LastName             pgtype.Text `json:"last_name"`
+	FirstName            *string     `json:"first_name"`
+	LastName             *string     `json:"last_name"`
 	Email                string      `json:"email"`
-	PhoneNumber          pgtype.Text `json:"phone_number"`
+	PhoneNumber          *string     `json:"phone_number"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
 	Gender               GenderType  `json:"gender"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	Address              pgtype.Text `json:"address"`
-	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
-	CreatedAt            time.Time   `json:"created_at"`
-	UpdatedAt            time.Time   `json:"updated_at"`
+	IdentificationNumber *string     `json:"identification_number"`
+	PassportNumber       *string     `json:"passport_number"`
+	Address              *string     `json:"address"`
+	LoyaltyPoints        *int32      `json:"loyalty_points"`
 }
 
 func (q *Queries) GetCustomerByID(ctx context.Context, userID int64) (GetCustomerByIDRow, error) {
@@ -239,17 +227,15 @@ func (q *Queries) GetCustomerByID(ctx context.Context, userID int64) (GetCustome
 		&i.PassportNumber,
 		&i.Address,
 		&i.LoyaltyPoints,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listCustomers = `-- name: ListCustomers :many
-SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points, created_at, updated_at FROM customers
+SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points
+FROM customers
 ORDER BY user_id
-LIMIT $1
-OFFSET $2
+LIMIT $1 OFFSET $2
 `
 
 type ListCustomersParams struct {
@@ -275,8 +261,6 @@ func (q *Queries) ListCustomers(ctx context.Context, arg ListCustomersParams) ([
 			&i.IdentificationNumber,
 			&i.Address,
 			&i.LoyaltyPoints,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -290,26 +274,24 @@ func (q *Queries) ListCustomers(ctx context.Context, arg ListCustomersParams) ([
 
 const updateCustomer = `-- name: UpdateCustomer :exec
 UPDATE customers
-SET
-  phone_number = $1,
+SET phone_number = $1,
   gender = $2,
   date_of_birth = $3,
   passport_number = $4,
   identification_number = $5,
   address = $6,
-  loyalty_points = $7,
-  updated_at = NOW()
+  loyalty_points = $7
 WHERE user_id = $8
 `
 
 type UpdateCustomerParams struct {
-	PhoneNumber          pgtype.Text `json:"phone_number"`
+	PhoneNumber          *string     `json:"phone_number"`
 	Gender               GenderType  `json:"gender"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
-	Address              pgtype.Text `json:"address"`
-	LoyaltyPoints        pgtype.Int4 `json:"loyalty_points"`
+	PassportNumber       *string     `json:"passport_number"`
+	IdentificationNumber *string     `json:"identification_number"`
+	Address              *string     `json:"address"`
+	LoyaltyPoints        *int32      `json:"loyalty_points"`
 	UserID               int64       `json:"user_id"`
 }
 

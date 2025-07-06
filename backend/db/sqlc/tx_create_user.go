@@ -23,14 +23,15 @@ func (store *SQLStore) CreateCustomerTx(ctx context.Context, arg CreateUserParam
 		if err != nil {
 			return err
 		}
+		emptyStr := ""
 		_, err = q.CreateCustomer(ctx, CreateCustomerParams{
 			UserID:               user.UserID,
-			PhoneNumber:          pgtype.Text{String: "", Valid: false},
+			PhoneNumber:          &emptyStr,
 			Gender:               "Other",
 			DateOfBirth:          pgtype.Date{Time: time.Time{}, Valid: false},
-			PassportNumber:       pgtype.Text{String: "", Valid: false},
-			IdentificationNumber: pgtype.Text{String: "", Valid: false},
-			Address:              pgtype.Text{String: "", Valid: false},
+			PassportNumber:       &emptyStr,
+			IdentificationNumber: &emptyStr,
+			Address:              &emptyStr,
 		})
 		if err != nil {
 			return err

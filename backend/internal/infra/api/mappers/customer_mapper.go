@@ -53,7 +53,6 @@ func ToCustomerResponses(customers []entities.Customer) []dto.CustomerResponse {
 			DateOfBirth:          dto.TimeSeconds{Seconds: customer.DateOfBirth.Unix()},
 			Gender:               string(customer.Gender),
 			LoyaltyPoints:        customer.LoyaltyPoints,
-			CreatedAt:            dto.TimeSeconds{Seconds: customer.CreatedAt.Unix()},
 			Address:              customer.Address,
 			PassportNumber:       customer.PassportNumber,
 			IdentificationNumber: customer.IdentificationNumber,
@@ -77,13 +76,5 @@ func ToCustomerDetailsResponse(customer *entities.Customer, bookingHistory []str
 		Address:              customer.Address,
 		LoyaltyPoints:        int(customer.LoyaltyPoints),
 		BookingHistory:       bookingHistory,
-		CreatedAt: dto.TimeWithNano{
-			Seconds:     customer.CreatedAt.Unix(),
-			Nanoseconds: int64(customer.CreatedAt.Nanosecond()),
-		},
-		UpdatedAt: dto.TimeWithNano{
-			Seconds:     customer.UpdatedAt.Unix(),
-			Nanoseconds: int64(customer.UpdatedAt.Nanosecond()),
-		},
 	}
 }

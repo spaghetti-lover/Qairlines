@@ -12,7 +12,7 @@ import (
 )
 
 const createTicketOwnerSnapshot = `-- name: CreateTicketOwnerSnapshot :one
-INSERT INTO TicketOwnerSnapshot (
+INSERT INTO TicketOwnerSnapshots (
   ticket_id, first_name, last_name, phone_number, gender, date_of_birth,
   passport_number, identification_number, address
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -21,14 +21,14 @@ RETURNING ticket_id, first_name, last_name, phone_number, gender, date_of_birth,
 
 type CreateTicketOwnerSnapshotParams struct {
 	TicketID             int64       `json:"ticket_id"`
-	FirstName            pgtype.Text `json:"first_name"`
-	LastName             pgtype.Text `json:"last_name"`
-	PhoneNumber          pgtype.Text `json:"phone_number"`
+	FirstName            *string     `json:"first_name"`
+	LastName             *string     `json:"last_name"`
+	PhoneNumber          *string     `json:"phone_number"`
 	Gender               GenderType  `json:"gender"`
 	DateOfBirth          pgtype.Date `json:"date_of_birth"`
-	PassportNumber       pgtype.Text `json:"passport_number"`
-	IdentificationNumber pgtype.Text `json:"identification_number"`
-	Address              pgtype.Text `json:"address"`
+	PassportNumber       *string     `json:"passport_number"`
+	IdentificationNumber *string     `json:"identification_number"`
+	Address              *string     `json:"address"`
 }
 
 func (q *Queries) CreateTicketOwnerSnapshot(ctx context.Context, arg CreateTicketOwnerSnapshotParams) (Ticketownersnapshot, error) {
@@ -59,7 +59,7 @@ func (q *Queries) CreateTicketOwnerSnapshot(ctx context.Context, arg CreateTicke
 }
 
 const getAllTicketOwnerSnapshots = `-- name: GetAllTicketOwnerSnapshots :many
-SELECT ticket_id, first_name, last_name, phone_number, gender, date_of_birth, passport_number, identification_number, address FROM TicketOwnerSnapshot
+SELECT ticket_id, first_name, last_name, phone_number, gender, date_of_birth, passport_number, identification_number, address FROM TicketOwnerSnapshots
 `
 
 func (q *Queries) GetAllTicketOwnerSnapshots(ctx context.Context) ([]Ticketownersnapshot, error) {
@@ -93,7 +93,7 @@ func (q *Queries) GetAllTicketOwnerSnapshots(ctx context.Context) ([]Ticketowner
 }
 
 const getTicketOwnerSnapshot = `-- name: GetTicketOwnerSnapshot :one
-SELECT ticket_id, first_name, last_name, phone_number, gender, date_of_birth, passport_number, identification_number, address FROM TicketOwnerSnapshot
+SELECT ticket_id, first_name, last_name, phone_number, gender, date_of_birth, passport_number, identification_number, address FROM TicketOwnerSnapshots
 WHERE ticket_id = $1
 LIMIT 1
 `
@@ -116,7 +116,7 @@ func (q *Queries) GetTicketOwnerSnapshot(ctx context.Context, ticketID int64) (T
 }
 
 const listTicketOwnerSnapshots = `-- name: ListTicketOwnerSnapshots :many
-SELECT ticket_id, first_name, last_name, phone_number, gender, date_of_birth, passport_number, identification_number, address FROM TicketOwnerSnapshot
+SELECT ticket_id, first_name, last_name, phone_number, gender, date_of_birth, passport_number, identification_number, address FROM TicketOwnerSnapshots
 ORDER BY ticket_id
 LIMIT $1
 OFFSET $2

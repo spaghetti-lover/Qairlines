@@ -34,8 +34,8 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 		return entities.User{}, err
 	}
 	user, err := r.store.CreateCustomerTx(ctx, db.CreateUserParams{
-		FirstName:      pgtype.Text{String: arg.FirstName, Valid: true},
-		LastName:       pgtype.Text{String: arg.LastName, Valid: true},
+		FirstName:      &arg.FirstName,
+		LastName:       &arg.LastName,
 		HashedPassword: hashedPassword,
 		Email:          arg.Email,
 		Role:           db.UserRoleCustomer,
@@ -46,8 +46,8 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 	}
 	return entities.User{
 		UserID:    user.UserID,
-		FirstName: user.FirstName.String,
-		LastName:  user.LastName.String,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
 		Email:     user.Email,
 		HashedPwd: user.HashedPassword,
 		Role:      entities.UserRole(entities.RoleCustomer),
@@ -57,28 +57,26 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 func (r *CustomerRepositoryPostgres) CreateCustomer(ctx context.Context, arg entities.CreateCustomerParams) (entities.Customer, error) {
 	customers, err := r.store.CreateCustomer(ctx, db.CreateCustomerParams{
 		UserID:               arg.UserID,
-		PhoneNumber:          pgtype.Text{String: arg.PhoneNumber, Valid: true},
+		PhoneNumber:          &arg.PhoneNumber,
 		Gender:               db.GenderType(arg.Gender),
 		DateOfBirth:          pgtype.Date{Time: arg.DateOfBirth, Valid: true},
-		PassportNumber:       pgtype.Text{String: arg.PassportNumber, Valid: true},
-		IdentificationNumber: pgtype.Text{String: arg.IdentificationNumber, Valid: true},
-		Address:              pgtype.Text{String: arg.Address, Valid: true},
-		LoyaltyPoints:        pgtype.Int4{Int32: arg.LoyaltyPoints, Valid: true},
+		PassportNumber:       &arg.PassportNumber,
+		IdentificationNumber: &arg.IdentificationNumber,
+		Address:              &arg.Address,
+		LoyaltyPoints:        &arg.LoyaltyPoints,
 	})
 	if err != nil {
 		return entities.Customer{}, err
 	}
 	return entities.Customer{
 		UserID:               customers.UserID,
-		PhoneNumber:          customers.PhoneNumber.String,
+		PhoneNumber:          *customers.PhoneNumber,
 		Gender:               entities.CustomerGender(customers.Gender),
 		DateOfBirth:          customers.DateOfBirth.Time,
-		PassportNumber:       customers.PassportNumber.String,
-		IdentificationNumber: customers.IdentificationNumber.String,
-		Address:              customers.Address.String,
-		LoyaltyPoints:        customers.LoyaltyPoints.Int32,
-		CreatedAt:            customers.CreatedAt,
-		UpdatedAt:            customers.UpdatedAt,
+		PassportNumber:       *customers.PassportNumber,
+		IdentificationNumber: *customers.IdentificationNumber,
+		Address:              *customers.Address,
+		LoyaltyPoints:        *customers.LoyaltyPoints,
 	}, nil
 }
 
@@ -87,12 +85,12 @@ func (r *CustomerRepositoryPostgres) UpdateCustomer(ctx context.Context, custome
 		UserID:               customer.UserID,
 		FirstName:            user.FirstName,
 		LastName:             user.LastName,
-		PhoneNumber:          pgtype.Text{String: customer.PhoneNumber, Valid: true},
+		PhoneNumber:          customer.PhoneNumber,
 		Gender:               entities.GenderType(customer.Gender),
 		DateOfBirth:          pgtype.Date{Time: customer.DateOfBirth, Valid: true},
-		Address:              pgtype.Text{String: customer.Address, Valid: true},
-		PassportNumber:       pgtype.Text{String: customer.PassportNumber, Valid: true},
-		IdentificationNumber: pgtype.Text{String: customer.IdentificationNumber, Valid: true},
+		Address:              customer.Address,
+		PassportNumber:       customer.PassportNumber,
+		IdentificationNumber: customer.IdentificationNumber,
 	})
 
 	if err != nil {
@@ -111,8 +109,6 @@ func (r *CustomerRepositoryPostgres) UpdateCustomer(ctx context.Context, custome
 			IdentificationNumber: customer.IdentificationNumber,
 			Address:              customer.Address,
 			LoyaltyPoints:        customer.LoyaltyPoints,
-			CreatedAt:            customer.CreatedAt,
-			UpdatedAt:            customer.UpdatedAt,
 		}, entities.User{
 			UserID:    user.UserID,
 			FirstName: user.FirstName,
@@ -135,17 +131,16 @@ func (r *CustomerRepositoryPostgres) GetAllCustomers(ctx context.Context) ([]ent
 		customers = append(customers, entities.Customer{
 			UserID: row.Uid,
 			User: entities.User{
-				FirstName: user.FirstName.String,
-				LastName:  user.LastName.String,
+				FirstName: *user.FirstName,
+				LastName:  *user.LastName,
 				Email:     user.Email,
 			},
 			DateOfBirth:          row.DateOfBirth.Time,
 			Gender:               entities.CustomerGender(row.Gender),
-			LoyaltyPoints:        row.LoyaltyPoints.Int32,
-			CreatedAt:            row.CreatedAt,
-			Address:              row.Address.String,
-			PassportNumber:       row.PassportNumber.String,
-			IdentificationNumber: row.IdentificationNumber.String,
+			LoyaltyPoints:        *row.LoyaltyPoints,
+			Address:              *row.Address,
+			PassportNumber:       *row.PassportNumber,
+			IdentificationNumber: *row.IdentificationNumber,
 		})
 	}
 
@@ -179,19 +174,17 @@ func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid i
 	return &entities.Customer{
 		UserID: row.Uid,
 		User: entities.User{
-			FirstName: row.FirstName.String,
-			LastName:  row.LastName.String,
+			FirstName: *row.FirstName,
+			LastName:  *row.LastName,
 			Email:     row.Email,
 		},
-		PhoneNumber:          row.PhoneNumber.String,
+		PhoneNumber:          *row.PhoneNumber,
 		DateOfBirth:          row.DateOfBirth.Time,
 		Gender:               entities.CustomerGender(row.Gender),
-		IdentificationNumber: row.IdentificationNumber.String,
-		PassportNumber:       row.PassportNumber.String,
-		Address:              row.Address.String,
-		LoyaltyPoints:        row.LoyaltyPoints.Int32,
-		CreatedAt:            row.CreatedAt,
-		UpdatedAt:            row.UpdatedAt,
+		IdentificationNumber: *row.IdentificationNumber,
+		PassportNumber:       *row.PassportNumber,
+		Address:              *row.Address,
+		LoyaltyPoints:        *row.LoyaltyPoints,
 	}, nil
 }
 

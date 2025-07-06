@@ -14,13 +14,37 @@ import (
 
 const cancelTicket = `-- name: CancelTicket :one
 UPDATE Tickets
-SET status = 'Cancelled', updated_at = NOW()
-WHERE Tickets.ticket_id = $1 AND status = 'Active'
-RETURNING ticket_id, status, flight_class, price, booking_id, flight_id, updated_at,
-          (SELECT seat_code FROM Seats WHERE seat_id = Tickets.seat_id) AS seat_code,
-          (SELECT first_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_first_name,
-          (SELECT last_name FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_last_name,
-          (SELECT phone_number FROM TicketOwnerSnapshot WHERE ticket_id = Tickets.ticket_id) AS owner_phone_number
+SET status = 'Cancelled',
+    updated_at = NOW()
+WHERE Tickets.ticket_id = $1
+    AND status = 'Active'
+RETURNING ticket_id,
+    status,
+    flight_class,
+    price,
+    booking_id,
+    flight_id,
+    updated_at,
+    (
+        SELECT seat_code
+        FROM Seats
+        WHERE seat_id = Tickets.seat_id
+    ) AS seat_code,
+    (
+        SELECT first_name
+        FROM TicketOwnerSnapshots
+        WHERE ticket_id = Tickets.ticket_id
+    ) AS owner_first_name,
+    (
+        SELECT last_name
+        FROM TicketOwnerSnapshots
+        WHERE ticket_id = Tickets.ticket_id
+    ) AS owner_last_name,
+    (
+        SELECT phone_number
+        FROM TicketOwnerSnapshots
+        WHERE ticket_id = Tickets.ticket_id
+    ) AS owner_phone_number
 `
 
 type CancelTicketRow struct {
@@ -28,13 +52,13 @@ type CancelTicketRow struct {
 	Status           TicketStatus `json:"status"`
 	FlightClass      FlightClass  `json:"flight_class"`
 	Price            int32        `json:"price"`
-	BookingID        pgtype.Int8  `json:"booking_id"`
+	BookingID        *int64       `json:"booking_id"`
 	FlightID         int64        `json:"flight_id"`
 	UpdatedAt        time.Time    `json:"updated_at"`
 	SeatCode         string       `json:"seat_code"`
-	OwnerFirstName   pgtype.Text  `json:"owner_first_name"`
-	OwnerLastName    pgtype.Text  `json:"owner_last_name"`
-	OwnerPhoneNumber pgtype.Text  `json:"owner_phone_number"`
+	OwnerFirstName   *string      `json:"owner_first_name"`
+	OwnerLastName    *string      `json:"owner_last_name"`
+	OwnerPhoneNumber *string      `json:"owner_phone_number"`
 }
 
 func (q *Queries) CancelTicket(ctx context.Context, ticketID int64) (CancelTicketRow, error) {
@@ -58,15 +82,15 @@ func (q *Queries) CancelTicket(ctx context.Context, ticketID int64) (CancelTicke
 
 const createTicket = `-- name: CreateTicket :one
 INSERT INTO tickets (
-    seat_id,
-    flight_class,
-    price,
-    status,
-    booking_id,
-    flight_id
-) VALUES (
-    $1, $2, $3, $4, $5, $6
-) RETURNING ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
+        seat_id,
+        flight_class,
+        price,
+        status,
+        booking_id,
+        flight_id
+    )
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
 `
 
 type CreateTicketParams struct {
@@ -74,7 +98,7 @@ type CreateTicketParams struct {
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
-	BookingID   pgtype.Int8  `json:"booking_id"`
+	BookingID   *int64       `json:"booking_id"`
 	FlightID    int64        `json:"flight_id"`
 }
 
@@ -113,7 +137,8 @@ func (q *Queries) DeleteTicket(ctx context.Context, ticketID int64) error {
 }
 
 const getTicketByFlightId = `-- name: GetTicketByFlightId :many
-SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
+SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
+FROM tickets
 WHERE flight_id = $1
 ORDER BY ticket_id
 `
@@ -149,8 +174,7 @@ func (q *Queries) GetTicketByFlightId(ctx context.Context, flightID int64) ([]Ti
 }
 
 const getTicketByID = `-- name: GetTicketByID :one
-SELECT
-    t.ticket_id,
+SELECT t.ticket_id,
     t.status,
     t.flight_class,
     t.price,
@@ -172,8 +196,8 @@ SELECT
     o.identification_number AS owner_identification_number,
     o.address AS owner_address
 FROM Tickets t
-LEFT JOIN Seats s ON t.seat_id = s.seat_id
-LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
+    LEFT JOIN Seats s ON t.seat_id = s.seat_id
+    LEFT JOIN TicketOwnerSnapshots o ON t.ticket_id = o.ticket_id
 WHERE t.ticket_id = $1
 `
 
@@ -182,23 +206,23 @@ type GetTicketByIDRow struct {
 	Status                    TicketStatus    `json:"status"`
 	FlightClass               FlightClass     `json:"flight_class"`
 	Price                     int32           `json:"price"`
-	BookingID                 pgtype.Int8     `json:"booking_id"`
+	BookingID                 *int64          `json:"booking_id"`
 	FlightID                  int64           `json:"flight_id"`
 	CreatedAt                 time.Time       `json:"created_at"`
 	UpdatedAt                 time.Time       `json:"updated_at"`
-	SeatCode                  pgtype.Text     `json:"seat_code"`
-	SeatID                    pgtype.Int8     `json:"seat_id"`
-	IsAvailable               pgtype.Bool     `json:"is_available"`
-	FlightID_2                pgtype.Int8     `json:"flight_id_2"`
+	SeatCode                  *string         `json:"seat_code"`
+	SeatID                    *int64          `json:"seat_id"`
+	IsAvailable               *bool           `json:"is_available"`
+	FlightID_2                *int64          `json:"flight_id_2"`
 	SeatClass                 NullFlightClass `json:"seat_class"`
-	OwnerFirstName            pgtype.Text     `json:"owner_first_name"`
-	OwnerLastName             pgtype.Text     `json:"owner_last_name"`
+	OwnerFirstName            *string         `json:"owner_first_name"`
+	OwnerLastName             *string         `json:"owner_last_name"`
 	OwnerGender               NullGenderType  `json:"owner_gender"`
-	OwnerPhoneNumber          pgtype.Text     `json:"owner_phone_number"`
+	OwnerPhoneNumber          *string         `json:"owner_phone_number"`
 	OwnerDateOfBirth          pgtype.Date     `json:"owner_date_of_birth"`
-	OwnerPassportNumber       pgtype.Text     `json:"owner_passport_number"`
-	OwnerIdentificationNumber pgtype.Text     `json:"owner_identification_number"`
-	OwnerAddress              pgtype.Text     `json:"owner_address"`
+	OwnerPassportNumber       *string         `json:"owner_passport_number"`
+	OwnerIdentificationNumber *string         `json:"owner_identification_number"`
+	OwnerAddress              *string         `json:"owner_address"`
 }
 
 func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error) {
@@ -231,8 +255,7 @@ func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketB
 }
 
 const getTicketsByBookingIDAndType = `-- name: GetTicketsByBookingIDAndType :many
-SELECT
-    ticket_id,
+SELECT ticket_id,
     seat_id,
     flight_class,
     price,
@@ -241,18 +264,30 @@ SELECT
     flight_id,
     created_at,
     updated_at
-FROM
-    Tickets
-WHERE
-    Tickets.booking_id = $1
+FROM Tickets
+WHERE Tickets.booking_id = $1
     AND (
-        ($2 = 'departure' AND flight_id = (SELECT departure_flight_id FROM Bookings WHERE Bookings.booking_id = $1))
-        OR ($2 = 'return' AND flight_id = (SELECT return_flight_id FROM Bookings WHERE Bookings.booking_id = $1))
+        (
+            $2 = 'departure'
+            AND flight_id = (
+                SELECT departure_flight_id
+                FROM Bookings
+                WHERE Bookings.booking_id = $1
+            )
+        )
+        OR (
+            $2 = 'return'
+            AND flight_id = (
+                SELECT return_flight_id
+                FROM Bookings
+                WHERE Bookings.booking_id = $1
+            )
+        )
     )
 `
 
 type GetTicketsByBookingIDAndTypeParams struct {
-	BookingID pgtype.Int8 `json:"booking_id"`
+	BookingID *int64      `json:"booking_id"`
 	Column2   interface{} `json:"column_2"`
 }
 
@@ -287,8 +322,7 @@ func (q *Queries) GetTicketsByBookingIDAndType(ctx context.Context, arg GetTicke
 }
 
 const getTicketsByFlightID = `-- name: GetTicketsByFlightID :many
-SELECT
-    t.ticket_id,
+SELECT t.ticket_id,
     t.seat_id,
     t.flight_class,
     t.price,
@@ -309,8 +343,8 @@ SELECT
     o.identification_number AS owner_identification_number,
     o.address AS owner_address
 FROM Tickets t
-LEFT JOIN Seats s ON t.seat_id = s.seat_id
-LEFT JOIN TicketOwnerSnapshot o ON t.ticket_id = o.ticket_id
+    LEFT JOIN Seats s ON t.seat_id = s.seat_id
+    LEFT JOIN TicketOwnerSnapshots o ON t.ticket_id = o.ticket_id
 WHERE t.flight_id = $1
 `
 
@@ -320,21 +354,21 @@ type GetTicketsByFlightIDRow struct {
 	FlightClass               FlightClass     `json:"flight_class"`
 	Price                     int32           `json:"price"`
 	Status                    TicketStatus    `json:"status"`
-	BookingID                 pgtype.Int8     `json:"booking_id"`
+	BookingID                 *int64          `json:"booking_id"`
 	FlightID                  int64           `json:"flight_id"`
 	CreatedAt                 time.Time       `json:"created_at"`
 	UpdatedAt                 time.Time       `json:"updated_at"`
-	SeatCode                  pgtype.Text     `json:"seat_code"`
-	IsAvailable               pgtype.Bool     `json:"is_available"`
+	SeatCode                  *string         `json:"seat_code"`
+	IsAvailable               *bool           `json:"is_available"`
 	SeatClass                 NullFlightClass `json:"seat_class"`
-	OwnerFirstName            pgtype.Text     `json:"owner_first_name"`
-	OwnerLastName             pgtype.Text     `json:"owner_last_name"`
-	OwnerPhoneNumber          pgtype.Text     `json:"owner_phone_number"`
+	OwnerFirstName            *string         `json:"owner_first_name"`
+	OwnerLastName             *string         `json:"owner_last_name"`
+	OwnerPhoneNumber          *string         `json:"owner_phone_number"`
 	OwnerGender               NullGenderType  `json:"owner_gender"`
 	OwnerDateOfBirth          pgtype.Date     `json:"owner_date_of_birth"`
-	OwnerPassportNumber       pgtype.Text     `json:"owner_passport_number"`
-	OwnerIdentificationNumber pgtype.Text     `json:"owner_identification_number"`
-	OwnerAddress              pgtype.Text     `json:"owner_address"`
+	OwnerPassportNumber       *string         `json:"owner_passport_number"`
+	OwnerIdentificationNumber *string         `json:"owner_identification_number"`
+	OwnerAddress              *string         `json:"owner_address"`
 }
 
 func (q *Queries) GetTicketsByFlightID(ctx context.Context, flightID int64) ([]GetTicketsByFlightIDRow, error) {
@@ -379,10 +413,10 @@ func (q *Queries) GetTicketsByFlightID(ctx context.Context, flightID int64) ([]G
 }
 
 const listTickets = `-- name: ListTickets :many
-SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at FROM tickets
+SELECT ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
+FROM tickets
 ORDER BY ticket_id
-LIMIT $1
-OFFSET $2
+LIMIT $1 OFFSET $2
 `
 
 type ListTicketsParams struct {
@@ -422,9 +456,13 @@ func (q *Queries) ListTickets(ctx context.Context, arg ListTicketsParams) ([]Tic
 
 const updateSeat = `-- name: UpdateSeat :one
 UPDATE Seats
-SET
-    seat_code = $2
-WHERE seat_id = (SELECT seat_id FROM Tickets WHERE ticket_id = $1 AND seat_id IS NOT NULL)
+SET seat_code = $2
+WHERE seat_id = (
+        SELECT seat_id
+        FROM Tickets
+        WHERE ticket_id = $1
+            AND seat_id IS NOT NULL
+    )
 RETURNING seat_id, flight_id, seat_code, is_available, class
 `
 
@@ -448,13 +486,12 @@ func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, e
 
 const updateTicket = `-- name: UpdateTicket :exec
 UPDATE tickets
-SET
-  flight_class = $2,
-  price = $3,
-  status = $4,
-  booking_id = $5,
-  flight_id = $6,
-  updated_at = NOW()
+SET flight_class = $2,
+    price = $3,
+    status = $4,
+    booking_id = $5,
+    flight_id = $6,
+    updated_at = NOW()
 WHERE ticket_id = $1
 `
 
@@ -463,7 +500,7 @@ type UpdateTicketParams struct {
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
-	BookingID   pgtype.Int8  `json:"booking_id"`
+	BookingID   *int64       `json:"booking_id"`
 	FlightID    int64        `json:"flight_id"`
 }
 
@@ -481,7 +518,8 @@ func (q *Queries) UpdateTicket(ctx context.Context, arg UpdateTicketParams) erro
 
 const updateTicketStatus = `-- name: UpdateTicketStatus :one
 UPDATE Tickets
-SET status = $2, updated_at = NOW()
+SET status = $2,
+    updated_at = NOW()
 WHERE ticket_id = $1
 RETURNING ticket_id, seat_id, flight_class, price, status, booking_id, flight_id, created_at, updated_at
 `

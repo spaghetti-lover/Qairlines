@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // DeleteAdminTxParams chứa thông tin cần thiết để xoá admin
@@ -44,13 +42,13 @@ func (store *SQLStore) DeleteAdminTx(ctx context.Context, arg DeleteAdminTxParam
 		}
 
 		// 3. Xoá các liên kết trong bảng Bookings (nếu có)
-		err = q.RemoveUserFromBookings(ctx, pgtype.Text{String: user.Email, Valid: true})
+		err = q.RemoveUserFromBookings(ctx, &user.Email)
 		if err != nil {
 			return err
 		}
 
 		// 4. Xoá các liên kết trong bảng Blog Posts (nếu user là tác giả)
-		err = q.RemoveAuthorFromBlogPosts(ctx, pgtype.Int8{Int64: user.UserID, Valid: true})
+		err = q.RemoveAuthorFromBlogPosts(ctx, &user.UserID)
 		if err != nil {
 			return err
 		}

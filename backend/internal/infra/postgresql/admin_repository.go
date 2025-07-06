@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
@@ -29,8 +28,8 @@ func NewAdminRepositoryPostgres(store *db.Store, tokenMaker token.Maker) *AdminR
 
 func (r *AdminRepositoryPostgres) CreateAdminTx(ctx context.Context, arg entities.CreateUserParams) (entities.User, error) {
 	user, err := r.store.CreateAdminTx(ctx, db.CreateUserParams{
-		FirstName:      pgtype.Text{String: arg.FirstName, Valid: true},
-		LastName:       pgtype.Text{String: arg.LastName, Valid: true},
+		FirstName:      &arg.FirstName,
+		LastName:       &arg.LastName,
 		HashedPassword: arg.Password,
 		Email:          arg.Email,
 		Role:           db.UserRoleAdmin,
@@ -41,8 +40,8 @@ func (r *AdminRepositoryPostgres) CreateAdminTx(ctx context.Context, arg entitie
 	}
 	return entities.User{
 		UserID:    user.UserID,
-		FirstName: user.FirstName.String,
-		LastName:  user.LastName.String,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
 		Email:     user.Email,
 		HashedPwd: user.HashedPassword,
 		Role:      entities.UserRole(entities.RoleAdmin),
@@ -64,8 +63,8 @@ func (r *AdminRepositoryPostgres) GetAllAdmins(ctx context.Context) ([]entities.
 
 		admins[i] = entities.Admin{
 			UserID:    strconv.FormatInt(user.UserID, 10),
-			FirstName: user.FirstName.String,
-			LastName:  user.LastName.String,
+			FirstName: *user.FirstName,
+			LastName:  *user.LastName,
 			Email:     user.Email,
 			CreatedAt: user.CreatedAt,
 		}
@@ -100,8 +99,8 @@ func (r *AdminRepositoryPostgres) GetAdminByID(ctx context.Context, adminID stri
 
 	return entities.Admin{
 		UserID:    strconv.FormatInt(user.UserID, 10),
-		FirstName: user.FirstName.String,
-		LastName:  user.LastName.String,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}, nil
@@ -128,8 +127,8 @@ func (r *AdminRepositoryPostgres) GetAdminByUserID(ctx context.Context, userID i
 
 	return entities.Admin{
 		UserID:    strconv.FormatInt(user.UserID, 10),
-		FirstName: user.FirstName.String,
-		LastName:  user.LastName.String,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}, nil
@@ -150,15 +149,9 @@ func (r *AdminRepositoryPostgres) UpdateAdmin(ctx context.Context, admin entitie
 	}
 
 	err = r.store.UpdateUser(ctx, db.UpdateUserParams{
-		UserID: userID,
-		FirstName: pgtype.Text{
-			String: admin.FirstName,
-			Valid:  true,
-		},
-		LastName: pgtype.Text{
-			String: admin.LastName,
-			Valid:  true,
-		},
+		UserID:    userID,
+		FirstName: &admin.FirstName,
+		LastName:  &admin.LastName,
 	})
 	if err != nil {
 		return entities.Admin{}, err
@@ -171,8 +164,8 @@ func (r *AdminRepositoryPostgres) UpdateAdmin(ctx context.Context, admin entitie
 
 	return entities.Admin{
 		UserID:    strconv.FormatInt(updatedUser.UserID, 10),
-		FirstName: updatedUser.FirstName.String,
-		LastName:  updatedUser.LastName.String,
+		FirstName: *updatedUser.FirstName,
+		LastName:  *updatedUser.LastName,
 		Email:     updatedUser.Email,
 		CreatedAt: updatedUser.CreatedAt,
 	}, nil

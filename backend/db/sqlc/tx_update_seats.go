@@ -3,8 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SeatUpdateParams struct {
@@ -18,14 +16,14 @@ func (store *SQLStore) UpdateSeats(ctx context.Context, bookingID int64, seats [
 		for _, seat := range seats {
 			// Kiểm tra ghế có thuộc chuyến bay không
 			ticket, err := store.GetTicketByID(ctx, seat.TicketID)
-			if err != nil || ticket.BookingID.Int64 != bookingID {
+			if err != nil || ticket.BookingID != &bookingID {
 				return fmt.Errorf("invalid ticket_id %d for booking_id %d", seat.TicketID, bookingID)
 			}
 
 			// Kiểm tra ghế có còn trống không
 			isAvailable, err := store.CheckSeatAvailability(ctx, CheckSeatAvailabilityParams{
 				SeatCode: seat.SeatCode,
-				FlightID: pgtype.Int8{Int64: ticket.FlightID, Valid: true},
+				FlightID: &ticket.FlightID,
 			})
 			if err != nil || !isAvailable {
 				return fmt.Errorf("seat %s is not available", seat.SeatCode)
@@ -37,7 +35,7 @@ func (store *SQLStore) UpdateSeats(ctx context.Context, bookingID int64, seats [
 
 			// Đánh dấu ghế là không còn trống trong bảng Seats
 			err = q.MarkSeatUnavailable(ctx, MarkSeatUnavailableParams{
-				FlightID: pgtype.Int8{Int64: ticket.FlightID, Valid: true},
+				FlightID: &ticket.FlightID,
 				SeatCode: seat.SeatCode,
 			})
 			if err != nil {
