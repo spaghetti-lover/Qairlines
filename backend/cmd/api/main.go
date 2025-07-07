@@ -12,9 +12,11 @@ import (
 
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api"
+	"github.com/spaghetti-lover/qairlines/pkg/logger"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 
@@ -41,6 +43,16 @@ func main() {
 	poolConfig, err := pgxpool.ParseConfig(config.DBSource)
 	if err != nil {
 		log.Fatal("cannot parse pool config:", err)
+	}
+
+	sqlLogger := logger.NewLoggerWithPath("logs/sql.log", "info")
+
+	poolConfig.ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger: &logger.PgxZerologTracer{
+			Logger:         *sqlLogger,
+			SlowQueryLimit: 500 * time.Millisecond,
+		},
+		LogLevel: tracelog.LogLevelDebug,
 	}
 
 	poolConfig.MaxConns = 20

@@ -1,13 +1,14 @@
 package news
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
+
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
 type IListNewsUseCase interface {
-	Execute(ctx *gin.Context, page int, limit int) ([]entities.News, error)
+	Execute(ctx context.Context, page int, limit int) ([]entities.News, error)
 }
 
 type ListNewsUseCase struct {
@@ -20,7 +21,7 @@ func NewListNewsUseCase(newsRepository adapters.INewsRepository) IListNewsUseCas
 	}
 }
 
-func (r *ListNewsUseCase) Execute(ctx *gin.Context, page int, limit int) ([]entities.News, error) {
+func (r *ListNewsUseCase) Execute(ctx context.Context, page int, limit int) ([]entities.News, error) {
 	start := (page - 1) * limit
 	news, err := r.newsRepository.ListNews(ctx, start, limit)
 	if err != nil {

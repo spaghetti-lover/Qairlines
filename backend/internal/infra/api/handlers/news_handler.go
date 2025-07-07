@@ -52,7 +52,7 @@ func (h *NewsHandler) ListNews(ctx *gin.Context) {
 		params.Limit = 10
 	}
 	log.Println(params.Page, params.Limit)
-	news, err := h.listNewsUseCase.Execute(ctx, params.Page, params.Limit)
+	news, err := h.listNewsUseCase.Execute(ctx.Request.Context(), params.Page, params.Limit)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get news", "error": err.Error()})
 		return

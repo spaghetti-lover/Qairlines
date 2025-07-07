@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"github.com/spaghetti-lover/qairlines/pkg/logger"
 )
 
 type CustomResponseWriter struct {
@@ -120,6 +121,7 @@ func LoggerMiddleware(httpLogger *zerolog.Logger) gin.HandlerFunc {
 		}
 
 		logEvent.
+			Str("trace_id", ctx.MustGet(string(logger.TraceIdKey)).(string)).
 			Str("method", ctx.Request.Method).
 			Str("path", ctx.Request.URL.Path).
 			Str("query", ctx.Request.URL.RawQuery).

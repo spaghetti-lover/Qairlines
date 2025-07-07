@@ -8,6 +8,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type BookingStatus string
@@ -399,14 +401,14 @@ type Ticketownersnapshot struct {
 }
 
 type User struct {
-	UserID         int64     `json:"user_id"`
-	Email          string    `json:"email"`
-	HashedPassword string    `json:"hashed_password"`
-	FirstName      *string   `json:"first_name"`
-	LastName       *string   `json:"last_name"`
-	Role           UserRole  `json:"role"`
-	IsActive       bool      `json:"is_active"`
-	DeletedAt      time.Time `json:"deleted_at"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	UserID         int64              `json:"user_id"`
+	Email          string             `json:"email"`
+	HashedPassword string             `json:"hashed_password"`
+	FirstName      *string            `json:"first_name"`
+	LastName       *string            `json:"last_name"`
+	Role           UserRole           `json:"role"`
+	IsActive       bool               `json:"is_active"`
+	DeletedAt      pgtype.Timestamptz `json:"deleted_at"`
+	CreatedAt      time.Time          `json:"created_at"`
+	UpdatedAt      time.Time          `json:"updated_at"`
 }

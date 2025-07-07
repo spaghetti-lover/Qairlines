@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
-	"github.com/rs/zerolog"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/di"
@@ -28,13 +27,13 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
 	}
 
-	httpLogger := newLoggerWithPath("logs/http.log", "info")
-	recoveryLogger := newLoggerWithPath("logs/recovery.log", "warning")
-	rateLimiterLogger := newLoggerWithPath("logs/rate_limiter.log", "warning")
+	httpLogger := logger.NewLoggerWithPath("logs/http.log", "info")
+	recoveryLogger := logger.NewLoggerWithPath("logs/recovery.log", "warning")
+	rateLimiterLogger := logger.NewLoggerWithPath("logs/rate_limiter.log", "warning")
 
 	// Create a new Gin router
 	router := gin.Default()
-	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger), middleware.RateLimitingMiddleware(rateLimiterLogger))
+	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger), middleware.RateLimitingMiddleware(rateLimiterLogger))
 
 	gin.SetMode(gin.DebugMode)
 
@@ -84,21 +83,4 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
-}
-
-func newLoggerWithPath(path string, level string) *zerolog.Logger {
-	config, err := config.LoadConfig(".")
-	if err != nil {
-		panic(fmt.Sprintf("failed to load config: %v", err))
-	}
-	settings := logger.LoggerConfig{
-		Level:      level,
-		Filename:   path,
-		MaxSize:    1, // megabytes
-		MaxBackups: 5,
-		MaxAge:     5,    // days
-		Compress:   true, // disabled by default
-		IsDev:      config.AppEnv,
-	}
-	return logger.NewLogger(settings)
 }
