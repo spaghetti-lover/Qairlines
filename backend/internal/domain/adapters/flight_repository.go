@@ -21,5 +21,5 @@ type IFlightRepository interface {
 	GetAllFlights(ctx context.Context) ([]entities.Flight, error)
 	DeleteFlightByID(ctx context.Context, flightID int64) error
 	SearchFlights(ctx context.Context, departureCity, arrivalCity string, flightDate time.Time) ([]entities.Flight, error)
-	GetSuggestedFlights(ctx context.Context) ([]entities.Flight, error)
+	ListFlights(ctx context.Context, page int, limit int) ([]entities.Flight, error)
 }

@@ -31,7 +31,7 @@ export default function PostManagementPage() {
   )
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news/all`
+    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/news?page=1&limit=10`
 
     try {
       const response = await fetch(getAllNewsApi, {

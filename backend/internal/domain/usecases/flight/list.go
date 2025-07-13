@@ -8,26 +8,26 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 )
 
-type IGetSuggestedFlightsUseCase interface {
-	Execute(ctx context.Context) ([]dto.FlightSearchResponse, error)
+type IListFlightsUseCase interface {
+	Execute(ctx context.Context, page int, limit int) ([]dto.FlightSearchResponse, error)
 }
 
-type GetSuggestedFlightsUseCase struct {
+type listFlightsUseCase struct {
 	flightRepository adapters.IFlightRepository
 }
 
-func NewGetSuggestedFlightsUseCase(flightRepository adapters.IFlightRepository) IGetSuggestedFlightsUseCase {
-	return &GetSuggestedFlightsUseCase{
+func NewlistFlightsUseCase(flightRepository adapters.IFlightRepository) IListFlightsUseCase {
+	return &listFlightsUseCase{
 		flightRepository: flightRepository,
 	}
 }
 
-func (u *GetSuggestedFlightsUseCase) Execute(ctx context.Context) ([]dto.FlightSearchResponse, error) {
-	flights, err := u.flightRepository.GetSuggestedFlights(ctx)
+func (u *listFlightsUseCase) Execute(ctx context.Context, page int, limit int) ([]dto.FlightSearchResponse, error) {
+	flights, err := u.flightRepository.ListFlights(ctx, page, limit)
 	if err != nil {
 		if err == adapters.ErrNoSuggestedFlights {
 			return nil, nil
-	}
+		}
 		return nil, err
 	}
 

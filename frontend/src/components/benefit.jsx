@@ -43,7 +43,7 @@ export default function Benefit() {
   }, [router]);
 
   const getAllNews = async () => {
-    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}GET /api/news/all`
+    const getAllNewsApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}GET /api/news?page=1&limit=10`
 
     try {
       const response = await fetch(getAllNewsApi, {

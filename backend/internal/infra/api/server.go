@@ -33,7 +33,7 @@ func NewServer(config config.Config, store *db.Store) (*Server, error) {
 
 	// Create a new Gin router
 	router := gin.Default()
-	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger), middleware.RateLimitingMiddleware(rateLimiterLogger))
+	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
 
 	gin.SetMode(gin.DebugMode)
 

@@ -12,19 +12,19 @@ import (
 
 const createFlight = `-- name: CreateFlight :one
 INSERT INTO flights (
-  flight_number,
-  aircraft_type,
-  departure_city,
-  arrival_city,
-  departure_airport,
-  arrival_airport,
-  departure_time,
-  arrival_time,
-  base_price,
-  status
-) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-) RETURNING flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status
+    flight_number,
+    aircraft_type,
+    departure_city,
+    arrival_city,
+    departure_airport,
+    arrival_airport,
+    departure_time,
+    arrival_time,
+    base_price,
+    status
+  )
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+RETURNING flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status
 `
 
 type CreateFlightParams struct {
@@ -87,16 +87,15 @@ func (q *Queries) DeleteFlight(ctx context.Context, flightID int64) (int64, erro
 }
 
 const getAllFlights = `-- name: GetAllFlights :many
-SELECT
-    flight_id,
-    flight_number,
-    aircraft_type,
-    departure_city,
-    arrival_city,
-    departure_time,
-    arrival_time,
-    base_price,
-    status
+SELECT flight_id,
+  flight_number,
+  aircraft_type,
+  departure_city,
+  arrival_city,
+  departure_time,
+  arrival_time,
+  base_price,
+  status
 FROM Flights
 `
 
@@ -143,8 +142,10 @@ func (q *Queries) GetAllFlights(ctx context.Context) ([]GetAllFlightsRow, error)
 }
 
 const getFlight = `-- name: GetFlight :one
-SELECT flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
-WHERE flight_id = $1 LIMIT 1
+SELECT flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status
+FROM flights
+WHERE flight_id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetFlight(ctx context.Context, flightID int64) (Flight, error) {
@@ -170,8 +171,10 @@ func (q *Queries) GetFlight(ctx context.Context, flightID int64) (Flight, error)
 }
 
 const getFlightsByStatus = `-- name: GetFlightsByStatus :one
-SELECT status FROM flights
-WHERE flight_id = $1 LIMIT 1
+SELECT status
+FROM flights
+WHERE flight_id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetFlightsByStatus(ctx context.Context, flightID int64) (FlightStatus, error) {
@@ -181,25 +184,29 @@ func (q *Queries) GetFlightsByStatus(ctx context.Context, flightID int64) (Fligh
 	return status, err
 }
 
-const getSuggestedFlights = `-- name: GetSuggestedFlights :many
-SELECT
-    flight_id,
-    flight_number,
-    airline,
-    departure_city,
-    arrival_city,
-    departure_time,
-    arrival_time,
-    departure_airport,
-    arrival_airport,
-    aircraft_type,
-    base_price
-FROM Flights
-ORDER BY departure_time ASC
-LIMIT 10
+const listFlights = `-- name: ListFlights :many
+SELECT flight_id,
+  flight_number,
+  airline,
+  departure_city,
+  arrival_city,
+  departure_time,
+  arrival_time,
+  departure_airport,
+  arrival_airport,
+  aircraft_type,
+  base_price
+FROM flights
+ORDER BY flight_id
+LIMIT $1 OFFSET $2
 `
 
-type GetSuggestedFlightsRow struct {
+type ListFlightsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+type ListFlightsRow struct {
 	FlightID         int64     `json:"flight_id"`
 	FlightNumber     string    `json:"flight_number"`
 	Airline          *string   `json:"airline"`
@@ -213,74 +220,27 @@ type GetSuggestedFlightsRow struct {
 	BasePrice        int32     `json:"base_price"`
 }
 
-func (q *Queries) GetSuggestedFlights(ctx context.Context) ([]GetSuggestedFlightsRow, error) {
-	rows, err := q.db.Query(ctx, getSuggestedFlights)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetSuggestedFlightsRow{}
-	for rows.Next() {
-		var i GetSuggestedFlightsRow
-		if err := rows.Scan(
-			&i.FlightID,
-			&i.FlightNumber,
-			&i.Airline,
-			&i.DepartureCity,
-			&i.ArrivalCity,
-			&i.DepartureTime,
-			&i.ArrivalTime,
-			&i.DepartureAirport,
-			&i.ArrivalAirport,
-			&i.AircraftType,
-			&i.BasePrice,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listFlights = `-- name: ListFlights :many
-SELECT flight_id, flight_number, airline, aircraft_type, departure_city, arrival_city, departure_airport, arrival_airport, departure_time, arrival_time, base_price, total_seats_row, total_seats_column, status FROM flights
-ORDER BY flight_id
-LIMIT $1
-OFFSET $2
-`
-
-type ListFlightsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Flight, error) {
+func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]ListFlightsRow, error) {
 	rows, err := q.db.Query(ctx, listFlights, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Flight{}
+	items := []ListFlightsRow{}
 	for rows.Next() {
-		var i Flight
+		var i ListFlightsRow
 		if err := rows.Scan(
 			&i.FlightID,
 			&i.FlightNumber,
 			&i.Airline,
-			&i.AircraftType,
 			&i.DepartureCity,
 			&i.ArrivalCity,
-			&i.DepartureAirport,
-			&i.ArrivalAirport,
 			&i.DepartureTime,
 			&i.ArrivalTime,
+			&i.DepartureAirport,
+			&i.ArrivalAirport,
+			&i.AircraftType,
 			&i.BasePrice,
-			&i.TotalSeatsRow,
-			&i.TotalSeatsColumn,
-			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -293,20 +253,21 @@ func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]Fli
 }
 
 const searchFlights = `-- name: SearchFlights :many
-SELECT
-    flight_id,
-    flight_number,
-    airline,
-    departure_city,
-    arrival_city,
-    departure_time,
-    arrival_time,
-    departure_airport,
-    arrival_airport,
-    aircraft_type,
-    base_price
+SELECT flight_id,
+  flight_number,
+  airline,
+  departure_city,
+  arrival_city,
+  departure_time,
+  arrival_time,
+  departure_airport,
+  arrival_airport,
+  aircraft_type,
+  base_price
 FROM Flights
-WHERE departure_city = $1 AND arrival_city = $2 AND DATE(departure_time) = $3
+WHERE departure_city = $1
+  AND arrival_city = $2
+  AND DATE(departure_time) = $3
 `
 
 type SearchFlightsParams struct {
@@ -363,9 +324,12 @@ func (q *Queries) SearchFlights(ctx context.Context, arg SearchFlightsParams) ([
 
 const updateFlightTimes = `-- name: UpdateFlightTimes :one
 UPDATE Flights
-SET departure_time = $2, arrival_time = $3
+SET departure_time = $2,
+  arrival_time = $3
 WHERE flight_id = $1
-RETURNING flight_id, departure_time, arrival_time
+RETURNING flight_id,
+  departure_time,
+  arrival_time
 `
 
 type UpdateFlightTimesParams struct {

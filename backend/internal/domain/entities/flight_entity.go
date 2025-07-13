@@ -44,3 +44,8 @@ type CreateFlightParams struct {
 	BasePrice        int32  `json:"base_price"`
 	Status           string `json:"status"`
 }
+
+type ListFlightsParams struct {
+	Page  int `form:"page" binding:"required"`
+	Limit int `form:"limit" binding:"required"`
+}

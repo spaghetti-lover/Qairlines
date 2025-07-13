@@ -9,11 +9,11 @@ func RegisterFlightRoutes(router *gin.RouterGroup, flightHandler *handlers.Fligh
 	flight := router.Group("/flight")
 	{
 		flight.POST("/", flightHandler.CreateFlight)
-		flight.GET("/", flightHandler.GetFlight)
+		flight.GET("/:id", flightHandler.GetFlight)
 		flight.PUT("/update", flightHandler.UpdateFlightTimes)
 		flight.GET("/all", flightHandler.GetAllFlights)
 		flight.DELETE("/", flightHandler.DeleteFlight)
 		flight.GET("/search", flightHandler.SearchFlights)
-		flight.GET("/suggest", flightHandler.GetSuggestedFlights)
+		flight.GET("/", flightHandler.ListFlights)
 	}
 }

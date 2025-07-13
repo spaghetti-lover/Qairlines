@@ -8,26 +8,27 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
+	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 )
 
 type FlightHandler struct {
-	createFlightUseCase        flight.ICreateFlightUseCase
-	getFlightUseCase           flight.IGetFlightUseCase
-	updateFlightTimesUseCase   flight.IUpdateFlightTimesUseCase
-	getAllFlightsUseCase       flight.IGetAllFlightsUseCase
-	deleteFlightUseCase        flight.IDeleteFlightUseCase
-	searchFlightsUseCase       flight.ISearchFlightsUseCase
-	getSuggestedFlightsUseCase flight.IGetSuggestedFlightsUseCase
+	createFlightUseCase      flight.ICreateFlightUseCase
+	getFlightUseCase         flight.IGetFlightUseCase
+	updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase
+	getAllFlightsUseCase     flight.IGetAllFlightsUseCase
+	deleteFlightUseCase      flight.IDeleteFlightUseCase
+	searchFlightsUseCase     flight.ISearchFlightsUseCase
+	listFlightsUseCase       flight.IListFlightsUseCase
 }
 
-func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlightUseCase flight.IGetFlightUseCase, updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase, getAllFlightsUseCase flight.IGetAllFlightsUseCase, deleteFlightUseCase flight.IDeleteFlightUseCase, searchFlightsUseCase flight.ISearchFlightsUseCase, getSuggestedFlightsUseCase flight.IGetSuggestedFlightsUseCase) *FlightHandler {
+func NewFlightHandler(createFlightUseCase flight.ICreateFlightUseCase, getFlightUseCase flight.IGetFlightUseCase, updateFlightTimesUseCase flight.IUpdateFlightTimesUseCase, getAllFlightsUseCase flight.IGetAllFlightsUseCase, deleteFlightUseCase flight.IDeleteFlightUseCase, searchFlightsUseCase flight.ISearchFlightsUseCase, listFlightsUseCase flight.IListFlightsUseCase) *FlightHandler {
 	return &FlightHandler{createFlightUseCase: createFlightUseCase, getFlightUseCase: getFlightUseCase, updateFlightTimesUseCase: updateFlightTimesUseCase,
 		getAllFlightsUseCase: getAllFlightsUseCase, deleteFlightUseCase: deleteFlightUseCase,
-		searchFlightsUseCase:       searchFlightsUseCase,
-		getSuggestedFlightsUseCase: getSuggestedFlightsUseCase,
+		searchFlightsUseCase: searchFlightsUseCase,
+		listFlightsUseCase:   listFlightsUseCase,
 	}
 }
 
@@ -50,7 +51,7 @@ func (h *FlightHandler) CreateFlight(ctx *gin.Context) {
 }
 
 func (h *FlightHandler) GetFlight(ctx *gin.Context) {
-	flightIDStr := ctx.Query("id")
+	flightIDStr := ctx.Param("id")
 	if flightIDStr == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Flight ID is required."})
 		return
@@ -197,8 +198,22 @@ func (h *FlightHandler) SearchFlights(ctx *gin.Context) {
 	})
 }
 
-func (h *FlightHandler) GetSuggestedFlights(ctx *gin.Context) {
-	flights, err := h.getSuggestedFlightsUseCase.Execute(ctx.Request.Context())
+func (h *FlightHandler) ListFlights(ctx *gin.Context) {
+	var params entities.ListFlightsParams
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Can not bind query param"})
+		return
+	}
+
+	if params.Page == 0 {
+		params.Page = 1
+	}
+
+	if params.Limit == 0 {
+		params.Limit = 10
+	}
+
+	flights, err := h.listFlightsUseCase.Execute(ctx.Request.Context(), params.Page, params.Limit)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("An unexpected error occurred. %v", err)})
 		return

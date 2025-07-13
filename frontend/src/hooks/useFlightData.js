@@ -10,9 +10,9 @@ const BUSINESS_CHANGE_FEE = 360000;
 const SUGGESTED_MIN_SEATS = 10;
 const SUGGESTED_MAX_SEATS = 100;
 
-/** 
- * Chuyển dữ liệu API sang định dạng cần thiết 
- * Tách ra ngoài để không bị re-create mỗi lần render 
+/**
+ * Chuyển dữ liệu API sang định dạng cần thiết
+ * Tách ra ngoài để không bị re-create mỗi lần render
  */
 function transformFlights(data, from, to) {
   return data.map((flight) => {
@@ -113,7 +113,7 @@ export const useFlightData = (departureCity, arrivalCity, flightDate) => {
   const initialFetchDoneRef = useRef(false);
 
   /**
-   * Hàm fetch chuyến bay. 
+   * Hàm fetch chuyến bay.
    * useCallback để không bị tạo mới mỗi render (stabilize reference).
    */
   const fetchFlights = useCallback(
@@ -147,7 +147,7 @@ export const useFlightData = (departureCity, arrivalCity, flightDate) => {
   const fetchSuggestedFlights = useCallback(
     async (setState) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/flight/suggest`);
+        const response = await fetch(`${API_BASE_URL}/api/flight?page=1&limit=10`);
         if (!response.ok) {
           throw new Error(`Lỗi khi gọi API suggest: ${response.statusText}`);
         }

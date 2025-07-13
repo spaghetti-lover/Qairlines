@@ -70,7 +70,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	flightGetAllUseCase := flight.NewGetAllFlightsUseCase(flightRepo, ticketRepo)
 	flightDeleteUseCase := flight.NewDeleteFlightUseCase(flightRepo)
 	flightSearchUseCase := flight.NewSearchFlightsUseCase(flightRepo)
-	flightSuggestedUseCase := flight.NewGetSuggestedFlightsUseCase(flightRepo)
+	flightSuggestedUseCase := flight.NewlistFlightsUseCase(flightRepo)
 	ticketGetTicketByFlightIDUseCase := ticket.NewGetTicketsByFlightIDUseCase(ticketRepo)
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
