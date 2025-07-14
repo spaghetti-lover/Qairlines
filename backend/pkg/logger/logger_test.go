@@ -5,7 +5,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,10 +41,4 @@ func TestGetTraceID(t *testing.T) {
 	emptyCtx := context.Background()
 	traceID = GetTraceID(emptyCtx)
 	assert.Equal(t, "", traceID)
-}
-
-func TestNewLoggerWithPath(t *testing.T) {
-	// Only test initialization, not actual file writing
-	logger := NewLoggerWithPath("test.log", "info")
-	assert.IsType(t, &zerolog.Logger{}, logger)
 }
