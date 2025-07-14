@@ -8,9 +8,9 @@ import (
 func RegisterAdminRoutes(router *gin.RouterGroup, adminHandler *handlers.AdminHandler) {
 	admin := router.Group("/admin")
 	{
-		admin.GET("/", adminHandler.GetCurrentAdmin)
+		admin.GET("/melocal", adminHandler.GetCurrentAdmin)
 		admin.POST("/", adminHandler.CreateAdminTx)
-		admin.GET("/all", adminHandler.GetAllAdmins)
+		admin.GET("", adminHandler.ListAdmins)
 		admin.PUT("/", adminHandler.UpdateAdmin)
 		admin.DELETE("/", adminHandler.DeleteAdmin)
 	}

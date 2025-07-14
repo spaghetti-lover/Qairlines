@@ -30,7 +30,7 @@ type AdminResponse struct {
 	} `json:"createdAt"`
 }
 
-type GetAllAdminsResponse struct {
+type ListAdminsResponse struct {
 	Message string          `json:"message"`
 	Data    []AdminResponse `json:"data"`
 }
@@ -69,4 +69,9 @@ type ChangePasswordRequest struct {
 
 type ChangePasswordResponse struct {
 	Message string `json:"message"`
+}
+
+type ListAdminsParams struct {
+	Limit int `json:"limit" binding:"required,min=1,max=100"`
+	Page  int `json:"page" binding:"required,min=1"`
 }

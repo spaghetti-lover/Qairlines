@@ -31,7 +31,6 @@ type Querier interface {
 	DeleteUser(ctx context.Context, userID int64) error
 	GetAdmin(ctx context.Context, userID int64) (int64, error)
 	GetAdminByEmail(ctx context.Context, email string) (GetAdminByEmailRow, error)
-	GetAllAdmin(ctx context.Context) ([]int64, error)
 	GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error)
 	GetAllFlights(ctx context.Context) ([]GetAllFlightsRow, error)
 	GetAllSeats(ctx context.Context) ([]Seat, error)

@@ -18,7 +18,7 @@ import (
 
 type AdminHandler struct {
 	adminCreateUseCase     admin.ICreateAdminUseCase
-	getAllAdminsUseCase    admin.IGetAllAdminsUseCase
+	ListAdminsUseCase      admin.IListAdminsUseCase
 	getCurrentAdminUseCase admin.IGetCurrentAdminUseCase
 	updateAdminUseCase     admin.IUpdateAdminUseCase
 	deleteAdminUseCase     admin.IDeleteAdminUseCase
@@ -27,14 +27,14 @@ type AdminHandler struct {
 func NewAdminHandler(
 	adminCreateUseCase admin.ICreateAdminUseCase,
 	getCurrentAdminUseCase admin.IGetCurrentAdminUseCase,
-	getAllAdminsUseCase admin.IGetAllAdminsUseCase,
+	ListAdminsUseCase admin.IListAdminsUseCase,
 	updateAdminUseCase admin.IUpdateAdminUseCase,
 	deleteAdminUseCase admin.IDeleteAdminUseCase,
 ) *AdminHandler {
 	return &AdminHandler{
 		adminCreateUseCase:     adminCreateUseCase,
 		getCurrentAdminUseCase: getCurrentAdminUseCase,
-		getAllAdminsUseCase:    getAllAdminsUseCase,
+		ListAdminsUseCase:      ListAdminsUseCase,
 		updateAdminUseCase:     updateAdminUseCase,
 		deleteAdminUseCase:     deleteAdminUseCase,
 	}
@@ -85,7 +85,7 @@ func (h *AdminHandler) CreateAdminTx(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, response)
 }
 
-func (h *AdminHandler) GetAllAdmins(ctx *gin.Context) {
+func (h *AdminHandler) ListAdmins(ctx *gin.Context) {
 	// Kiểm tra quyền admin
 	isAdmin := ctx.GetHeader("admin")
 	if isAdmin != "true" {
@@ -93,15 +93,33 @@ func (h *AdminHandler) GetAllAdmins(ctx *gin.Context) {
 		return
 	}
 
+	var params dto.ListAdminsParams
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Can not bind query param"})
+		return
+	}
+
+	if params.Page < 0 {
+		params.Page = 0
+	}
+
+	if params.Limit <= 0 {
+		params.Limit = 10
+	}
+
+	if params.Limit > 100 {
+		params.Limit = 100
+	}
+
 	// Lấy danh sách admin
-	admins, err := h.getAllAdminsUseCase.Execute(ctx.Request.Context())
+	admins, err := h.ListAdminsUseCase.Execute(ctx.Request.Context(), params.Page, params.Limit)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return
 	}
 
 	// Tạo response
-	response := dto.GetAllAdminsResponse{
+	response := dto.ListAdminsResponse{
 		Message: "Admins retrieved successfully.",
 		Data:    mappers.AdminsEntitiesToResponse(admins),
 	}

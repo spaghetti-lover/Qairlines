@@ -10,11 +10,9 @@ import (
 )
 
 const createAdmin = `-- name: CreateAdmin :one
-INSERT INTO admins (
-  user_id
-) VALUES (
-  $1
-) RETURNING user_id
+INSERT INTO admins (user_id)
+VALUES ($1)
+RETURNING user_id
 `
 
 func (q *Queries) CreateAdmin(ctx context.Context, userID int64) (int64, error) {
@@ -35,8 +33,10 @@ func (q *Queries) DeleteAdmin(ctx context.Context, userID int64) error {
 }
 
 const getAdmin = `-- name: GetAdmin :one
-SELECT user_id FROM admins
-WHERE user_id = $1 LIMIT 1
+SELECT user_id
+FROM admins
+WHERE user_id = $1
+LIMIT 1
 `
 
 func (q *Queries) GetAdmin(ctx context.Context, userID int64) (int64, error) {
@@ -47,9 +47,11 @@ func (q *Queries) GetAdmin(ctx context.Context, userID int64) (int64, error) {
 }
 
 const getAdminByEmail = `-- name: GetAdminByEmail :one
-SELECT  FROM admins
-JOIN users u ON a.user_id = u.user_id
-WHERE u.email = $1 LIMIT 1
+SELECT 
+FROM admins
+  JOIN users u ON a.user_id = u.user_id
+WHERE u.email = $1
+LIMIT 1
 `
 
 type GetAdminByEmailRow struct {
@@ -62,36 +64,12 @@ func (q *Queries) GetAdminByEmail(ctx context.Context, email string) (GetAdminBy
 	return i, err
 }
 
-const getAllAdmin = `-- name: GetAllAdmin :many
-SELECT user_id FROM admins
-`
-
-func (q *Queries) GetAllAdmin(ctx context.Context) ([]int64, error) {
-	rows, err := q.db.Query(ctx, getAllAdmin)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []int64{}
-	for rows.Next() {
-		var user_id int64
-		if err := rows.Scan(&user_id); err != nil {
-			return nil, err
-		}
-		items = append(items, user_id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const isAdmin = `-- name: IsAdmin :one
 SELECT EXISTS (
-  SELECT 1
-  FROM admins
-  WHERE user_id = $1
-) AS is_admin
+    SELECT 1
+    FROM admins
+    WHERE user_id = $1
+  ) AS is_admin
 `
 
 func (q *Queries) IsAdmin(ctx context.Context, userID int64) (bool, error) {
@@ -102,10 +80,10 @@ func (q *Queries) IsAdmin(ctx context.Context, userID int64) (bool, error) {
 }
 
 const listAdmins = `-- name: ListAdmins :many
-SELECT user_id FROM admins
+SELECT user_id
+FROM admins
 ORDER BY user_id
-LIMIT $1
-OFFSET $2
+LIMIT $1 OFFSET $2
 `
 
 type ListAdminsParams struct {

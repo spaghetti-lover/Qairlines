@@ -48,14 +48,18 @@ func (r *AdminRepositoryPostgres) CreateAdminTx(ctx context.Context, arg entitie
 	}, nil
 }
 
-func (r *AdminRepositoryPostgres) GetAllAdmins(ctx context.Context) ([]entities.Admin, error) {
-	adminIDs, err := r.store.GetAllAdmin(ctx)
+func (r *AdminRepositoryPostgres) ListAdmins(ctx context.Context, page int, limit int) ([]entities.Admin, error) {
+	adminIDs, err := r.store.ListAdmins(ctx, db.ListAdminsParams{
+		Limit:  int32(limit),
+		Offset: int32(page * limit),
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	admins := make([]entities.Admin, len(adminIDs))
 	for i, adminID := range adminIDs {
+
 		user, err := r.store.GetUser(ctx, adminID)
 		if err != nil {
 			return nil, err
