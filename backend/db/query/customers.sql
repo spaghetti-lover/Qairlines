@@ -51,7 +51,7 @@ WHERE user_id = $8;
 -- name: ListCustomers :many
 SELECT *
 FROM customers
-ORDER BY user_id
+ORDER BY user_id, created_at DESC
 LIMIT $1 OFFSET $2;
 -- name: DeleteCustomerByID :one
 DELETE FROM Customers

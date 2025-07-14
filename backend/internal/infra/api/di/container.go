@@ -49,7 +49,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	customerCreateUseCase := customer.NewCreateCustomerUseCase(customerRepo, userRepo)
 	customerUpdateUseCase := customer.NewCustomerUpdateUseCase(customerRepo)
-	customerGetAllUseCase := customer.NewListCustomersUseCase(customerRepo)
+	customerListAllUseCase := customer.NewListCustomersUseCase(customerRepo)
 	customerDeleteUseCase := customer.NewDeleteCustomerUseCase(customerRepo)
 	customerGetUseCase := customer.NewGetCustomerDetailsUseCase(customerRepo, tokenMaker)
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
@@ -80,7 +80,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 
 	// Handlers
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
-	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, nil, customerGetAllUseCase, customerDeleteUseCase, customerGetUseCase)
+	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, nil, customerListAllUseCase, customerDeleteUseCase, customerGetUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
 	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, ListAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)

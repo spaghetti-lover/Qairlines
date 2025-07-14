@@ -34,7 +34,7 @@ func TestGetErrorMessage(t *testing.T) {
 }
 
 func TestLoadMessages_Success(t *testing.T) {
-	// Tạo file tạm chứa JSON hợp lệ
+	// Create temporary file with valid JSON
 	tmpFile, err := os.CreateTemp("", "messages.json")
 	assert.NoError(t, err)
 	defer os.Remove(tmpFile.Name())

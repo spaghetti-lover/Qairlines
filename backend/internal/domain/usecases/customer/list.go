@@ -24,12 +24,12 @@ func NewListCustomersUseCase(customerRepository adapters.ICustomerRepository) IL
 
 func (u *ListCustomersUseCase) Execute(ctx context.Context, page int, limit int) ([]dto.CustomerResponse, error) {
 	start := (page - 1) * limit
-	// Lấy danh sách khách hàng từ repository
+	// Get customer list from repository
 	customers, err := u.customerRepository.ListCustomers(ctx, start, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	// Sử dụng mapper để chuyển đổi danh sách entity sang DTO
+	// Use mapper to convert entity list to DTO
 	return mappers.ToCustomerResponses(customers), nil
 }

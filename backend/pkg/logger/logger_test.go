@@ -17,7 +17,7 @@ func TestPrettyJSONWriter_Write_ValidJSON(t *testing.T) {
 	n, err := writer.Write(input)
 	assert.NoError(t, err)
 	assert.Greater(t, n, 0)
-	// Kết quả phải có dấu xuống dòng và khoảng trắng (pretty)
+	// Result should have newlines and spaces (pretty formatted)
 	assert.Contains(t, buf.String(), "\n")
 	assert.Contains(t, buf.String(), "  \"foo\": \"bar\"")
 }
@@ -30,7 +30,7 @@ func TestPrettyJSONWriter_Write_InvalidJSON(t *testing.T) {
 	n, err := writer.Write(input)
 	assert.NoError(t, err)
 	assert.Greater(t, n, 0)
-	// Kết quả phải giống input vì không format được
+	// Result should be same as input since it cannot be formatted
 	assert.Equal(t, "not a json", buf.String())
 }
 
@@ -45,7 +45,7 @@ func TestGetTraceID(t *testing.T) {
 }
 
 func TestNewLoggerWithPath(t *testing.T) {
-	// Chỉ test khởi tạo, không test ghi file thật
+	// Only test initialization, not actual file writing
 	logger := NewLoggerWithPath("test.log", "info")
 	assert.IsType(t, &zerolog.Logger{}, logger)
 }

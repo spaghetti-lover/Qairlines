@@ -115,13 +115,13 @@ func (r *CustomerRepositoryPostgres) UpdateCustomer(ctx context.Context, custome
 		}, nil
 }
 
-func (r *CustomerRepositoryPostgres) ListCustomers(ctx context.Context, page int, limit int) ([]entities.Customer, error) {
+func (r *CustomerRepositoryPostgres) ListCustomers(ctx context.Context, offset int, limit int) ([]entities.Customer, error) {
 	rows, err := r.store.ListCustomers(ctx, db.ListCustomersParams{
 		Limit:  int32(limit),
-		Offset: (int32(page) - 1) * int32(limit),
+		Offset: int32(offset),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all customers: %w", err)
+		return nil, fmt.Errorf("failed to list customers: %w", err)
 	}
 
 	var customers []entities.Customer
