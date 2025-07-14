@@ -10,7 +10,7 @@ func RegisterCustomerRoutes(router *gin.RouterGroup, customerHandler *handlers.C
 	{
 		customer.POST("/", customerHandler.CreateCustomerTx)
 		customer.PUT("/:id", customerHandler.UpdateCustomer)
-		customer.GET("/all", customerHandler.GetAllCustomers)
+		customer.GET("", customerHandler.ListCustomers)
 		customer.DELETE("/delete", customerHandler.DeleteCustomer)
 		customer.GET("/", customerHandler.GetCustomerDetails)
 	}

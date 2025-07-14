@@ -83,3 +83,8 @@ type TimeWithNano struct {
 	Seconds     int64 `json:"seconds"`
 	Nanoseconds int64 `json:"nanoseconds"`
 }
+
+type ListCustomersParams struct {
+	Limit int `json:"limit" binding:"required,min=1,max=100" default:"10"`
+	Page  int `json:"page" binding:"required,min=1" default:"1"`
+}

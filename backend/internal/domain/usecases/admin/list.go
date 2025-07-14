@@ -22,5 +22,6 @@ func NewListAdminsUseCase(adminRepository adapters.IAdminRepository) IListAdmins
 }
 
 func (u *ListAdminsUseCase) Execute(ctx context.Context, page int, limit int) ([]entities.Admin, error) {
-	return u.adminRepository.ListAdmins(ctx, page, limit)
+	start := (page - 1) * limit
+	return u.adminRepository.ListAdmins(ctx, start, limit)
 }

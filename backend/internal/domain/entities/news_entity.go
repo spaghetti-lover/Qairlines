@@ -23,8 +23,3 @@ type CreateNewsParams struct {
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
-
-type ListNewsParams struct {
-	Page  int `form:"page" binding:"required"`
-	Limit int `form:"limit" binding:"required"`
-}

@@ -48,10 +48,10 @@ func (r *AdminRepositoryPostgres) CreateAdminTx(ctx context.Context, arg entitie
 	}, nil
 }
 
-func (r *AdminRepositoryPostgres) ListAdmins(ctx context.Context, page int, limit int) ([]entities.Admin, error) {
+func (r *AdminRepositoryPostgres) ListAdmins(ctx context.Context, offset int, limit int) ([]entities.Admin, error) {
 	adminIDs, err := r.store.ListAdmins(ctx, db.ListAdminsParams{
 		Limit:  int32(limit),
-		Offset: int32(page * limit),
+		Offset: int32(offset),
 	})
 	if err != nil {
 		return nil, err
@@ -197,7 +197,5 @@ func (r *AdminRepositoryPostgres) DeleteAdmin(ctx context.Context, userID int64)
 	if !result.Success {
 		return errors.New("delete admin transaction failed")
 	}
-
-	log.Printf("Admin (user_id=%d) deleted successfully", userID)
 	return nil
 }

@@ -8,23 +8,24 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 )
 
-type IGetAllCustomersUseCase interface {
-	Execute(ctx context.Context) ([]dto.CustomerResponse, error)
+type IListCustomersUseCase interface {
+	Execute(ctx context.Context, page int, limit int) ([]dto.CustomerResponse, error)
 }
 
-type GetAllCustomersUseCase struct {
+type ListCustomersUseCase struct {
 	customerRepository adapters.ICustomerRepository
 }
 
-func NewGetAllCustomersUseCase(customerRepository adapters.ICustomerRepository) IGetAllCustomersUseCase {
-	return &GetAllCustomersUseCase{
+func NewListCustomersUseCase(customerRepository adapters.ICustomerRepository) IListCustomersUseCase {
+	return &ListCustomersUseCase{
 		customerRepository: customerRepository,
 	}
 }
 
-func (u *GetAllCustomersUseCase) Execute(ctx context.Context) ([]dto.CustomerResponse, error) {
+func (u *ListCustomersUseCase) Execute(ctx context.Context, page int, limit int) ([]dto.CustomerResponse, error) {
+	start := (page - 1) * limit
 	// Lấy danh sách khách hàng từ repository
-	customers, err := u.customerRepository.GetAllCustomers(ctx)
+	customers, err := u.customerRepository.ListCustomers(ctx, start, limit)
 	if err != nil {
 		return nil, err
 	}

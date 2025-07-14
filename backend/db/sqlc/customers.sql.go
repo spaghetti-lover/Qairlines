@@ -74,65 +74,6 @@ func (q *Queries) DeleteCustomerByID(ctx context.Context, userID int64) (int64, 
 	return user_id, err
 }
 
-const getAllCustomers = `-- name: GetAllCustomers :many
-SELECT u.user_id AS uid,
-  u.first_name,
-  u.last_name,
-  u.email,
-  c.date_of_birth,
-  c.gender,
-  c.loyalty_points,
-  c.address,
-  c.passport_number,
-  c.identification_number
-FROM Users u
-  JOIN Customers c ON u.user_id = c.user_id
-`
-
-type GetAllCustomersRow struct {
-	Uid                  int64      `json:"uid"`
-	FirstName            *string    `json:"first_name"`
-	LastName             *string    `json:"last_name"`
-	Email                string     `json:"email"`
-	DateOfBirth          time.Time  `json:"date_of_birth"`
-	Gender               GenderType `json:"gender"`
-	LoyaltyPoints        *int32     `json:"loyalty_points"`
-	Address              *string    `json:"address"`
-	PassportNumber       *string    `json:"passport_number"`
-	IdentificationNumber *string    `json:"identification_number"`
-}
-
-func (q *Queries) GetAllCustomers(ctx context.Context) ([]GetAllCustomersRow, error) {
-	rows, err := q.db.Query(ctx, getAllCustomers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetAllCustomersRow{}
-	for rows.Next() {
-		var i GetAllCustomersRow
-		if err := rows.Scan(
-			&i.Uid,
-			&i.FirstName,
-			&i.LastName,
-			&i.Email,
-			&i.DateOfBirth,
-			&i.Gender,
-			&i.LoyaltyPoints,
-			&i.Address,
-			&i.PassportNumber,
-			&i.IdentificationNumber,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getCustomer = `-- name: GetCustomer :one
 SELECT user_id, phone_number, gender, date_of_birth, passport_number, identification_number, address, loyalty_points
 FROM customers

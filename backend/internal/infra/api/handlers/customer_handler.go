@@ -22,17 +22,17 @@ type CustomerHandler struct {
 	customerCreateUseCase     customer.ICreateCustomerUseCase
 	customerUpdateUseCase     customer.ICustomerUpdateUseCase
 	userUpdateUseCase         user.IUserUpdateUseCase
-	getAllCustomerUseCase     customer.IGetAllCustomersUseCase
+	listCustomerUseCase       customer.IListCustomersUseCase
 	deleteCustomerUseCase     customer.IDeleteCustomerUseCase
 	getCustomerDetailsUseCase customer.IGetCustomerDetailsUseCase
 }
 
-func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, getAllCustomerUseCase customer.IGetAllCustomersUseCase, deleteCustomerUseCase customer.IDeleteCustomerUseCase, getCustomerDetailsUseCase customer.IGetCustomerDetailsUseCase) *CustomerHandler {
+func NewCustomerHandler(customerCreateUseCase customer.ICreateCustomerUseCase, customerUpdateUseCase customer.ICustomerUpdateUseCase, userUpdateUseCase user.IUserUpdateUseCase, listCustomerUseCase customer.IListCustomersUseCase, deleteCustomerUseCase customer.IDeleteCustomerUseCase, getCustomerDetailsUseCase customer.IGetCustomerDetailsUseCase) *CustomerHandler {
 	return &CustomerHandler{
 		customerCreateUseCase:     customerCreateUseCase,
 		customerUpdateUseCase:     customerUpdateUseCase,
 		userUpdateUseCase:         userUpdateUseCase,
-		getAllCustomerUseCase:     getAllCustomerUseCase,
+		listCustomerUseCase:       listCustomerUseCase,
 		deleteCustomerUseCase:     deleteCustomerUseCase,
 		getCustomerDetailsUseCase: getCustomerDetailsUseCase,
 	}
@@ -117,14 +117,21 @@ func (h *CustomerHandler) UpdateCustomer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
-func (h *CustomerHandler) GetAllCustomers(ctx *gin.Context) {
+func (h *CustomerHandler) ListCustomers(ctx *gin.Context) {
 	isAdmin := ctx.GetHeader("admin")
 	if isAdmin != "true" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
 		return
 	}
 
-	customers, err := h.getAllCustomerUseCase.Execute(ctx.Request.Context())
+	var params dto.ListCustomersParams
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters.", "error": err.Error()})
+		return
+	}
+
+	customers, err := h.listCustomerUseCase.Execute(ctx.Request.Context(), params.Page, params.Limit)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
 		return

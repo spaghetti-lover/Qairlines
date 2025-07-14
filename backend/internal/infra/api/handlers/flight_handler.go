@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
-	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
@@ -199,7 +198,7 @@ func (h *FlightHandler) SearchFlights(ctx *gin.Context) {
 }
 
 func (h *FlightHandler) ListFlights(ctx *gin.Context) {
-	var params entities.ListFlightsParams
+	var params dto.ListFlightsParams
 	if err := ctx.ShouldBindQuery(&params); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Can not bind query param"})
 		return

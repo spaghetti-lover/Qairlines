@@ -17,10 +17,10 @@ func NewNewsModelRepositoryPostgres(store *db.Store) adapters.INewsRepository {
 	return &NewsModelRepositoryPostgres{store: *store}
 }
 
-func (r *NewsModelRepositoryPostgres) ListNews(ctx context.Context, page int, limit int) ([]entities.News, error) {
+func (r *NewsModelRepositoryPostgres) ListNews(ctx context.Context, offset int, limit int) ([]entities.News, error) {
 	news, err := r.store.ListNews(ctx, db.ListNewsParams{
 		Limit:  int32(limit),
-		Offset: int32(page),
+		Offset: int32(offset),
 	})
 	if err != nil {
 		return []entities.News{}, err

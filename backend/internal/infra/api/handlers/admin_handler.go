@@ -99,8 +99,8 @@ func (h *AdminHandler) ListAdmins(ctx *gin.Context) {
 		return
 	}
 
-	if params.Page < 0 {
-		params.Page = 0
+	if params.Page <= 0 {
+		params.Page = 1
 	}
 
 	if params.Limit <= 0 {
@@ -132,7 +132,7 @@ func (h *AdminHandler) GetCurrentAdmin(ctx *gin.Context) {
 	// Kiểm tra quyền admin
 	isAdmin := ctx.GetHeader("admin")
 	if isAdmin != "true" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required."})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication failed. Admin privileges required.", "error": "Admin privileges required."})
 		return
 	}
 

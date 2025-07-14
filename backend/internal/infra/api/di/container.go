@@ -49,7 +49,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
 	customerCreateUseCase := customer.NewCreateCustomerUseCase(customerRepo, userRepo)
 	customerUpdateUseCase := customer.NewCustomerUpdateUseCase(customerRepo)
-	customerGetAllUseCase := customer.NewGetAllCustomersUseCase(customerRepo)
+	customerGetAllUseCase := customer.NewListCustomersUseCase(customerRepo)
 	customerDeleteUseCase := customer.NewDeleteCustomerUseCase(customerRepo)
 	customerGetUseCase := customer.NewGetCustomerDetailsUseCase(customerRepo, tokenMaker)
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)

@@ -3,26 +3,40 @@ package utils
 import (
 	"regexp"
 	"strings"
+	"unicode"
+
+	"golang.org/x/text/unicode/norm"
 )
 
-// Slugify converts a string into a URL-friendly slug.
-func Slugify(title string) string {
-	// Chuyển đổi thành chữ thường
-	title = strings.ToLower(title)
+func removeDiacritics(str string) string {
+	// Thay thế ký tự đ/Đ trước vì nó không thuộc nhóm Mn
+	str = strings.ReplaceAll(str, "đ", "d")
+	str = strings.ReplaceAll(str, "Đ", "D")
 
-	// Xóa ký tự không phải chữ cái, số hoặc khoảng trắng
+	// Loại dấu bằng cách chuẩn hóa Unicode
+	t := norm.NFD.String(str)
+	result := make([]rune, 0, len(t))
+	for _, r := range t {
+		if unicode.Is(unicode.Mn, r) {
+			continue
+		}
+		result = append(result, r)
+	}
+	return string(result)
+}
+
+func Slugify(title string) string {
+	title = strings.ToLower(title)
+	title = removeDiacritics(title)
+
 	re := regexp.MustCompile(`[^a-z0-9\s-]`)
 	title = re.ReplaceAllString(title, "")
 
-	// Thay thế khoảng trắng bằng dấu gạch ngang
 	title = strings.ReplaceAll(title, " ", "-")
 
-	// Xóa các dấu gạch ngang liên tiếp
 	re = regexp.MustCompile("-+")
 	title = re.ReplaceAllString(title, "-")
 
-	// Xóa khoảng trắng ở đầu và cuối chuỗi
-	title = strings.TrimSpace(title)
-
+	title = strings.Trim(title, "-")
 	return title
 }

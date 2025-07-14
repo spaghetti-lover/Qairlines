@@ -23,7 +23,8 @@ func NewlistFlightsUseCase(flightRepository adapters.IFlightRepository) IListFli
 }
 
 func (u *listFlightsUseCase) Execute(ctx context.Context, page int, limit int) ([]dto.FlightSearchResponse, error) {
-	flights, err := u.flightRepository.ListFlights(ctx, page, limit)
+	start := (page - 1) * limit
+	flights, err := u.flightRepository.ListFlights(ctx, start, limit)
 	if err != nil {
 		if err == adapters.ErrNoSuggestedFlights {
 			return nil, nil

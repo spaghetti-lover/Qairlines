@@ -12,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
-	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
@@ -38,18 +37,10 @@ func NewNewsHandler(listNewsUseCase news.IListNewsUseCase, deleteNewsUseCase new
 }
 
 func (h *NewsHandler) ListNews(ctx *gin.Context) {
-	var params entities.ListNewsParams
+	var params dto.ListNewsParams
 	if err := ctx.ShouldBindQuery(&params); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Can not bind query param"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Can not bind query param.", "error": err.Error()})
 		return
-	}
-
-	if params.Page == 0 {
-		params.Page = 1
-	}
-
-	if params.Limit == 0 {
-		params.Limit = 10
 	}
 	news, err := h.listNewsUseCase.Execute(ctx.Request.Context(), params.Page, params.Limit)
 	if err != nil {
@@ -76,14 +67,14 @@ func (h *NewsHandler) DeleteNews(ctx *gin.Context) {
 
 	newsID, err := strconv.ParseInt(newsIDStr, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid News ID."})
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid News ID.", "error": err.Error()})
 		return
 	}
 
 	err = h.deleteNewsUseCase.Execute(ctx.Request.Context(), newsID)
 	if err != nil {
 		if err == adapters.ErrNewsNotFound {
-			ctx.JSON(http.StatusNotFound, gin.H{"message": "News post not found."})
+			ctx.JSON(http.StatusNotFound, gin.H{"message": "News post not found.", "error": err.Error()})
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})

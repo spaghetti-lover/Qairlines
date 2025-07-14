@@ -160,10 +160,10 @@ func (r *FlightRepositoryPostgres) SearchFlights(ctx context.Context, departureC
 	return flights, nil
 }
 
-func (r *FlightRepositoryPostgres) ListFlights(ctx context.Context, page int, limit int) ([]entities.Flight, error) {
+func (r *FlightRepositoryPostgres) ListFlights(ctx context.Context, offset int, limit int) ([]entities.Flight, error) {
 	rows, err := r.store.ListFlights(ctx, db.ListFlightsParams{
 		Limit:  int32(limit),
-		Offset: int32((page - 1) * limit),
+		Offset: int32(offset),
 	})
 	if err != nil {
 		return nil, err

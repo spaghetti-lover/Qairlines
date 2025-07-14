@@ -45,7 +45,4 @@ type CreateFlightParams struct {
 	Status           string `json:"status"`
 }
 
-type ListFlightsParams struct {
-	Page  int `form:"page" binding:"required"`
-	Limit int `form:"limit" binding:"required"`
-}
+

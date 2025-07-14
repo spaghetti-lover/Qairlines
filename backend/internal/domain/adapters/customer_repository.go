@@ -15,7 +15,7 @@ var (
 type ICustomerRepository interface {
 	CreateCustomerTx(ctx context.Context, arg entities.CreateUserParams) (entities.User, error)
 	UpdateCustomer(ctx context.Context, costumer entities.Customer, user entities.User) (entities.Customer, entities.User, error)
-	GetAllCustomers(ctx context.Context) ([]entities.Customer, error)
+	ListCustomers(ctx context.Context, page int, limit int) ([]entities.Customer, error)
 	DeleteCustomerByID(ctx context.Context, customerID int64) error
 	GetCustomerByUID(ctx context.Context, uid int64) (*entities.Customer, error)
 	GetBookingHistoryByUID(ctx context.Context, uid int64) ([]string, error)

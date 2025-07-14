@@ -115,20 +115,23 @@ func (r *CustomerRepositoryPostgres) UpdateCustomer(ctx context.Context, custome
 		}, nil
 }
 
-func (r *CustomerRepositoryPostgres) GetAllCustomers(ctx context.Context) ([]entities.Customer, error) {
-	rows, err := r.store.GetAllCustomers(ctx)
+func (r *CustomerRepositoryPostgres) ListCustomers(ctx context.Context, page int, limit int) ([]entities.Customer, error) {
+	rows, err := r.store.ListCustomers(ctx, db.ListCustomersParams{
+		Limit:  int32(limit),
+		Offset: (int32(page) - 1) * int32(limit),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all customers: %w", err)
 	}
 
 	var customers []entities.Customer
 	for _, row := range rows {
-		user, err := r.store.GetUser(ctx, row.Uid)
+		user, err := r.store.GetUser(ctx, row.UserID)
 		if err != nil {
 			return nil, err
 		}
 		customers = append(customers, entities.Customer{
-			UserID: row.Uid,
+			UserID: row.UserID,
 			User: entities.User{
 				FirstName: *user.FirstName,
 				LastName:  *user.LastName,
