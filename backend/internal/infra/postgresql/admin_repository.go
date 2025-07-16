@@ -66,7 +66,7 @@ func (r *AdminRepositoryPostgres) ListAdmins(ctx context.Context, offset int, li
 		}
 
 		admins[i] = entities.Admin{
-			UserID:    strconv.FormatInt(user.UserID, 10),
+			UserID:    user.UserID,
 			FirstName: *user.FirstName,
 			LastName:  *user.LastName,
 			Email:     user.Email,
@@ -102,7 +102,7 @@ func (r *AdminRepositoryPostgres) GetAdminByID(ctx context.Context, adminID stri
 	}
 
 	return entities.Admin{
-		UserID:    strconv.FormatInt(user.UserID, 10),
+		UserID:    user.UserID,
 		FirstName: *user.FirstName,
 		LastName:  *user.LastName,
 		Email:     user.Email,
@@ -130,7 +130,7 @@ func (r *AdminRepositoryPostgres) GetAdminByUserID(ctx context.Context, userID i
 	}
 
 	return entities.Admin{
-		UserID:    strconv.FormatInt(user.UserID, 10),
+		UserID:    user.UserID,
 		FirstName: *user.FirstName,
 		LastName:  *user.LastName,
 		Email:     user.Email,
@@ -139,12 +139,7 @@ func (r *AdminRepositoryPostgres) GetAdminByUserID(ctx context.Context, userID i
 }
 
 func (r *AdminRepositoryPostgres) UpdateAdmin(ctx context.Context, admin entities.Admin) (entities.Admin, error) {
-	userID, err := strconv.ParseInt(admin.UserID, 10, 64)
-	if err != nil {
-		return entities.Admin{}, err
-	}
-
-	isAdmin, err := r.store.IsAdmin(ctx, userID)
+	isAdmin, err := r.store.IsAdmin(ctx, admin.UserID)
 	if err != nil {
 		return entities.Admin{}, err
 	}
@@ -153,7 +148,7 @@ func (r *AdminRepositoryPostgres) UpdateAdmin(ctx context.Context, admin entitie
 	}
 
 	err = r.store.UpdateUser(ctx, db.UpdateUserParams{
-		UserID:    userID,
+		UserID:    admin.UserID,
 		FirstName: &admin.FirstName,
 		LastName:  &admin.LastName,
 	})
@@ -161,13 +156,13 @@ func (r *AdminRepositoryPostgres) UpdateAdmin(ctx context.Context, admin entitie
 		return entities.Admin{}, err
 	}
 
-	updatedUser, err := r.store.GetUser(ctx, userID)
+	updatedUser, err := r.store.GetUser(ctx, admin.UserID)
 	if err != nil {
 		return entities.Admin{}, err
 	}
 
 	return entities.Admin{
-		UserID:    strconv.FormatInt(updatedUser.UserID, 10),
+		UserID:    updatedUser.UserID,
 		FirstName: *updatedUser.FirstName,
 		LastName:  *updatedUser.LastName,
 		Email:     updatedUser.Email,

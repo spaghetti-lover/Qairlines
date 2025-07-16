@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
@@ -44,11 +45,11 @@ func (r *NewsModelRepositoryPostgres) ListNews(ctx context.Context, offset int, 
 func (r *NewsModelRepositoryPostgres) DeleteNewsByID(ctx context.Context, newsID int64) error {
 	rowsAffected, err := r.store.DeleteNews(ctx, newsID)
 	if err != nil {
-		return fmt.Errorf("failed to delete news post: %w", err)
+		return err
 	}
 
 	if rowsAffected == 0 {
-		return adapters.ErrNewsNotFound // Trả về lỗi nếu không có hàng nào bị xóa
+		return sql.ErrNoRows // Trả về lỗi nếu không có hàng nào bị xóa
 	}
 
 	return nil

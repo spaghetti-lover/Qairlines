@@ -3,7 +3,6 @@ package news
 import (
 	"context"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
@@ -29,7 +28,7 @@ func NewUpdateNewsUseCase(newsRepository adapters.INewsRepository) IUpdateNewsUs
 
 func (u *UpdateNewsUseCase) Execute(ctx context.Context, newsID int64, req dto.UpdateNewsRequest) (*dto.UpdateNewsResponse, error) {
 	// Validate input
-	if req.Title == "" || req.Description == "" || req.Content == "" || req.AuthorID == "" {
+	if req.Title == "" || req.Description == "" || req.Content == "" {
 		return nil, ErrInvalidNewsData
 	}
 
@@ -46,11 +45,7 @@ func (u *UpdateNewsUseCase) Execute(ctx context.Context, newsID int64, req dto.U
 	existingNews.Title = req.Title
 	existingNews.Description = req.Description
 	existingNews.Content = req.Content
-	authorID, err := strconv.ParseInt(req.AuthorID, 10, 64)
-	if err != nil {
-		return nil, ErrInvalidNewsData
-	}
-	existingNews.AuthorID = authorID
+	existingNews.AuthorID = req.AuthorID
 	existingNews.UpdatedAt = time.Now()
 
 	updatedNews, err := u.newsRepository.UpdateNews(ctx, &existingNews)
@@ -60,11 +55,11 @@ func (u *UpdateNewsUseCase) Execute(ctx context.Context, newsID int64, req dto.U
 
 	// Map entity sang DTO
 	return &dto.UpdateNewsResponse{
-		ID:          strconv.FormatInt(updatedNews.ID, 10),
+		ID:          updatedNews.ID,
 		Title:       updatedNews.Title,
 		Description: updatedNews.Description,
 		Content:     updatedNews.Content,
-		AuthorID:    strconv.FormatInt(updatedNews.AuthorID, 10),
+		AuthorID:    updatedNews.AuthorID,
 		Image:       updatedNews.Image,
 		UpdatedAt:   updatedNews.UpdatedAt.Format(time.RFC3339),
 	}, nil

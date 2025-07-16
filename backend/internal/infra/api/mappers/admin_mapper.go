@@ -1,6 +1,8 @@
 package mappers
 
 import (
+	"strconv"
+
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/admin"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
@@ -53,7 +55,7 @@ func CurrentAdminEntityToResponse(admin entities.Admin) dto.GetCurrentAdminRespo
 	response := dto.GetCurrentAdminResponse{
 		Message: "Admin retrieved successfully.",
 	}
-	response.Data.UID = admin.UserID
+	response.Data.UID = strconv.FormatInt(admin.UserID, 10)
 	response.Data.FirstName = admin.FirstName
 	response.Data.LastName = admin.LastName
 	response.Data.Email = admin.Email
@@ -73,7 +75,7 @@ func AdminUpdateEntityToResponse(admin entities.Admin) dto.AdminUpdateResponse {
 	response := dto.AdminUpdateResponse{
 		Message: "Admin updated successfully.",
 	}
-	response.Data.UID = admin.UserID
+	response.Data.UID = strconv.FormatInt(admin.UserID, 10)
 	response.Data.FirstName = admin.FirstName
 	response.Data.LastName = admin.LastName
 	response.Data.Email = admin.Email

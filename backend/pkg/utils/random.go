@@ -43,15 +43,12 @@ func RandomStringNum() string {
 }
 
 // RandomTime generates a random time like
-func RandomTime() pgtype.Timestamp {
+func RandomTime() time.Time {
 	// Tạo thời gian ngẫu nhiên trong khoảng từ giờ đến 7 ngày sau
 	randomDuration := time.Duration(rand.Intn(7*24)) * time.Hour
 	t := time.Now().Add(randomDuration)
 
-	return pgtype.Timestamp{
-		Time:  t,
-		Valid: true,
-	}
+	return t
 }
 
 // RandomPrice generates a random price

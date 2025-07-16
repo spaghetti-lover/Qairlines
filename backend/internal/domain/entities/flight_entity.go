@@ -32,7 +32,7 @@ type Flight struct {
 }
 
 type CreateFlightParams struct {
-	FlightID         string `json:"flight_id"`
+	FlightID         int64  `json:"flight_id"`
 	FlightNumber     string `json:"flight_number"`
 	AircraftType     string `json:"aircraft_type"`
 	DepartureCity    string `json:"departure_city"`
@@ -44,5 +44,3 @@ type CreateFlightParams struct {
 	BasePrice        int32  `json:"base_price"`
 	Status           string `json:"status"`
 }
-
-

@@ -536,7 +536,7 @@ VALUES (
     1200000,
     44,
     6,
-    'On Time'
+    'On Time'customer.sql
   ),
   (
     'VN212',

@@ -16,13 +16,13 @@ import (
 )
 
 type Server struct {
-	store      *db.Store
+	store      db.Store
 	router     http.Handler
 	tokenMaker token.Maker
 }
 
-func NewServer(config config.Config, store *db.Store) (*Server, error) {
-	container, err := di.NewContainer(config, store)
+func NewServer(config config.Config, store db.Store) (*Server, error) {
+	container, err := di.NewContainer(config, &store)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
 	}

@@ -82,7 +82,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, nil, customerListAllUseCase, customerDeleteUseCase, customerGetUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
-	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase)
+	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase, &config)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, ListAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase, flightSuggestedUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)

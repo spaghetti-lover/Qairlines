@@ -10,7 +10,7 @@ type CreateAdminRequest struct {
 type CreateAdminResponse struct {
 	Message string `json:"message"`
 	Admin   struct {
-		ID        string `json:"id"`
+		ID        int64  `json:"id"`
 		FirstName string `json:"firstName"`
 		LastName  string `json:"lastName"`
 		Email     string `json:"email"`
@@ -21,7 +21,7 @@ type CreateAdminResponse struct {
 }
 
 type AdminResponse struct {
-	ID        string `json:"id"`
+	ID        int64  `json:"id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	Email     string `json:"email"`

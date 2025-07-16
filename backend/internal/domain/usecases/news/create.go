@@ -2,8 +2,6 @@ package news
 
 import (
 	"context"
-	"errors"
-	"strconv"
 	"time"
 
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
@@ -27,13 +25,8 @@ func NewCreateNewsUseCase(newsRepository adapters.INewsRepository) ICreateNewsUs
 
 func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsToDBRequest) (*dto.CreateNewsResponse, error) {
 	// Validate input
-	if req.Title == "" || req.Description == "" || req.Content == "" || req.AuthorID == "" {
+	if req.Title == "" || req.Description == "" || req.Content == "" {
 		return nil, ErrInvalidNewsData
-	}
-
-	authorID, err := strconv.ParseInt(req.AuthorID, 10, 64)
-	if err != nil {
-		return nil, errors.New("invalid author ID: " + err.Error())
 	}
 
 	// Tạo entity News
@@ -41,7 +34,7 @@ func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsToDBR
 		Title:       req.Title,
 		Description: req.Description,
 		Content:     req.Content,
-		AuthorID:    authorID,
+		AuthorID:    req.AuthorID,
 		Image:       req.Image,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -55,11 +48,11 @@ func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsToDBR
 
 	// Map entity sang DTO
 	return &dto.CreateNewsResponse{
-		ID:          strconv.FormatInt(createdNews.ID, 10),
+		ID:          createdNews.ID,
 		Title:       createdNews.Title,
 		Description: createdNews.Description,
 		Content:     createdNews.Content,
-		AuthorID:    strconv.FormatInt(createdNews.AuthorID, 10),
+		AuthorID:    createdNews.AuthorID,
 		Image:       createdNews.Image,
 		CreatedAt:   createdNews.CreatedAt.Format(time.RFC3339),
 	}, nil

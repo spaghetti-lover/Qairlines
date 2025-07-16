@@ -25,7 +25,7 @@ func (u *DeleteAdminUseCase) Execute(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	if admin.UserID == "" {
+	if admin.UserID == 0 {
 		return adapters.ErrAdminNotFound
 	}
 

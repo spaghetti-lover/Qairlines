@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"errors"
+	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spaghetti-lover/qairlines/config"
-	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
@@ -24,15 +22,24 @@ type NewsHandler struct {
 	createNewsUseCase news.ICreateNewsUseCase
 	updateNewsUseCase news.IUpdateNewsUseCase
 	getNewsUseCase    news.IGetNewsUseCase
+	config            *config.Config
 }
 
-func NewNewsHandler(listNewsUseCase news.IListNewsUseCase, deleteNewsUseCase news.IDeleteNewsUseCase, createNewsUseCase news.ICreateNewsUseCase, updateNewsUseCase news.IUpdateNewsUseCase, getNewsUseCase news.IGetNewsUseCase) *NewsHandler {
+func NewNewsHandler(
+	listNewsUseCase news.IListNewsUseCase,
+	deleteNewsUseCase news.IDeleteNewsUseCase,
+	createNewsUseCase news.ICreateNewsUseCase,
+	updateNewsUseCase news.IUpdateNewsUseCase,
+	getNewsUseCase news.IGetNewsUseCase,
+	cfg *config.Config,
+) *NewsHandler {
 	return &NewsHandler{
 		listNewsUseCase:   listNewsUseCase,
 		deleteNewsUseCase: deleteNewsUseCase,
 		createNewsUseCase: createNewsUseCase,
 		updateNewsUseCase: updateNewsUseCase,
 		getNewsUseCase:    getNewsUseCase,
+		config:            cfg,
 	}
 }
 
@@ -66,18 +73,25 @@ func (h *NewsHandler) DeleteNews(ctx *gin.Context) {
 	}
 
 	newsID, err := strconv.ParseInt(newsIDStr, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid News ID.", "error": err.Error()})
+	if err != nil || newsID == 0 {
+		var errMsg string
+		if err != nil {
+			errMsg = err.Error()
+		} else {
+			errMsg = "newsID must be greater than 0"
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid News ID.", "error": errMsg})
 		return
 	}
 
 	err = h.deleteNewsUseCase.Execute(ctx.Request.Context(), newsID)
 	if err != nil {
-		if err == adapters.ErrNewsNotFound {
+		// Check cả sql.ErrNoRows và custom error nếu có
+		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, gin.H{"message": "News post not found.", "error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later.", "error": err.Error()})
 		return
 	}
 
@@ -85,10 +99,7 @@ func (h *NewsHandler) DeleteNews(ctx *gin.Context) {
 }
 
 func (h *NewsHandler) CreateNews(ctx *gin.Context) {
-	config, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatal("cannot load config:", err)
-	}
+	config := h.config
 
 	var publicURL = fmt.Sprintf("http://localhost%s/images/", config.ServerAddressPort)
 	isAdmin := ctx.GetHeader("admin")
@@ -222,18 +233,18 @@ func (h *NewsHandler) GetNews(ctx *gin.Context) {
 	}
 
 	newsID, err := strconv.ParseInt(newsIDStr, 10, 64)
-	if err != nil {
+	if err != nil || newsID == 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid News ID."})
 		return
 	}
 
 	new, err := h.getNewsUseCase.Execute(ctx.Request.Context(), newsID)
 	if err != nil {
-		if errors.Is(err, news.ErrNewsNotFound) {
+		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, gin.H{"message": "News post not found."})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later."})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred. Please try again later.", "error": err.Error()})
 		return
 	}
 

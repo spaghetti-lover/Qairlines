@@ -26,7 +26,7 @@ func (u *GetCurrentAdminUseCase) Execute(ctx context.Context, userID int64) (ent
 	if err != nil {
 		return entities.Admin{}, err
 	}
-	if admin.UserID == "" {
+	if admin.UserID == 0 {
 		return entities.Admin{}, adapters.ErrAdminNotFound
 	}
 	return admin, nil
