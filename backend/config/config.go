@@ -25,6 +25,7 @@ type Config struct {
 	AppEnv                  string        `mapstructure:"APP_EVN"`
 	RateLimiterRequestSec   int           `mapstructure:"RATE_LIMITER_REQUEST_SEC"`
 	RateLimiterRequestBurst int           `mapstructure:"RATE_LIMITER_REQUEST_BURST"`
+	StripeSecretKey         string        `mapstructure:"STRIPE_SECRET_KEY"`
 }
 
 // LoadConfig reads configuration from file or environment variables.

@@ -76,6 +76,7 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/segmentio/kafka-go v0.4.48
 	github.com/shirou/gopsutil/v4 v4.25.4
+	github.com/stripe/stripe-go/v74 v74.30.0
 	golang.org/x/crypto v0.32.0
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

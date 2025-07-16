@@ -10,9 +10,11 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/customer"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/flight"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
+	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/payment"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
+	"github.com/spaghetti-lover/qairlines/internal/infra/stripe"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
 
@@ -25,6 +27,7 @@ type Container struct {
 	FlightHandler   *handlers.FlightHandler
 	TicketHandler   *handlers.TicketHandler
 	BookingHandler  *handlers.BookingHandler
+	PaymentHandler  *handlers.PaymentHandler
 	TokenMaker      token.Maker
 }
 
@@ -34,6 +37,8 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	stripeGateway := stripe.NewStripeGateway(config.StripeSecretKey)
 
 	// Repositories
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
@@ -77,6 +82,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
 	bookingCreateUseCase := booking.NewCreateBookingUseCase(bookingRepo, flightRepo)
 	bookingGetUseCase := booking.NewGetBookingUseCase(bookingRepo)
+	paymentUsecase := payment.NewCreatePaymentIntentUseCase(stripeGateway)
 
 	// Handlers
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
@@ -87,6 +93,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase, flightSuggestedUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
 	bookingHandler := handlers.NewBookingHandler(bookingCreateUseCase, tokenMaker, userRepo, bookingGetUseCase)
+	paymentHandler := handlers.NewPaymentHandler(paymentUsecase)
 
 	return &Container{
 		HealthHandler:   healthHandler,
@@ -97,6 +104,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 		FlightHandler:   flightHandler,
 		TicketHandler:   ticketHandler,
 		BookingHandler:  bookingHandler,
+		PaymentHandler:  paymentHandler,
 		TokenMaker:      tokenMaker,
 	}, nil
 }
