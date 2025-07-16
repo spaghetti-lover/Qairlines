@@ -91,7 +91,7 @@ export function useFlightBooking(bookingID) {
         // Fetch departure flight data
         if (booking.departureFlightId) {
           axios
-            .get(`${API_BASE_URL}/api/flight?id=${booking.departureFlightId}`, {
+            .get(`${API_BASE_URL}/api/flight/${booking.departureFlightId}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -108,7 +108,7 @@ export function useFlightBooking(bookingID) {
         // Fetch return flight data
         if (booking.returnFlightId) {
           axios
-            .get(`${API_BASE_URL}/api/flight?id=${booking.returnFlightId}`, {
+            .get(`${API_BASE_URL}/api/flight/${booking.returnFlightId}`, {
               headers: {
                 Authorization: `Bearer ${token}`,
               },

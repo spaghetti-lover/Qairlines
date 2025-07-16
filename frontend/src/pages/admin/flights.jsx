@@ -70,7 +70,7 @@ export default function ScheduledFlights() {
 
   const handleRemove = async (id) => {
     setFlights(flights.filter(flight => flight.id !== id))
-    const deleteFlightApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flight/?`
+    const deleteFlightApi = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/flight/`
 
     try {
         const response = await fetch(deleteFlightApi +

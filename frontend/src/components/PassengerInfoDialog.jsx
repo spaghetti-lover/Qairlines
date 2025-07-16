@@ -57,7 +57,7 @@ export function PassengerInfoDialog({ isOpen, onClose, passengerCount, onInfoFil
   // Hàm xử lý khi nhấn submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const newErrors = passengers.map((passenger) => {
       const passengerErrors = {};
       if (!passenger.idNumber) passengerErrors.idNumber = "Vui lòng nhập số CCCD.";
@@ -70,13 +70,13 @@ export function PassengerInfoDialog({ isOpen, onClose, passengerCount, onInfoFil
         const birthDateError = validateBirthDate(passenger.birthDate);
         if (birthDateError) passengerErrors.birthDate = birthDateError;
       }
-      if (!passenger.gender) passengerErrors.gender = "Vui lòng chọn giới tính.";
+      if (!passenger.gender) passengapierErrors.gender = "Vui lòng chọn giới tính.";
       if (!passenger.address) passengerErrors.address = "Vui lòng nhập địa chỉ.";
       return passengerErrors;
     });
-  
+
     setErrors(newErrors);
-  
+
     // Kiểm tra nếu không có lỗi
     if (newErrors.every((error) => Object.keys(error).length === 0)) {
       try {
@@ -88,7 +88,7 @@ export function PassengerInfoDialog({ isOpen, onClose, passengerCount, onInfoFil
       }
     }
   };
-  
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -96,10 +96,6 @@ export function PassengerInfoDialog({ isOpen, onClose, passengerCount, onInfoFil
         <DialogHeader>
           <DialogTitle>Thông tin hành khách</DialogTitle>
         </DialogHeader>
-        <div>
-          <label htmlFor="email">Nhập email nhận thông tin vé:</label>
-          <Input type="text" id="email" placeholder="a@email.com" />
-        </div>
 
         <form onSubmit={handleSubmit}>
           {passengers.map((passenger, index) => (

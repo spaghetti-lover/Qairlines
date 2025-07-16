@@ -104,6 +104,6 @@ type TicketResponse struct {
 }
 
 type ListFlightsParams struct {
-	Limit int `json:"limit" binding:"required,min=1,max=100" default:"10"`
-	Page  int `json:"page" binding:"required,min=1" default:"1"`
+	Limit int `form:"limit" binding:"required,min=1,max=100" default:"10"`
+	Page  int `form:"page" binding:"required,min=1" default:"1"`
 }

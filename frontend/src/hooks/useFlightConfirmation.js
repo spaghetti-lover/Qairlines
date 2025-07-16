@@ -70,7 +70,7 @@ export function useFlightConfirmation() {
   const fetchFlightData = useCallback(
     async (flightId, optionId, setFlightDataFn, setOptionFn) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/flight?id=${flightId}`);
+        const response = await fetch(`${API_BASE_URL}/api/flight/${flightId}`);
         if (!response.ok) {
           throw new Error("Không thể lấy dữ liệu chuyến bay.");
         }

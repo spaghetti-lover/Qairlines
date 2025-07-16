@@ -46,11 +46,18 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		// Tạo booking
+		var returnFlightIDPtr *int64
+		if arg.TripType == "roundTrip" && arg.ReturnFlightID != 0 {
+			returnFlightIDPtr = &arg.ReturnFlightID
+		} else {
+			returnFlightIDPtr = nil
+		}
+
 		booking, err := q.CreateBooking(ctx, CreateBookingParams{
 			UserEmail:         &arg.UserEmail,
 			TripType:          TripType(arg.TripType),
 			DepartureFlightID: &arg.DepartureFlightID,
-			ReturnFlightID:    &arg.ReturnFlightID,
+			ReturnFlightID:    returnFlightIDPtr,
 			Status:            BookingStatus(entities.BookingStatusPending),
 		})
 		if err != nil {
