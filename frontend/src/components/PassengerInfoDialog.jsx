@@ -70,7 +70,7 @@ export function PassengerInfoDialog({ isOpen, onClose, passengerCount, onInfoFil
         const birthDateError = validateBirthDate(passenger.birthDate);
         if (birthDateError) passengerErrors.birthDate = birthDateError;
       }
-      if (!passenger.gender) passengapierErrors.gender = "Vui lòng chọn giới tính.";
+      if (!passenger.gender) passengerErrors.gender = "Vui lòng chọn giới tính.";
       if (!passenger.address) passengerErrors.address = "Vui lòng nhập địa chỉ.";
       return passengerErrors;
     });
