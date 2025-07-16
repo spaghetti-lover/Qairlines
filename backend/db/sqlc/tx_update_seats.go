@@ -16,7 +16,7 @@ func (store *SQLStore) UpdateSeats(ctx context.Context, bookingID int64, seats [
 		for _, seat := range seats {
 			// Kiểm tra ghế có thuộc chuyến bay không
 			ticket, err := store.GetTicketByID(ctx, seat.TicketID)
-			if err != nil || ticket.BookingID != &bookingID {
+			if err != nil || ticket.BookingID == nil || *ticket.BookingID != bookingID {
 				return fmt.Errorf("invalid ticket_id %d for booking_id %d", seat.TicketID, bookingID)
 			}
 
@@ -27,10 +27,6 @@ func (store *SQLStore) UpdateSeats(ctx context.Context, bookingID int64, seats [
 			})
 			if err != nil || !isAvailable {
 				return fmt.Errorf("seat %s is not available", seat.SeatCode)
-			}
-
-			if err != nil {
-				return fmt.Errorf("failed to update seat for ticket_id %d: %w", seat.TicketID, err)
 			}
 
 			// Đánh dấu ghế là không còn trống trong bảng Seats
