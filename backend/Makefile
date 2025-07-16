@@ -21,5 +21,7 @@ sqlc:
 	sqlc generate
 server:
 	go run cmd/api/main.go
+mock:
+	mockgen -package mockdb  -destination internal/domain/mock/store.go github.com/spaghetti-lover/qairlines/db/sqlc Store
 mail:
 	go run cmd/mail/main.go
