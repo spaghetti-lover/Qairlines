@@ -11,18 +11,20 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/di"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/middleware"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/routes"
+	"github.com/spaghetti-lover/qairlines/internal/infra/worker"
 	"github.com/spaghetti-lover/qairlines/pkg/logger"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
 
 type Server struct {
-	store      db.Store
-	router     http.Handler
-	tokenMaker token.Maker
+	store           db.Store
+	router          http.Handler
+	tokenMaker      token.Maker
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(config config.Config, store db.Store) (*Server, error) {
-	container, err := di.NewContainer(config, &store)
+func NewServer(config config.Config, store db.Store, taskDistributor worker.TaskDistributor) (*Server, error) {
+	container, err := di.NewContainer(config, &store, taskDistributor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
 	}
@@ -35,7 +37,7 @@ func NewServer(config config.Config, store db.Store) (*Server, error) {
 	router := gin.Default()
 	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
 
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.TestMode)
 
 	// Clean up clients for rate limiting
 	go middleware.CleanUpClients()
@@ -75,9 +77,10 @@ func NewServer(config config.Config, store db.Store) (*Server, error) {
 	}).Handler(router)
 
 	server := &Server{
-		store:      store,
-		router:     corsHandler,
-		tokenMaker: container.TokenMaker,
+		store:           store,
+		router:          corsHandler,
+		tokenMaker:      container.TokenMaker,
+		taskDistributor: taskDistributor,
 	}
 
 	return server, nil

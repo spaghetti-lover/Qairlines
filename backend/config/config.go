@@ -9,14 +9,10 @@ import (
 // Config stores all configuration of the application.
 // The values are read by viper from a config file or environment variable.
 type Config struct {
-	MailFrom                string        `mapstructure:"MAIL_FROM"`
-	MailPassword            string        `mapstructure:"MAIL_PASSWORD"`
-	MailPort                string        `mapstructure:"MAIL_PORT"`
-	MailHost                string        `mapstructure:"MAIL_HOST"`
-	MailServer              string        `mapstructure:"MAIL_SERVER"`
-	KafkaBrokerURL          string        `mapstructure:"KAFKA_BROKER_URL"`
-	KafkaTopic              string        `mapstructure:"KAFKA_TOPIC"`
-	KafkaGroupID            string        `mapstructure:"KAFKA_GROUP_ID"`
+	MailSenderName          string        `mapstructure:"MAIL_SENDER_NAME"`
+	MailSenderAddress       string        `mapstructure:"MAIL_SENDER_ADDRESS"`
+	MailSenderPassword      string        `mapstructure:"MAIL_SENDER_PASSWORD"`
+	RedisAddress            string        `mapstructure:"REDIS_ADDRESS"`
 	DBDriver                string        `mapstructure:"DB_DRIVER"`
 	DBSource                string        `mapstructure:"DB_SOURCE"`
 	ServerAddressPort       string        `mapstructure:"SERVER_ADDRESS_PORT"`

@@ -18,6 +18,7 @@ type CreateBookingTxParams struct {
 	TripType            string
 	DepartureTicketData []TicketData
 	ReturnTicketData    []TicketData
+	AfterCreate         func(booking entities.Booking) error
 }
 
 type TicketData struct {
@@ -46,19 +47,20 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 	var result CreateBookingTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
 		// Tạo booking
-		var returnFlightIDPtr *int64
+		var returnFlightID pgtype.Int8
 		if arg.TripType == "roundTrip" && arg.ReturnFlightID != 0 {
-			returnFlightIDPtr = &arg.ReturnFlightID
+			returnFlightID = pgtype.Int8{Int64: arg.ReturnFlightID, Valid: true}
 		} else {
-			returnFlightIDPtr = nil
+			returnFlightID = pgtype.Int8{Int64: 0, Valid: false}
 		}
 
 		booking, err := q.CreateBooking(ctx, CreateBookingParams{
 			UserEmail:         pgtype.Text{String: arg.UserEmail, Valid: true},
 			TripType:          TripType(arg.TripType),
 			DepartureFlightID: pgtype.Int8{Int64: arg.DepartureFlightID, Valid: true},
-			ReturnFlightID:    pgtype.Int8{Int64: *returnFlightIDPtr, Valid: returnFlightIDPtr != nil},
+			ReturnFlightID:    returnFlightID,
 			Status:            BookingStatus(entities.BookingStatusPending),
 		})
 		if err != nil {
@@ -68,7 +70,7 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 			BookingID:         booking.BookingID,
 			UserEmail:         booking.UserEmail.String,
 			TripType:          entities.TripType(booking.TripType),
-			DepartureFlightID: *&booking.DepartureFlightID.Int64,
+			DepartureFlightID: booking.DepartureFlightID.Int64,
 			ReturnFlightID:    &booking.ReturnFlightID.Int64,
 			Status:            entities.BookingStatus(booking.Status),
 			CreatedAt:         booking.CreatedAt,
@@ -95,7 +97,7 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 			}
 		}
 
-		return nil
+		return arg.AfterCreate(result.Booking)
 	})
 
 	return result, err

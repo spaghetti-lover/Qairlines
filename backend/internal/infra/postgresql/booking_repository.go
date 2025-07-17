@@ -79,6 +79,7 @@ func (r *BookingRepositoryPostgres) CreateBookingTx(ctx context.Context, booking
 		ReturnFlightID:      returnFlightID,
 		DepartureTicketData: departureTicketData,
 		ReturnTicketData:    returnTicketDataList,
+		AfterCreate:         booking.AfterCreate,
 	}
 
 	// Gọi CreateBookingTx từ tầng SQLStore

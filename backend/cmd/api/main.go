@@ -10,12 +10,15 @@ import (
 
 	"net/http"
 
+	"github.com/hibiken/asynq"
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api"
+	"github.com/spaghetti-lover/qairlines/internal/infra/mail"
+	"github.com/spaghetti-lover/qairlines/internal/infra/worker"
 	"github.com/spaghetti-lover/qairlines/pkg/logger"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
@@ -69,8 +72,14 @@ func main() {
 
 	store := db.NewStore(connPool)
 
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
 	// Create server
-	server, err := api.NewServer(config, store)
+	server, err := api.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal("cannot connect to server: ", err)
 	}
@@ -81,13 +90,10 @@ func main() {
 		Handler: server,
 	}
 
+	// Start task processor in goroutine
+	go runTaskProcessor(config, redisOpt, store)
 	// Start server in goroutine
-	go func() {
-		log.Println("Server started on", config.ServerAddressPort)
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("ListenAndServe failed: %v", err)
-		}
-	}()
+	go runApiServer(config, store, taskDistributor)
 
 	<-ctx.Done()
 	log.Println("Shutdown signal received")
@@ -95,9 +101,35 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	// Graceful shutdown for HTTP server
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("Server shutdown failed: %v", err)
 	}
 
 	log.Println("Server gracefully stopped")
+}
+
+func runApiServer(config config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := api.NewServer(config, store, taskDistributor)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+
+	httpServer := &http.Server{
+		Addr:    config.ServerAddressPort,
+		Handler: server,
+	}
+
+	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("ListenAndServe failed: %v", err)
+	}
+}
+
+func runTaskProcessor(config config.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+	mailer := mail.NewGmailSender(config.MailSenderName, config.MailSenderAddress, config.MailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+	log.Println("Task processor started")
+	if err := taskProcessor.Start(); err != nil {
+		log.Fatalf("Failed to start task processor: %v", err)
+	}
 }

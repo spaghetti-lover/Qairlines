@@ -8,11 +8,11 @@ import (
 )
 
 type PaymentHandler struct {
-	usecase payment.ICreatePaymentIntentUsecase
+	createPaymentUseCase payment.ICreatePaymentIntentUsecase
 }
 
-func NewPaymentHandler(u payment.ICreatePaymentIntentUsecase) *PaymentHandler {
-	return &PaymentHandler{usecase: u}
+func NewPaymentHandler(createPaymentUseCase payment.ICreatePaymentIntentUsecase) *PaymentHandler {
+	return &PaymentHandler{createPaymentUseCase: createPaymentUseCase}
 }
 
 func (h *PaymentHandler) CreatePaymentIntent(ctx *gin.Context) {
@@ -25,7 +25,7 @@ func (h *PaymentHandler) CreatePaymentIntent(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	clientSecret, err := h.usecase.Execute(ctx, req.BookingID, req.Amount, req.Currency)
+	clientSecret, err := h.createPaymentUseCase.Execute(ctx, req.BookingID, req.Amount, req.Currency)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

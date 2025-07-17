@@ -16,7 +16,7 @@ createmigrate:
 	@read -p "Enter migration name: " name; \
 	migrate create -ext sql -dir db/migrations -seq $$name
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 sqlc:
 	sqlc generate
 server:
@@ -25,3 +25,5 @@ mock:
 	mockgen -package mockdb  -destination internal/domain/mock/store.go github.com/spaghetti-lover/qairlines/db/sqlc Store
 mail:
 	go run cmd/mail/main.go
+redis:
+	docker run --name redis -p 6379:6379 -d redis:8-alpine

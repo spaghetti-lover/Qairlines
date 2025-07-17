@@ -43,4 +43,5 @@ type CreateBookingParams struct {
 	TripType                TripType `json:"tripType"`
 	DepartureTicketDataList []Ticket `json:"departureTicketDataList"`
 	ReturnTicketDataList    []Ticket `json:"returnTicketDataList"`
+	AfterCreate             func(booking Booking) error
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 	"github.com/spaghetti-lover/qairlines/internal/infra/stripe"
+	"github.com/spaghetti-lover/qairlines/internal/infra/worker"
 	"github.com/spaghetti-lover/qairlines/pkg/token"
 )
 
@@ -29,9 +30,10 @@ type Container struct {
 	BookingHandler  *handlers.BookingHandler
 	PaymentHandler  *handlers.PaymentHandler
 	TokenMaker      token.Maker
+	taskDistributor worker.TaskDistributor
 }
 
-func NewContainer(config config.Config, store *db.Store) (*Container, error) {
+func NewContainer(config config.Config, store *db.Store, taskDistributor worker.TaskDistributor) (*Container, error) {
 	// Token Maker
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
@@ -80,7 +82,7 @@ func NewContainer(config config.Config, store *db.Store) (*Container, error) {
 	ticketCancelUseCase := ticket.NewCancelTicketUseCase(ticketRepo)
 	ticketGetUseCase := ticket.NewGetTicketUseCase(ticketRepo)
 	ticketUpdateUseCase := ticket.NewUpdateSeatsUseCase(ticketRepo)
-	bookingCreateUseCase := booking.NewCreateBookingUseCase(bookingRepo, flightRepo)
+	bookingCreateUseCase := booking.NewCreateBookingUseCase(bookingRepo, flightRepo, taskDistributor)
 	bookingGetUseCase := booking.NewGetBookingUseCase(bookingRepo)
 	paymentUsecase := payment.NewCreatePaymentIntentUseCase(stripeGateway)
 

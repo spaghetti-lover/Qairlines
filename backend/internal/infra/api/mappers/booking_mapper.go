@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
 )
@@ -119,4 +120,24 @@ func mapTicketIDsToResponse(tickets []entities.Ticket) []string {
 		ticketIDs = append(ticketIDs, strconv.FormatInt(ticket.TicketID, 10))
 	}
 	return ticketIDs
+}
+
+func MapEntitiesTicketsToDbTicketData(tickets []entities.Ticket) []db.TicketData {
+	var result []db.TicketData
+	for _, t := range tickets {
+		result = append(result, db.TicketData{
+			Price:       int64(t.Price),
+			FlightClass: string(t.FlightClass),
+			OwnerData: db.OwnerData{
+				IdentityCardNumber: t.Owner.IdentificationNumber,
+				FirstName:          t.Owner.FirstName,
+				LastName:           t.Owner.LastName,
+				PhoneNumber:        t.Owner.PhoneNumber,
+				DateOfBirth:        t.Owner.DateOfBirth.Format("2006-01-02"),
+				Gender:             string(t.Owner.Gender),
+				Address:            t.Owner.Address,
+			},
+		})
+	}
+	return result
 }
