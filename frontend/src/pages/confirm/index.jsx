@@ -106,7 +106,7 @@ function LoadingSkeleton() {
           <Skeleton className="h-6 w-2/3" />
         </div>
       </div>
-      
+
       <div className="max-w-4xl mx-auto">
         <Card className="shadow-lg border-orange">
           <CardContent className="p-4 sm:p-6">
@@ -127,7 +127,7 @@ function LoadingSkeleton() {
                 <Skeleton className="h-6 w-24" />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
               <div className="flex items-center space-x-3">
                 <Skeleton className="h-5 w-5 rounded-full" />
@@ -347,7 +347,7 @@ function ConfirmationDialog({ isOpen, onOpenChange, bookingId, handleReturnHome 
             Cảm ơn quý khách đã đặt vé. Chúc quý khách có chuyến bay vui vẻ!
           </DialogDescription>
         </div>
-        <Button 
+        <Button
           onClick={handleReturnHome}
           variant="orange"
           className="w-full mt-6 text-white transition-colors duration-200"

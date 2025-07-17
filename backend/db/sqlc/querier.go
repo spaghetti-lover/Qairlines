@@ -6,12 +6,14 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	CancelTicket(ctx context.Context, ticketID int64) (CancelTicketRow, error)
 	CheckSeatAvailability(ctx context.Context, arg CheckSeatAvailabilityParams) (bool, error)
-	CountOccupiedSeats(ctx context.Context, flightID *int64) (int64, error)
+	CountOccupiedSeats(ctx context.Context, flightID pgtype.Int8) (int64, error)
 	CreateAdmin(ctx context.Context, userID int64) (int64, error)
 	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
@@ -58,13 +60,13 @@ type Querier interface {
 	ListCustomers(ctx context.Context, arg ListCustomersParams) ([]Customer, error)
 	ListFlights(ctx context.Context, arg ListFlightsParams) ([]ListFlightsRow, error)
 	ListNews(ctx context.Context, arg ListNewsParams) ([]News, error)
-	ListSeatsWithFlightId(ctx context.Context, flightID *int64) ([]Seat, error)
+	ListSeatsWithFlightId(ctx context.Context, flightID pgtype.Int8) ([]Seat, error)
 	ListTicketOwnerSnapshots(ctx context.Context, arg ListTicketOwnerSnapshotsParams) ([]Ticketownersnapshot, error)
 	ListTickets(ctx context.Context, arg ListTicketsParams) ([]Ticket, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	MarkSeatUnavailable(ctx context.Context, arg MarkSeatUnavailableParams) error
-	RemoveAuthorFromBlogPosts(ctx context.Context, authorID *int64) error
-	RemoveUserFromBookings(ctx context.Context, userEmail *string) error
+	RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error
+	RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error
 	SearchFlights(ctx context.Context, arg SearchFlightsParams) ([]SearchFlightsRow, error)
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
 	UpdateFlightTimes(ctx context.Context, arg UpdateFlightTimesParams) (UpdateFlightTimesRow, error)

@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createFlight = `-- name: CreateFlight :one
@@ -29,11 +31,11 @@ RETURNING flight_id, flight_number, airline, aircraft_type, departure_city, arri
 
 type CreateFlightParams struct {
 	FlightNumber     string       `json:"flight_number"`
-	AircraftType     *string      `json:"aircraft_type"`
-	DepartureCity    *string      `json:"departure_city"`
-	ArrivalCity      *string      `json:"arrival_city"`
-	DepartureAirport *string      `json:"departure_airport"`
-	ArrivalAirport   *string      `json:"arrival_airport"`
+	AircraftType     pgtype.Text  `json:"aircraft_type"`
+	DepartureCity    pgtype.Text  `json:"departure_city"`
+	ArrivalCity      pgtype.Text  `json:"arrival_city"`
+	DepartureAirport pgtype.Text  `json:"departure_airport"`
+	ArrivalAirport   pgtype.Text  `json:"arrival_airport"`
 	DepartureTime    time.Time    `json:"departure_time"`
 	ArrivalTime      time.Time    `json:"arrival_time"`
 	BasePrice        int32        `json:"base_price"`
@@ -102,9 +104,9 @@ FROM Flights
 type GetAllFlightsRow struct {
 	FlightID      int64        `json:"flight_id"`
 	FlightNumber  string       `json:"flight_number"`
-	AircraftType  *string      `json:"aircraft_type"`
-	DepartureCity *string      `json:"departure_city"`
-	ArrivalCity   *string      `json:"arrival_city"`
+	AircraftType  pgtype.Text  `json:"aircraft_type"`
+	DepartureCity pgtype.Text  `json:"departure_city"`
+	ArrivalCity   pgtype.Text  `json:"arrival_city"`
 	DepartureTime time.Time    `json:"departure_time"`
 	ArrivalTime   time.Time    `json:"arrival_time"`
 	BasePrice     int32        `json:"base_price"`
@@ -207,17 +209,17 @@ type ListFlightsParams struct {
 }
 
 type ListFlightsRow struct {
-	FlightID         int64     `json:"flight_id"`
-	FlightNumber     string    `json:"flight_number"`
-	Airline          *string   `json:"airline"`
-	DepartureCity    *string   `json:"departure_city"`
-	ArrivalCity      *string   `json:"arrival_city"`
-	DepartureTime    time.Time `json:"departure_time"`
-	ArrivalTime      time.Time `json:"arrival_time"`
-	DepartureAirport *string   `json:"departure_airport"`
-	ArrivalAirport   *string   `json:"arrival_airport"`
-	AircraftType     *string   `json:"aircraft_type"`
-	BasePrice        int32     `json:"base_price"`
+	FlightID         int64       `json:"flight_id"`
+	FlightNumber     string      `json:"flight_number"`
+	Airline          pgtype.Text `json:"airline"`
+	DepartureCity    pgtype.Text `json:"departure_city"`
+	ArrivalCity      pgtype.Text `json:"arrival_city"`
+	DepartureTime    time.Time   `json:"departure_time"`
+	ArrivalTime      time.Time   `json:"arrival_time"`
+	DepartureAirport pgtype.Text `json:"departure_airport"`
+	ArrivalAirport   pgtype.Text `json:"arrival_airport"`
+	AircraftType     pgtype.Text `json:"aircraft_type"`
+	BasePrice        int32       `json:"base_price"`
 }
 
 func (q *Queries) ListFlights(ctx context.Context, arg ListFlightsParams) ([]ListFlightsRow, error) {
@@ -271,23 +273,23 @@ WHERE departure_city = $1
 `
 
 type SearchFlightsParams struct {
-	DepartureCity *string   `json:"departure_city"`
-	ArrivalCity   *string   `json:"arrival_city"`
-	DepartureTime time.Time `json:"departure_time"`
+	DepartureCity pgtype.Text `json:"departure_city"`
+	ArrivalCity   pgtype.Text `json:"arrival_city"`
+	DepartureTime time.Time   `json:"departure_time"`
 }
 
 type SearchFlightsRow struct {
-	FlightID         int64     `json:"flight_id"`
-	FlightNumber     string    `json:"flight_number"`
-	Airline          *string   `json:"airline"`
-	DepartureCity    *string   `json:"departure_city"`
-	ArrivalCity      *string   `json:"arrival_city"`
-	DepartureTime    time.Time `json:"departure_time"`
-	ArrivalTime      time.Time `json:"arrival_time"`
-	DepartureAirport *string   `json:"departure_airport"`
-	ArrivalAirport   *string   `json:"arrival_airport"`
-	AircraftType     *string   `json:"aircraft_type"`
-	BasePrice        int32     `json:"base_price"`
+	FlightID         int64       `json:"flight_id"`
+	FlightNumber     string      `json:"flight_number"`
+	Airline          pgtype.Text `json:"airline"`
+	DepartureCity    pgtype.Text `json:"departure_city"`
+	ArrivalCity      pgtype.Text `json:"arrival_city"`
+	DepartureTime    time.Time   `json:"departure_time"`
+	ArrivalTime      time.Time   `json:"arrival_time"`
+	DepartureAirport pgtype.Text `json:"departure_airport"`
+	ArrivalAirport   pgtype.Text `json:"arrival_airport"`
+	AircraftType     pgtype.Text `json:"aircraft_type"`
+	BasePrice        int32       `json:"base_price"`
 }
 
 func (q *Queries) SearchFlights(ctx context.Context, arg SearchFlightsParams) ([]SearchFlightsRow, error) {

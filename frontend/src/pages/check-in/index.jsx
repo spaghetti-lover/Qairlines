@@ -6,6 +6,7 @@ import { StepIndicator } from "@/components/checkin/step-indicator";
 import { FlightDetailsStep } from "@/components/checkin/flight-details";
 import { PassengerListStep } from "@/components/checkin/passenger-list";
 import { SeatSelectionStep } from "@/components/checkin/seat-selection";
+import { PaymentStep } from "@/components/checkin/payment-step";
 import { ConfirmationStep } from "@/components/checkin/confirmation-step";
 import LoadingSkeleton from "@/components/checkin/loading-skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +18,7 @@ const steps = [
   { title: "Chi tiết chuyến bay", description: "Xem lại thông tin chuyến bay" },
   { title: "Hành khách", description: "Chọn hành khách" },
   { title: "Chọn ghế", description: "Chọn ghế của bạn" },
+  { title: "Thanh toán", description: "Thanh toán vé" },
   { title: "Xác nhận", description: "Xác nhận thông tin" },
 ];
 
@@ -28,7 +30,10 @@ export default function CheckInPage() {
   const [bookingData, setBookingData] = useState(null);
   const [departureFlight, setDepartureFlight] = useState(null);
   const [returnFlight, setReturnFlight] = useState(null);
-  const [passengerList, setPassengerList] = useState({ departure: [], return: [] });
+  const [passengerList, setPassengerList] = useState({
+    departure: [],
+    return: [],
+  });
 
   const [departureSeats, setDepartureSeats] = useState([]);
   const [returnSeats, setReturnSeats] = useState([]);
@@ -94,11 +99,15 @@ export default function CheckInPage() {
         const formattedFlight = {
           from: flightData.departureCity,
           to: flightData.arrivalCity,
-          departureTime: new Date(flightData.departureTime.seconds * 1000).toLocaleTimeString([], {
+          departureTime: new Date(
+            flightData.departureTime.seconds * 1000
+          ).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           }),
-          arrivalTime: new Date(flightData.arrivalTime.seconds * 1000).toLocaleTimeString([], {
+          arrivalTime: new Date(
+            flightData.arrivalTime.seconds * 1000
+          ).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           }),
@@ -107,7 +116,9 @@ export default function CheckInPage() {
             flightData.arrivalTime.seconds
           ),
           flightNumber: flightData.flightNumber,
-          date: new Date(flightData.departureTime.seconds * 1000).toLocaleDateString("vi-VN"),
+          date: new Date(
+            flightData.departureTime.seconds * 1000
+          ).toLocaleDateString("vi-VN"),
         };
 
         if (type === "departure") {
@@ -123,7 +134,6 @@ export default function CheckInPage() {
     [calculateDuration, setDepartureFlight, setReturnFlight, setError]
   );
 
-
   const fetchTickets = useCallback(
     async (ticketIds) => {
       try {
@@ -131,11 +141,16 @@ export default function CheckInPage() {
         if (!token) throw new Error("Token không tồn tại.");
 
         const ticketPromises = ticketIds.map(async (ticketId) => {
-          const response = await fetch(`${API_BASE_URL}/api/ticket?id=${ticketId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await fetch(
+            `${API_BASE_URL}/api/ticket?id=${ticketId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (!response.ok) {
-            throw new Error(`Error fetching ticket ${ticketId}: ${response.statusText}`);
+            throw new Error(
+              `Error fetching ticket ${ticketId}: ${response.statusText}`
+            );
           }
 
           const result = await response.json();
@@ -171,9 +186,12 @@ export default function CheckInPage() {
       if (!token) throw new Error("Token không tồn tại.");
 
       // Fetch booking
-      const response = await fetch(`${API_BASE_URL}/api/booking?id=${bookingID}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/booking?id=${bookingID}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!response.ok) {
         throw new Error(`Error fetching booking: ${response.statusText}`);
       }
@@ -191,7 +209,9 @@ export default function CheckInPage() {
       }
 
       // Fetch passengers
-      const departurePassengers = await fetchTickets(result.data.departureIdTickets);
+      const departurePassengers = await fetchTickets(
+        result.data.departureIdTickets
+      );
       const returnPassengers =
         result.data.tripType === "roundTrip"
           ? await fetchTickets(result.data.returnIdTickets)
@@ -318,30 +338,30 @@ export default function CheckInPage() {
         description: "Ghế đã được cập nhật thành công!",
         variant: "default",
       });
-      fetch(`${API_MAIL_URL}/send-mail`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          To: email,
-          Subject: "Xác nhận ghế máy bay",
-          Body: `
-          Xin chào,
+      // fetch(`${API_MAIL_URL}/send-mail`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     To: email,
+      //     Subject: "Xác nhận ghế máy bay",
+      //     Body: `
+      //     Xin chào,
 
-          Chúng tôi xin thông báo rằng ghế của bạn đã được cập nhật thành công cho chuyến bay.
+      //     Chúng tôi xin thông báo rằng ghế của bạn đã được cập nhật thành công cho chuyến bay.
 
-          Mã chuyến bay: ${bookingID}
+      //     Mã chuyến bay: ${bookingID}
 
-          Vui lòng kiểm tra lại thông tin trong ứng dụng để đảm bảo mọi thứ chính xác.
+      //     Vui lòng kiểm tra lại thông tin trong ứng dụng để đảm bảo mọi thứ chính xác.
 
-          Chúc bạn có một chuyến bay an toàn và thoải mái!
+      //     Chúc bạn có một chuyến bay an toàn và thoải mái!
 
-          Trân trọng,
-          Đội ngũ Qairlines
-          `,
-        }),
-      })
+      //     Trân trọng,
+      //     Đội ngũ Qairlines
+      //     `,
+      //   }),
+      // })
       return true;
     } catch (error) {
       console.error("Error updating seats:", error);
@@ -357,10 +377,10 @@ export default function CheckInPage() {
   // Hàm xử lý điều hướng step
   const handleContinue = async () => {
     // Nếu đang ở step Chọn ghế (index = 2) thì gọi updateSeatsApi
-    if (currentStep === 2) {
-      const isUpdated = await updateSeatsApi();
-      if (!isUpdated) return;
-    }
+    // if (currentStep === 2) {
+    //   const isUpdated = await updateSeatsApi();
+    //   if (!isUpdated) return;
+    // }
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -380,7 +400,9 @@ export default function CheckInPage() {
   }
 
   if (error) {
-    return <div className="container mx-auto p-6 text-red-600">Lỗi: {error}</div>;
+    return (
+      <div className="container mx-auto p-6 text-red-600">Lỗi: {error}</div>
+    );
   }
 
   return (
@@ -390,7 +412,9 @@ export default function CheckInPage() {
       {currentStep === 0 && (
         <FlightDetailsStep
           flightDetails={departureFlight}
-          returnFlightDetails={bookingData?.tripType === "roundTrip" ? returnFlight : null}
+          returnFlightDetails={
+            bookingData?.tripType === "roundTrip" ? returnFlight : null
+          }
           passengerCount={passengerList.departure.length}
           onContinue={handleContinue}
           onCancel={() => window.history.back()}
@@ -408,7 +432,9 @@ export default function CheckInPage() {
       {currentStep === 2 && (
         <SeatSelectionStep
           passengers={
-            currentTrip === "departure" ? passengerList.departure : passengerList.return
+            currentTrip === "departure"
+              ? passengerList.departure
+              : passengerList.return
           }
           seats={currentTrip === "departure" ? departureSeats : returnSeats}
           onSeatSelect={(seatId, customerId) =>
@@ -417,13 +443,28 @@ export default function CheckInPage() {
           onContinue={handleContinue}
           onBack={handleBack}
           onSwitchTrip={() =>
-            setCurrentTrip((prev) => (prev === "departure" ? "return" : "departure"))
+            setCurrentTrip((prev) =>
+              prev === "departure" ? "return" : "departure"
+            )
           }
           currentTrip={currentTrip}
         />
       )}
 
       {currentStep === 3 && (
+        <PaymentStep
+          onPaymentSuccess={async () => {
+            const isUpdated = await updateSeatsApi();
+            if (isUpdated) setCurrentStep(4);
+          }}
+          onBack={handleBack}
+          bookingId={bookingID}
+          amount={10000} // Giả sử 10000 là số tiền thanh toán
+          currency="USD"
+        />
+      )}
+
+      {currentStep === 4 && (
         <ConfirmationStep
           bookingReference={bookingData?.bookingId || "Không rõ"}
           departurePassengers={passengerList.departure || []}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/adapters"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
@@ -33,8 +34,8 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 		return entities.User{}, err
 	}
 	user, err := r.store.CreateCustomerTx(ctx, db.CreateUserParams{
-		FirstName:      &arg.FirstName,
-		LastName:       &arg.LastName,
+		FirstName:      pgtype.Text{String: arg.FirstName, Valid: true},
+		LastName:       pgtype.Text{String: arg.LastName, Valid: true},
 		HashedPassword: hashedPassword,
 		Email:          arg.Email,
 		Role:           db.UserRoleCustomer,
@@ -45,8 +46,8 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 	}
 	return entities.User{
 		UserID:    user.UserID,
-		FirstName: *user.FirstName,
-		LastName:  *user.LastName,
+		FirstName: user.FirstName.String,
+		LastName:  user.LastName.String,
 		Email:     user.Email,
 		HashedPwd: user.HashedPassword,
 		Role:      entities.UserRole(entities.RoleCustomer),
@@ -56,26 +57,26 @@ func (r *CustomerRepositoryPostgres) CreateCustomerTx(ctx context.Context, arg e
 func (r *CustomerRepositoryPostgres) CreateCustomer(ctx context.Context, arg entities.CreateCustomerParams) (entities.Customer, error) {
 	customers, err := r.store.CreateCustomer(ctx, db.CreateCustomerParams{
 		UserID:               arg.UserID,
-		PhoneNumber:          &arg.PhoneNumber,
+		PhoneNumber:          pgtype.Text{String: arg.PhoneNumber, Valid: true},
 		Gender:               db.GenderType(arg.Gender),
 		DateOfBirth:          arg.DateOfBirth,
-		PassportNumber:       &arg.PassportNumber,
-		IdentificationNumber: &arg.IdentificationNumber,
-		Address:              &arg.Address,
-		LoyaltyPoints:        &arg.LoyaltyPoints,
+		PassportNumber:       pgtype.Text{String: arg.PassportNumber, Valid: true},
+		IdentificationNumber: pgtype.Text{String: arg.IdentificationNumber, Valid: true},
+		Address:              pgtype.Text{String: arg.Address, Valid: true},
+		LoyaltyPoints:        pgtype.Int4{Int32: arg.LoyaltyPoints, Valid: true},
 	})
 	if err != nil {
 		return entities.Customer{}, err
 	}
 	return entities.Customer{
 		UserID:               customers.UserID,
-		PhoneNumber:          *customers.PhoneNumber,
+		PhoneNumber:          customers.PhoneNumber.String,
 		Gender:               entities.CustomerGender(customers.Gender),
 		DateOfBirth:          customers.DateOfBirth,
-		PassportNumber:       *customers.PassportNumber,
-		IdentificationNumber: *customers.IdentificationNumber,
-		Address:              *customers.Address,
-		LoyaltyPoints:        *customers.LoyaltyPoints,
+		PassportNumber:       customers.PassportNumber.String,
+		IdentificationNumber: customers.IdentificationNumber.String,
+		Address:              customers.Address.String,
+		LoyaltyPoints:        customers.LoyaltyPoints.Int32,
 	}, nil
 }
 
@@ -133,16 +134,16 @@ func (r *CustomerRepositoryPostgres) ListCustomers(ctx context.Context, offset i
 		customers = append(customers, entities.Customer{
 			UserID: row.UserID,
 			User: entities.User{
-				FirstName: *user.FirstName,
-				LastName:  *user.LastName,
+				FirstName: user.FirstName.String,
+				LastName:  user.LastName.String,
 				Email:     user.Email,
 			},
 			DateOfBirth:          row.DateOfBirth,
 			Gender:               entities.CustomerGender(row.Gender),
-			LoyaltyPoints:        *row.LoyaltyPoints,
-			Address:              *row.Address,
-			PassportNumber:       *row.PassportNumber,
-			IdentificationNumber: *row.IdentificationNumber,
+			LoyaltyPoints:        row.LoyaltyPoints.Int32,
+			Address:              row.Address.String,
+			PassportNumber:       row.PassportNumber.String,
+			IdentificationNumber: row.IdentificationNumber.String,
 		})
 	}
 
@@ -176,17 +177,17 @@ func (r *CustomerRepositoryPostgres) GetCustomerByUID(ctx context.Context, uid i
 	return &entities.Customer{
 		UserID: row.Uid,
 		User: entities.User{
-			FirstName: *row.FirstName,
-			LastName:  *row.LastName,
+			FirstName: row.FirstName.String,
+			LastName:  row.LastName.String,
 			Email:     row.Email,
 		},
-		PhoneNumber:          *row.PhoneNumber,
+		PhoneNumber:          row.PhoneNumber.String,
 		DateOfBirth:          row.DateOfBirth,
 		Gender:               entities.CustomerGender(row.Gender),
-		IdentificationNumber: *row.IdentificationNumber,
-		PassportNumber:       *row.PassportNumber,
-		Address:              *row.Address,
-		LoyaltyPoints:        *row.LoyaltyPoints,
+		IdentificationNumber: row.IdentificationNumber.String,
+		PassportNumber:       row.PassportNumber.String,
+		Address:              row.Address.String,
+		LoyaltyPoints:        row.LoyaltyPoints.Int32,
 	}, nil
 }
 

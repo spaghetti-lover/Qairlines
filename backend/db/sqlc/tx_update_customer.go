@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
@@ -24,12 +25,12 @@ func (store *SQLStore) UpdateCustomerTx(ctx context.Context, arg UpdateCustomerT
 		// Update customer
 		err := store.UpdateCustomer(ctx, UpdateCustomerParams{
 			UserID:               arg.UserID,
-			PhoneNumber:          &arg.PhoneNumber,
+			PhoneNumber:          pgtype.Text{String: arg.PhoneNumber, Valid: true},
 			Gender:               GenderType(arg.Gender),
 			DateOfBirth:          arg.DateOfBirth,
-			Address:              &arg.Address,
-			PassportNumber:       &arg.PassportNumber,
-			IdentificationNumber: &arg.IdentificationNumber,
+			Address:              pgtype.Text{String: arg.Address, Valid: true},
+			PassportNumber:       pgtype.Text{String: arg.PassportNumber, Valid: true},
+			IdentificationNumber: pgtype.Text{String: arg.IdentificationNumber, Valid: true},
 		})
 		if err != nil {
 			return err
@@ -42,8 +43,8 @@ func (store *SQLStore) UpdateCustomerTx(ctx context.Context, arg UpdateCustomerT
 		}
 		err = store.UpdateUser(ctx, UpdateUserParams{
 			UserID:    user.UserID,
-			FirstName: &user.FirstName,
-			LastName:  &user.LastName,
+			FirstName: pgtype.Text{String: user.FirstName, Valid: true},
+			LastName:  pgtype.Text{String: user.LastName, Valid: true},
 		})
 		if err != nil {
 			return err

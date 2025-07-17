@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/spaghetti-lover/qairlines/internal/domain/entities"
 )
 
@@ -54,10 +55,10 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 		}
 
 		booking, err := q.CreateBooking(ctx, CreateBookingParams{
-			UserEmail:         &arg.UserEmail,
+			UserEmail:         pgtype.Text{String: arg.UserEmail, Valid: true},
 			TripType:          TripType(arg.TripType),
-			DepartureFlightID: &arg.DepartureFlightID,
-			ReturnFlightID:    returnFlightIDPtr,
+			DepartureFlightID: pgtype.Int8{Int64: arg.DepartureFlightID, Valid: true},
+			ReturnFlightID:    pgtype.Int8{Int64: *returnFlightIDPtr, Valid: returnFlightIDPtr != nil},
 			Status:            BookingStatus(entities.BookingStatusPending),
 		})
 		if err != nil {
@@ -65,10 +66,10 @@ func (store *SQLStore) CreateBookingTx(ctx context.Context, arg CreateBookingTxP
 		}
 		result.Booking = entities.Booking{
 			BookingID:         booking.BookingID,
-			UserEmail:         *booking.UserEmail,
+			UserEmail:         booking.UserEmail.String,
 			TripType:          entities.TripType(booking.TripType),
-			DepartureFlightID: *booking.DepartureFlightID,
-			ReturnFlightID:    booking.ReturnFlightID,
+			DepartureFlightID: *&booking.DepartureFlightID.Int64,
+			ReturnFlightID:    &booking.ReturnFlightID.Int64,
 			Status:            entities.BookingStatus(booking.Status),
 			CreatedAt:         booking.CreatedAt,
 			UpdatedAt:         booking.UpdatedAt,
@@ -104,7 +105,7 @@ func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, fl
 	createdSeat, err := q.CreateSeat(ctx, CreateSeatParams{
 		IsAvailable: true,
 		Class:       FlightClass(ticket.FlightClass),
-		FlightID:    &flightID,
+		FlightID:    pgtype.Int8{Int64: flightID, Valid: true},
 	})
 
 	if err != nil {
@@ -116,7 +117,7 @@ func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, fl
 		FlightClass: FlightClass(ticket.FlightClass),
 		Price:       int32(ticket.Price),
 		Status:      TicketStatusActive,
-		BookingID:   &bookingID,
+		BookingID:   pgtype.Int8{Int64: bookingID, Valid: true},
 		FlightID:    flightID,
 	})
 
@@ -126,13 +127,13 @@ func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, fl
 
 	_, err = q.CreateTicketOwnerSnapshot(ctx, CreateTicketOwnerSnapshotParams{
 		TicketID:       createdTicket.TicketID,
-		FirstName:      &ticket.OwnerData.FirstName,
-		LastName:       &ticket.OwnerData.LastName,
-		PhoneNumber:    &ticket.OwnerData.PhoneNumber,
+		FirstName:      pgtype.Text{String: ticket.OwnerData.FirstName, Valid: true},
+		LastName:       pgtype.Text{String: ticket.OwnerData.LastName, Valid: true},
+		PhoneNumber:    pgtype.Text{String: ticket.OwnerData.PhoneNumber, Valid: true},
 		Gender:         GenderType(ticket.OwnerData.Gender),
 		DateOfBirth:    parseDate(ticket.OwnerData.DateOfBirth),
-		PassportNumber: &ticket.OwnerData.IdentityCardNumber,
-		Address:        &ticket.OwnerData.Address,
+		PassportNumber: pgtype.Text{String: ticket.OwnerData.IdentityCardNumber, Valid: true},
+		Address:        pgtype.Text{String: ticket.OwnerData.Address, Valid: true},
 	})
 	if err != nil {
 		return entities.Ticket{}, fmt.Errorf("failed to insert ticket owner data: %w", err)
@@ -140,7 +141,7 @@ func createTicketForBooking(ctx context.Context, q *Queries, bookingID int64, fl
 
 	return entities.Ticket{
 		TicketID:    createdTicket.TicketID,
-		BookingID:   *createdTicket.BookingID,
+		BookingID:   createdTicket.BookingID.Int64,
 		FlightID:    createdTicket.FlightID,
 		Price:       createdTicket.Price,
 		FlightClass: entities.FlightClass(createdTicket.FlightClass),

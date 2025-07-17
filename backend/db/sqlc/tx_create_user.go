@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // Create User and Customer in a single transaction
@@ -21,15 +23,14 @@ func (store *SQLStore) CreateCustomerTx(ctx context.Context, arg CreateUserParam
 		if err != nil {
 			return err
 		}
-		emptyStr := ""
 		_, err = q.CreateCustomer(ctx, CreateCustomerParams{
 			UserID:               user.UserID,
-			PhoneNumber:          &emptyStr,
+			PhoneNumber:          pgtype.Text{String: "", Valid: true},
 			Gender:               "Other",
 			DateOfBirth:          time.Time{},
-			PassportNumber:       &emptyStr,
-			IdentificationNumber: &emptyStr,
-			Address:              &emptyStr,
+			PassportNumber:       pgtype.Text{String: "", Valid: true},
+			IdentificationNumber: pgtype.Text{String: "", Valid: true},
+			Address:              pgtype.Text{String: "", Valid: true},
 		})
 		if err != nil {
 			return err

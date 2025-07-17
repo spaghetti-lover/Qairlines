@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createNews = `-- name: CreateNews :one
@@ -23,11 +25,11 @@ RETURNING id, title, description, content, image, author_id, created_at, updated
 `
 
 type CreateNewsParams struct {
-	Title       string  `json:"title"`
-	Description *string `json:"description"`
-	Content     *string `json:"content"`
-	Image       *string `json:"image"`
-	AuthorID    *int64  `json:"author_id"`
+	Title       string      `json:"title"`
+	Description pgtype.Text `json:"description"`
+	Content     pgtype.Text `json:"content"`
+	Image       pgtype.Text `json:"image"`
+	AuthorID    pgtype.Int8 `json:"author_id"`
 }
 
 func (q *Queries) CreateNews(ctx context.Context, arg CreateNewsParams) (News, error) {
@@ -136,7 +138,7 @@ SET author_id = NULL,
 WHERE author_id = $1
 `
 
-func (q *Queries) RemoveAuthorFromBlogPosts(ctx context.Context, authorID *int64) error {
+func (q *Queries) RemoveAuthorFromBlogPosts(ctx context.Context, authorID pgtype.Int8) error {
 	_, err := q.db.Exec(ctx, removeAuthorFromBlogPosts, authorID)
 	return err
 }
@@ -161,13 +163,13 @@ RETURNING id,
 `
 
 type UpdateNewsParams struct {
-	Title       string    `json:"title"`
-	Description *string   `json:"description"`
-	Content     *string   `json:"content"`
-	Image       *string   `json:"image"`
-	AuthorID    *int64    `json:"author_id"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	ID          int64     `json:"id"`
+	Title       string      `json:"title"`
+	Description pgtype.Text `json:"description"`
+	Content     pgtype.Text `json:"content"`
+	Image       pgtype.Text `json:"image"`
+	AuthorID    pgtype.Int8 `json:"author_id"`
+	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          int64       `json:"id"`
 }
 
 func (q *Queries) UpdateNews(ctx context.Context, arg UpdateNewsParams) (News, error) {

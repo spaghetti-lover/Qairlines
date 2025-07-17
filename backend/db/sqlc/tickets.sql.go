@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const cancelTicket = `-- name: CancelTicket :one
@@ -50,13 +52,13 @@ type CancelTicketRow struct {
 	Status           TicketStatus `json:"status"`
 	FlightClass      FlightClass  `json:"flight_class"`
 	Price            int32        `json:"price"`
-	BookingID        *int64       `json:"booking_id"`
+	BookingID        pgtype.Int8  `json:"booking_id"`
 	FlightID         int64        `json:"flight_id"`
 	UpdatedAt        time.Time    `json:"updated_at"`
 	SeatCode         string       `json:"seat_code"`
-	OwnerFirstName   *string      `json:"owner_first_name"`
-	OwnerLastName    *string      `json:"owner_last_name"`
-	OwnerPhoneNumber *string      `json:"owner_phone_number"`
+	OwnerFirstName   pgtype.Text  `json:"owner_first_name"`
+	OwnerLastName    pgtype.Text  `json:"owner_last_name"`
+	OwnerPhoneNumber pgtype.Text  `json:"owner_phone_number"`
 }
 
 func (q *Queries) CancelTicket(ctx context.Context, ticketID int64) (CancelTicketRow, error) {
@@ -96,7 +98,7 @@ type CreateTicketParams struct {
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
-	BookingID   *int64       `json:"booking_id"`
+	BookingID   pgtype.Int8  `json:"booking_id"`
 	FlightID    int64        `json:"flight_id"`
 }
 
@@ -204,23 +206,23 @@ type GetTicketByIDRow struct {
 	Status                    TicketStatus    `json:"status"`
 	FlightClass               FlightClass     `json:"flight_class"`
 	Price                     int32           `json:"price"`
-	BookingID                 *int64          `json:"booking_id"`
+	BookingID                 pgtype.Int8     `json:"booking_id"`
 	FlightID                  int64           `json:"flight_id"`
 	CreatedAt                 time.Time       `json:"created_at"`
 	UpdatedAt                 time.Time       `json:"updated_at"`
-	SeatCode                  *string         `json:"seat_code"`
-	SeatID                    *int64          `json:"seat_id"`
-	IsAvailable               *bool           `json:"is_available"`
-	FlightID_2                *int64          `json:"flight_id_2"`
+	SeatCode                  pgtype.Text     `json:"seat_code"`
+	SeatID                    pgtype.Int8     `json:"seat_id"`
+	IsAvailable               pgtype.Bool     `json:"is_available"`
+	FlightID_2                pgtype.Int8     `json:"flight_id_2"`
 	SeatClass                 NullFlightClass `json:"seat_class"`
-	OwnerFirstName            *string         `json:"owner_first_name"`
-	OwnerLastName             *string         `json:"owner_last_name"`
+	OwnerFirstName            pgtype.Text     `json:"owner_first_name"`
+	OwnerLastName             pgtype.Text     `json:"owner_last_name"`
 	OwnerGender               NullGenderType  `json:"owner_gender"`
-	OwnerPhoneNumber          *string         `json:"owner_phone_number"`
+	OwnerPhoneNumber          pgtype.Text     `json:"owner_phone_number"`
 	OwnerDateOfBirth          time.Time       `json:"owner_date_of_birth"`
-	OwnerPassportNumber       *string         `json:"owner_passport_number"`
-	OwnerIdentificationNumber *string         `json:"owner_identification_number"`
-	OwnerAddress              *string         `json:"owner_address"`
+	OwnerPassportNumber       pgtype.Text     `json:"owner_passport_number"`
+	OwnerIdentificationNumber pgtype.Text     `json:"owner_identification_number"`
+	OwnerAddress              pgtype.Text     `json:"owner_address"`
 }
 
 func (q *Queries) GetTicketByID(ctx context.Context, ticketID int64) (GetTicketByIDRow, error) {
@@ -285,7 +287,7 @@ WHERE Tickets.booking_id = $1
 `
 
 type GetTicketsByBookingIDAndTypeParams struct {
-	BookingID *int64      `json:"booking_id"`
+	BookingID pgtype.Int8 `json:"booking_id"`
 	Column2   interface{} `json:"column_2"`
 }
 
@@ -352,21 +354,21 @@ type GetTicketsByFlightIDRow struct {
 	FlightClass               FlightClass     `json:"flight_class"`
 	Price                     int32           `json:"price"`
 	Status                    TicketStatus    `json:"status"`
-	BookingID                 *int64          `json:"booking_id"`
+	BookingID                 pgtype.Int8     `json:"booking_id"`
 	FlightID                  int64           `json:"flight_id"`
 	CreatedAt                 time.Time       `json:"created_at"`
 	UpdatedAt                 time.Time       `json:"updated_at"`
-	SeatCode                  *string         `json:"seat_code"`
-	IsAvailable               *bool           `json:"is_available"`
+	SeatCode                  pgtype.Text     `json:"seat_code"`
+	IsAvailable               pgtype.Bool     `json:"is_available"`
 	SeatClass                 NullFlightClass `json:"seat_class"`
-	OwnerFirstName            *string         `json:"owner_first_name"`
-	OwnerLastName             *string         `json:"owner_last_name"`
-	OwnerPhoneNumber          *string         `json:"owner_phone_number"`
+	OwnerFirstName            pgtype.Text     `json:"owner_first_name"`
+	OwnerLastName             pgtype.Text     `json:"owner_last_name"`
+	OwnerPhoneNumber          pgtype.Text     `json:"owner_phone_number"`
 	OwnerGender               NullGenderType  `json:"owner_gender"`
 	OwnerDateOfBirth          time.Time       `json:"owner_date_of_birth"`
-	OwnerPassportNumber       *string         `json:"owner_passport_number"`
-	OwnerIdentificationNumber *string         `json:"owner_identification_number"`
-	OwnerAddress              *string         `json:"owner_address"`
+	OwnerPassportNumber       pgtype.Text     `json:"owner_passport_number"`
+	OwnerIdentificationNumber pgtype.Text     `json:"owner_identification_number"`
+	OwnerAddress              pgtype.Text     `json:"owner_address"`
 }
 
 func (q *Queries) GetTicketsByFlightID(ctx context.Context, flightID int64) ([]GetTicketsByFlightIDRow, error) {
@@ -498,7 +500,7 @@ type UpdateTicketParams struct {
 	FlightClass FlightClass  `json:"flight_class"`
 	Price       int32        `json:"price"`
 	Status      TicketStatus `json:"status"`
-	BookingID   *int64       `json:"booking_id"`
+	BookingID   pgtype.Int8  `json:"booking_id"`
 	FlightID    int64        `json:"flight_id"`
 }
 

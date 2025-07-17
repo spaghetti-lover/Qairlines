@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const checkSeatAvailability = `-- name: CheckSeatAvailability :one
@@ -15,8 +17,8 @@ WHERE seat_code = $1 and flight_id = $2
 `
 
 type CheckSeatAvailabilityParams struct {
-	SeatCode string `json:"seat_code"`
-	FlightID *int64 `json:"flight_id"`
+	SeatCode string      `json:"seat_code"`
+	FlightID pgtype.Int8 `json:"flight_id"`
 }
 
 func (q *Queries) CheckSeatAvailability(ctx context.Context, arg CheckSeatAvailabilityParams) (bool, error) {
@@ -31,7 +33,7 @@ SELECT COUNT(*) FROM "seats"
 WHERE flight_id = $1 AND is_available = false
 `
 
-func (q *Queries) CountOccupiedSeats(ctx context.Context, flightID *int64) (int64, error) {
+func (q *Queries) CountOccupiedSeats(ctx context.Context, flightID pgtype.Int8) (int64, error) {
 	row := q.db.QueryRow(ctx, countOccupiedSeats, flightID)
 	var count int64
 	err := row.Scan(&count)
@@ -50,7 +52,7 @@ INSERT INTO "seats" (
 `
 
 type CreateSeatParams struct {
-	FlightID    *int64      `json:"flight_id"`
+	FlightID    pgtype.Int8 `json:"flight_id"`
 	SeatCode    string      `json:"seat_code"`
 	IsAvailable bool        `json:"is_available"`
 	Class       FlightClass `json:"class"`
@@ -153,7 +155,7 @@ SELECT seat_id, flight_id, seat_code, is_available, class FROM "seats"
 WHERE flight_id = $1
 `
 
-func (q *Queries) ListSeatsWithFlightId(ctx context.Context, flightID *int64) ([]Seat, error) {
+func (q *Queries) ListSeatsWithFlightId(ctx context.Context, flightID pgtype.Int8) ([]Seat, error) {
 	rows, err := q.db.Query(ctx, listSeatsWithFlightId, flightID)
 	if err != nil {
 		return nil, err
@@ -186,8 +188,8 @@ WHERE seat_code = $1 AND flight_id = $2
 `
 
 type MarkSeatUnavailableParams struct {
-	SeatCode string `json:"seat_code"`
-	FlightID *int64 `json:"flight_id"`
+	SeatCode string      `json:"seat_code"`
+	FlightID pgtype.Int8 `json:"flight_id"`
 }
 
 func (q *Queries) MarkSeatUnavailable(ctx context.Context, arg MarkSeatUnavailableParams) error {

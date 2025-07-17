@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createBooking = `-- name: CreateBooking :one
@@ -22,10 +24,10 @@ INSERT INTO bookings (
 `
 
 type CreateBookingParams struct {
-	UserEmail         *string       `json:"user_email"`
+	UserEmail         pgtype.Text   `json:"user_email"`
 	TripType          TripType      `json:"trip_type"`
-	DepartureFlightID *int64        `json:"departure_flight_id"`
-	ReturnFlightID    *int64        `json:"return_flight_id"`
+	DepartureFlightID pgtype.Int8   `json:"departure_flight_id"`
+	ReturnFlightID    pgtype.Int8   `json:"return_flight_id"`
 	Status            BookingStatus `json:"status"`
 }
 
@@ -157,7 +159,7 @@ SET user_email = NULL,
 WHERE user_email = $1
 `
 
-func (q *Queries) RemoveUserFromBookings(ctx context.Context, userEmail *string) error {
+func (q *Queries) RemoveUserFromBookings(ctx context.Context, userEmail pgtype.Text) error {
 	_, err := q.db.Exec(ctx, removeUserFromBookings, userEmail)
 	return err
 }

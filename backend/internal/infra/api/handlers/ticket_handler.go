@@ -80,7 +80,7 @@ func (h *TicketHandler) GetTicket(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, gin.H{"message": "Ticket not found"})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "An unexpected error occurred", "error": err.Error()})
 		return
 	}
 

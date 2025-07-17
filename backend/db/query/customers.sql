@@ -48,11 +48,13 @@ SET phone_number = $1,
   address = $6,
   loyalty_points = $7
 WHERE user_id = $8;
+
 -- name: ListCustomers :many
 SELECT *
 FROM customers
-ORDER BY user_id, created_at DESC
+ORDER BY user_id DESC
 LIMIT $1 OFFSET $2;
+
 -- name: DeleteCustomerByID :one
 DELETE FROM Customers
 WHERE user_id = $1
