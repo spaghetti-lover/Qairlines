@@ -18,9 +18,4 @@ func HashPassword(password string) (string, error) {
 // CheckPassword checks if the provided password is correct or not
 func CheckPassword(password string, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	// tạm thời bỏ qua bước mã hóa
-	// if hashedPassword != password {
-	// 	return errors.New("invalid credentials")
-	// }
-	// return nil
 }
