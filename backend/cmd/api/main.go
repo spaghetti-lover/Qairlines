@@ -21,6 +21,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/worker"
 	"github.com/spaghetti-lover/qairlines/pkg/logger"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
+	"golang.org/x/sync/errgroup"
 )
 
 var interruptSignals = []os.Signal{
@@ -78,38 +79,20 @@ func main() {
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	// Create server
-	server, err := api.NewServer(config, store, taskDistributor)
-	if err != nil {
-		log.Fatal("cannot connect to server: ", err)
-	}
-
-	// Setup HTTP server
-	httpServer := &http.Server{
-		Addr:    config.ServerAddressPort,
-		Handler: server,
-	}
+	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	// Start task processor in goroutine
-	go runTaskProcessor(config, redisOpt, store)
+	runTaskProcessor(ctx, waitGroup, config, redisOpt, store)
 	// Start server in goroutine
-	go runApiServer(config, store, taskDistributor)
+	runApiServer(ctx, waitGroup, config, store, taskDistributor)
 
-	<-ctx.Done()
-	log.Println("Shutdown signal received")
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Graceful shutdown for HTTP server
-	if err := httpServer.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("Server shutdown failed: %v", err)
+	err = waitGroup.Wait()
+	if err != nil {
+		log.Fatal("Error in goroutines: ", err)
 	}
-
-	log.Println("Server gracefully stopped")
 }
 
-func runApiServer(config config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+func runApiServer(ctx context.Context, waitGroup *errgroup.Group, config config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	server, err := api.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
@@ -120,16 +103,39 @@ func runApiServer(config config.Config, store db.Store, taskDistributor worker.T
 		Handler: server,
 	}
 
-	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("ListenAndServe failed: %v", err)
-	}
+	waitGroup.Go(func() error {
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe failed: %v", err)
+			return err
+		}
+		return nil
+	})
+
+	waitGroup.Go(func() error {
+		<-ctx.Done()
+		log.Println("Shutting down server...")
+		err := httpServer.Shutdown(context.Background())
+		if err != nil {
+			log.Fatalf("Server shutdown failed: %v", err)
+			return err
+		}
+		log.Println("Server gracefully stopped")
+		return nil
+	})
 }
 
-func runTaskProcessor(config config.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+func runTaskProcessor(ctx context.Context, waitGroup *errgroup.Group, config config.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
 	mailer := mail.NewGmailSender(config.MailSenderName, config.MailSenderAddress, config.MailSenderPassword)
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Println("Task processor started")
 	if err := taskProcessor.Start(); err != nil {
 		log.Fatalf("Failed to start task processor: %v", err)
 	}
+	waitGroup.Go(func() error {
+		<-ctx.Done()
+		log.Println("Shutting down task processor...")
+		taskProcessor.Shutdown()
+		log.Println("Task processor gracefully stopped")
+		return nil
+	})
 }
