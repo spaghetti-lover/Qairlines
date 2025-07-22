@@ -165,7 +165,7 @@ npm run dev
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-_For more examples, you can the read [Documentation](https://github.com/spaghetti-lover/Qairlines/tree/main/backend/docs)_
+_For more examples, you can the read [Documentation](https://github.com/spaghetti-lover/Qairlines/tree/main/backend/docs/documentation)_
 
 ![Screenshot 2024-12-22 024234](https://github.com/user-attachments/assets/03ba9f8a-cef8-4a68-bf83-3544d0e5dd5a)
 ![image](https://github.com/user-attachments/assets/41e01cc0-613c-41b9-9287-8794c354bcf0)
