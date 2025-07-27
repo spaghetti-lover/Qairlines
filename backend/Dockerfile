@@ -7,7 +7,7 @@ RUN go build -o main /app/cmd/api/main.go
 FROM alpine
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY app.env .
+COPY .env .
 COPY start.sh .
 COPY wait-for.sh .
 COPY db/migrations ./db/migrations

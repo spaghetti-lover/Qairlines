@@ -14,12 +14,14 @@ type ICreateNewsUseCase interface {
 }
 
 type CreateNewsUseCase struct {
-	newsRepository adapters.INewsRepository
+	newsRepository  adapters.INewsRepository
+	cacheRepository adapters.ICacheRepository
 }
 
-func NewCreateNewsUseCase(newsRepository adapters.INewsRepository) ICreateNewsUseCase {
+func NewCreateNewsUseCase(newsRepository adapters.INewsRepository, cacheRepository adapters.ICacheRepository) ICreateNewsUseCase {
 	return &CreateNewsUseCase{
-		newsRepository: newsRepository,
+		newsRepository:  newsRepository,
+		cacheRepository: cacheRepository,
 	}
 }
 
@@ -43,6 +45,11 @@ func (u *CreateNewsUseCase) Execute(ctx context.Context, req dto.CreateNewsToDBR
 	// Lưu vào database
 	createdNews, err := u.newsRepository.CreateNews(ctx, news)
 	if err != nil {
+		return nil, err
+	}
+
+	// Xóa cache liên quan đến bài viết
+	if err := u.cacheRepository.Clear("getNews:*"); err != nil {
 		return nil, err
 	}
 

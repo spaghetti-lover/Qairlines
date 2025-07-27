@@ -14,6 +14,7 @@ import (
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
+	"github.com/redis/go-redis/v9"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api"
@@ -31,7 +32,7 @@ var interruptSignals = []os.Signal{
 }
 
 func main() {
-	config, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
 	}
@@ -44,7 +45,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)
 	defer stop()
 
-	poolConfig, err := pgxpool.ParseConfig(config.DBSource)
+	poolConfig, err := pgxpool.ParseConfig(cfg.DBSource)
 	if err != nil {
 		log.Fatal("cannot parse pool config:", err)
 	}
@@ -68,13 +69,15 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot connect to database: ", err)
 	}
-
 	defer connPool.Close()
-
+	redis := config.NewRedisClient()
+	if redis == nil {
+		log.Fatal("failed to create Redis client")
+	}
 	store := db.NewStore(connPool)
 
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
+		Addr: cfg.RedisAddress,
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
@@ -82,9 +85,9 @@ func main() {
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	// Start task processor in goroutine
-	runTaskProcessor(ctx, waitGroup, config, redisOpt, store)
+	runTaskProcessor(ctx, waitGroup, cfg, redisOpt, store)
 	// Start server in goroutine
-	runApiServer(ctx, waitGroup, config, store, taskDistributor)
+	runApiServer(ctx, waitGroup, cfg, redis, store, taskDistributor)
 
 	err = waitGroup.Wait()
 	if err != nil {
@@ -92,8 +95,8 @@ func main() {
 	}
 }
 
-func runApiServer(ctx context.Context, waitGroup *errgroup.Group, config config.Config, store db.Store, taskDistributor worker.TaskDistributor) {
-	server, err := api.NewServer(config, store, taskDistributor)
+func runApiServer(ctx context.Context, waitGroup *errgroup.Group, config config.Config, redis *redis.Client, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := api.NewServer(config, store, redis, taskDistributor)
 	if err != nil {
 		log.Fatal("cannot create server:", err)
 	}

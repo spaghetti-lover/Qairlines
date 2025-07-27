@@ -12,7 +12,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/config"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/news"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/dto"
-"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
+	"github.com/spaghetti-lover/qairlines/internal/infra/api/mappers"
 	"github.com/spaghetti-lover/qairlines/pkg/utils"
 )
 

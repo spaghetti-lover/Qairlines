@@ -22,12 +22,15 @@ type Config struct {
 	RateLimiterRequestSec   int           `mapstructure:"RATE_LIMITER_REQUEST_SEC"`
 	RateLimiterRequestBurst int           `mapstructure:"RATE_LIMITER_REQUEST_BURST"`
 	StripeSecretKey         string        `mapstructure:"STRIPE_SECRET_KEY"`
+	RedisDB                 string        `mapstructure:"REDIS_DB"`
+	RedisUsername           string        `mapstructure:"REDIS_USERNAME"`
+	RedisPassword           string        `mapstructure:"REDIS_PASSWORD"`
 }
 
 // LoadConfig reads configuration from file or environment variables.
 func LoadConfig(path string) (config Config, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
 	err = viper.ReadInConfig()

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/cors"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
@@ -23,8 +25,8 @@ type Server struct {
 	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(config config.Config, store db.Store, taskDistributor worker.TaskDistributor) (*Server, error) {
-	container, err := di.NewContainer(config, &store, taskDistributor)
+func NewServer(config config.Config, store db.Store, redis *redis.Client, taskDistributor worker.TaskDistributor) (*Server, error) {
+	container, err := di.NewContainer(config, redis, &store, taskDistributor)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize dependencies: %w", err)
 	}
@@ -35,6 +37,7 @@ func NewServer(config config.Config, store db.Store, taskDistributor worker.Task
 
 	// Create a new Gin router
 	router := gin.Default()
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
 
 	gin.SetMode(gin.TestMode)

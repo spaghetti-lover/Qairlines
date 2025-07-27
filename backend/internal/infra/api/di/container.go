@@ -1,6 +1,7 @@
 package di
 
 import (
+	"github.com/redis/go-redis/v9"
 	"github.com/spaghetti-lover/qairlines/config"
 	db "github.com/spaghetti-lover/qairlines/db/sqlc"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases"
@@ -13,6 +14,7 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/payment"
 	"github.com/spaghetti-lover/qairlines/internal/domain/usecases/ticket"
 	"github.com/spaghetti-lover/qairlines/internal/infra/api/handlers"
+	"github.com/spaghetti-lover/qairlines/internal/infra/cache"
 	"github.com/spaghetti-lover/qairlines/internal/infra/postgresql"
 	"github.com/spaghetti-lover/qairlines/internal/infra/stripe"
 	"github.com/spaghetti-lover/qairlines/internal/infra/worker"
@@ -30,17 +32,18 @@ type Container struct {
 	BookingHandler  *handlers.BookingHandler
 	PaymentHandler  *handlers.PaymentHandler
 	TokenMaker      token.Maker
-	taskDistributor worker.TaskDistributor
+	TaskDistributor worker.TaskDistributor
+	RedisClient     *redis.Client
 }
 
-func NewContainer(config config.Config, store *db.Store, taskDistributor worker.TaskDistributor) (*Container, error) {
+func NewContainer(cfg config.Config, redisClient *redis.Client, store *db.Store, taskDistributor worker.TaskDistributor) (*Container, error) {
 	// Token Maker
-	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	tokenMaker, err := token.NewPasetoMaker(cfg.TokenSymmetricKey)
 	if err != nil {
 		return nil, err
 	}
 
-	stripeGateway := stripe.NewStripeGateway(config.StripeSecretKey)
+	stripeGateway := stripe.NewStripeGateway(cfg.StripeSecretKey)
 
 	// Repositories
 	healthRepo := postgresql.NewHealthRepositoryPostgres(store)
@@ -51,6 +54,7 @@ func NewContainer(config config.Config, store *db.Store, taskDistributor worker.
 	flightRepo := postgresql.NewFlightRepositoryPostgres(store)
 	ticketRepo := postgresql.NewTicketRepositoryPostgres(store)
 	bookingRepo := postgresql.NewBookingRepositoryPostgres(store)
+	cacheRepo := cache.NewRedisCacheService(redisClient)
 
 	// Use Cases
 	healthUseCase := usecases.NewHealthUseCase(healthRepo)
@@ -62,9 +66,9 @@ func NewContainer(config config.Config, store *db.Store, taskDistributor worker.
 	loginUseCase := auth.NewLoginUseCase(userRepo, tokenMaker)
 	changePasswordUseCase := auth.NewChangePasswordUseCase(userRepo)
 	newsGetAllWithAuthorUseCase := news.NewListNewsUseCase(newsRepo)
-	newsGetUseCase := news.NewGetNewsUseCase(newsRepo)
+	newsGetUseCase := news.NewGetNewsUseCase(newsRepo, cacheRepo)
 	newsDeleteUseCase := news.NewDeleteNewsUseCase(newsRepo)
-	newsCreateUseCase := news.NewCreateNewsUseCase(newsRepo)
+	newsCreateUseCase := news.NewCreateNewsUseCase(newsRepo, cacheRepo)
 	newsUpdateUseCase := news.NewUpdateNewsUseCase(newsRepo)
 	adminCreateUseCase := admin.NewCreateAdminUseCase(adminRepo, userRepo)
 	ListAdminsUseCase := admin.NewListAdminsUseCase(adminRepo)
@@ -90,7 +94,7 @@ func NewContainer(config config.Config, store *db.Store, taskDistributor worker.
 	healthHandler := handlers.NewHealthHandler(healthUseCase)
 	customerHandler := handlers.NewCustomerHandler(customerCreateUseCase, customerUpdateUseCase, nil, customerListAllUseCase, customerDeleteUseCase, customerGetUseCase)
 	authHandler := handlers.NewAuthHandler(loginUseCase, changePasswordUseCase)
-	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase, &config)
+	newsHandler := handlers.NewNewsHandler(newsGetAllWithAuthorUseCase, newsDeleteUseCase, newsCreateUseCase, newsUpdateUseCase, newsGetUseCase, &cfg)
 	adminHandler := handlers.NewAdminHandler(adminCreateUseCase, getCurrentAdminUseCase, ListAdminsUseCase, updateAdminUseCase, deleteAdminUseCase)
 	flightHandler := handlers.NewFlightHandler(flightCreateUseCase, flightGetUseCase, flightUpdateUseCase, flightGetAllUseCase, flightDeleteUseCase, flightSearchUseCase, flightSuggestedUseCase)
 	ticketHandler := handlers.NewTicketHandler(ticketGetTicketByFlightIDUseCase, ticketGetUseCase, ticketCancelUseCase, ticketUpdateUseCase)
@@ -108,5 +112,6 @@ func NewContainer(config config.Config, store *db.Store, taskDistributor worker.
 		BookingHandler:  bookingHandler,
 		PaymentHandler:  paymentHandler,
 		TokenMaker:      tokenMaker,
+		RedisClient:     redisClient,
 	}, nil
 }
