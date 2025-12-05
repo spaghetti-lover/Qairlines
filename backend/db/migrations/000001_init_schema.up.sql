@@ -1,3 +1,7 @@
+-- CREATE DATABASE "qairline";
+-- CREATE USER "root" WITH ENCRYPTED PASSWORD 'secret';
+-- GRANT ALL PRIVILEGES ON DATABASE "qairline" TO "root";
+
 -- Define ENUM types
 CREATE TYPE user_role AS ENUM ('customer', 'admin');
 

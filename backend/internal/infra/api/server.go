@@ -3,9 +3,12 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/cors"
 	"github.com/spaghetti-lover/qairlines/config"
@@ -36,20 +39,51 @@ func NewServer(config config.Config, store db.Store, redis *redis.Client, taskDi
 	rateLimiterLogger := logger.NewLoggerWithPath("logs/rate_limiter.log", "warning")
 
 	// Create a new Gin router
-	router := gin.Default()
-	router.Use(gzip.Gzip(gzip.DefaultCompression))
-	router.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
-
 	gin.SetMode(gin.TestMode)
+	router := gin.Default()
 
 	// Clean up clients for rate limiting
 	go middleware.CleanUpClients()
 
+	requestCountMetric := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "qairlines",
+		Name:      "request_count",
+	}, []string{"method", "path"})
+	prometheus.MustRegister(requestCountMetric)
+
+	requestDurationMetric := prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Namespace: "qairlines",
+		Name:      "request_duration",
+	}, []string{"method", "path"})
+	prometheus.MustRegister(requestDurationMetric)
+
+	// Middleware to collect metrics
+	router.Use(func(c *gin.Context) {
+		method := c.Request.Method
+		path := c.FullPath()
+		if path == "" {
+			path = "unknown"
+		}
+
+		requestCountMetric.WithLabelValues(method, path).Add(1)
+
+		startTime := time.Now()
+		c.Next()
+
+		duration := time.Since(startTime).Seconds()
+		requestDurationMetric.WithLabelValues(method, path).Observe(duration)
+	})
+
 	// Group all APIs under "/api"
 	apiRouter := router.Group("/api")
+	apiRouter.Use(gzip.Gzip(gzip.DefaultCompression))
+	apiRouter.Use(middleware.RateLimitingMiddleware(rateLimiterLogger), middleware.TraceMiddleware(), middleware.LoggerMiddleware(httpLogger), middleware.RecoveryMiddleware(recoveryLogger))
 
 	// Health API
 	router.GET("/health", container.HealthHandler.GetHealth)
+
+	// Prometheus Metrics API
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	// News API
 	routes.RegisterNewsRoutes(apiRouter, container.NewsHandler)
 	// Customer API

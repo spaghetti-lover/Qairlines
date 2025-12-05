@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:12-alpine
+    container_name: postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -26,6 +27,54 @@ services:
       - redis-data:/data
       - ./system/redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - app-networks
+
+  app:
+    build: .
+    container_name: qairlines-app
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_ADDRESS=redis:6379
+    networks:
+      - app-networks
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./system/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - app-networks
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./system/grafana/provisioning:/etc/grafana/provisioning
+      - ./system/grafana/dashboards:/etc/grafana/dashboards
+    networks:
+      - app-networks
+
+  locus:
+    image: locustio/locust
+    container_name: locus
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./system/locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=http://app:8080
+    depends_on:
+      - app
     networks:
       - app-networks
 

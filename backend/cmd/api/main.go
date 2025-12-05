@@ -21,7 +21,6 @@ import (
 	"github.com/spaghetti-lover/qairlines/internal/infra/mail"
 	"github.com/spaghetti-lover/qairlines/internal/infra/worker"
 	"github.com/spaghetti-lover/qairlines/pkg/logger"
-	"github.com/spaghetti-lover/qairlines/pkg/utils"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,11 +34,6 @@ func main() {
 	cfg, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config:", err)
-	}
-
-	err = utils.LoadMessages("./message.json")
-	if err != nil {
-		log.Fatalf("Failed to load messages: %v", err)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), interruptSignals...)

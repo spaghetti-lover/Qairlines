@@ -20,7 +20,7 @@ test:
 sqlc:
 	sqlc generate
 server:
-	go run cmd/api/main.go
+	docker-compose up
 mock:
 	mockgen -package mockdb  -destination internal/domain/mock/store.go github.com/spaghetti-lover/qairlines/db/sqlc Store
 mail:
