@@ -27,6 +27,9 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Create .env from GitHub Secret
+        run: |
+          printf "%s" "${{ secrets.APP_ENV_CONTENT }}" > backend/.env
       - name: Set up Go 1.x
         uses: actions/setup-go@v4 # ✅ update version mới nhất
         with:
