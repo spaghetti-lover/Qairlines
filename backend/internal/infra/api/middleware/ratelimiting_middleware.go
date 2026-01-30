@@ -17,7 +17,7 @@ type Client struct {
 }
 
 var (
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	clients = make(map[string]*Client)
 )
 
@@ -42,7 +42,9 @@ func getRateLimiter(ip string) *rate.Limiter {
 		burst := config.RateLimiterRequestBurst
 		limiter := rate.NewLimiter(rate.Limit(requestSec), burst)
 		newClient := &Client{limiter: limiter, lastSeen: time.Now()}
+		mu.Lock()
 		clients[ip] = newClient
+		mu.Unlock()
 		return limiter
 	}
 	client.lastSeen = time.Now()
